@@ -1,0 +1,56 @@
+{
+  "name": "malahy",
+  "version": "2.0.0",
+  "description": "برنامج مدينة الألعاب في فتح الله — نظام تذاكر وحسابات وتقارير",
+  "main": "main.js",
+  "author": "Mohamed Farouk Amer",
+  "license": "ISC",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "publish": "electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.malahy.fathallah",
+    "productName": "مدينة الألعاب فتح الله",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "database.js",
+      "index.html",
+      "windows/**/*",
+      "assets/**/*",
+      "package.json",
+      "!backup/**",
+      "!dist/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "مدينة الألعاب فتح الله"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "YOUR_GITHUB_USERNAME",
+        "repo": "YOUR_REPO_NAME"
+      }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^43.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  }
+}
