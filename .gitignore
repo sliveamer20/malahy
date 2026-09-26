@@ -1,4 +1,6 @@
 node_modules/
 dist/
 backup/
+releases/
+opencode.json
 *.log

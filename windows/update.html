@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تحديث مطلوب</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+::selection{background:rgba(6,182,212,.35);color:#fff;}
+
+html,body{
+  background:
+    radial-gradient(ellipse 700px 350px at 50% 50%,rgba(6,182,212,.06),transparent 65%),
+    var(--bg,#0a1628);
+  height:100vh;min-height:100vh;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cairo','Segoe UI',Tahoma,sans-serif;
+  color:#f1f5f9;
+}
+:root{
+  --bg:#0a1628; --panel:#0f2137; --panel-2:#152a46;
+  --line:rgba(255,255,255,.08);
+  --ink:#f1f5f9; --muted:#94a3b8; --muted-2:#64748b;
+  --primary:#06b6d4; --primary-dim:#0891b2; --primary-bright:#22d3ee;
+  --secondary:#f59e0b; --secondary-dim:#d97706;
+  --danger:#ef4444; --danger-dim:#dc2626;
+  --radius:16px;
+  --shadow:0 18px 40px -18px rgba(0,0,0,.8);
+  --ui:'Cairo','Segoe UI',Tahoma,sans-serif;
+  --led:'Orbitron',ui-monospace,'Courier New',monospace;
+}
+
+.card{
+  width:100%;max-width:520px;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:34px 30px 28px;text-align:center;
+  animation:pop .4s cubic-bezier(.22,1,.36,1) forwards;
+  margin:20px;
+}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97);}to{opacity:1;transform:none;}}
+
+.logo{
+  width:88px;height:88px;margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 0 10px rgba(6,182,212,.18));
+}
+.logo img{width:100%;height:100%;object-fit:contain;display:block;}
+
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(180deg,rgba(245,158,11,.18),rgba(245,158,11,.06));
+  border:1px solid rgba(245,158,11,.4);
+  color:#fde68a;border-radius:999px;
+  padding:6px 16px;font-size:12.5px;font-weight:800;
+  letter-spacing:.4px;margin-bottom:14px;
+}
+.badge .dot{width:7px;height:7px;border-radius:50%;background:var(--secondary);box-shadow:0 0 8px rgba(245,158,11,.7);animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+h1{font-size:21px;font-weight:900;letter-spacing:-.3px;margin-bottom:10px;}
+
+.msg{color:var(--muted);font-size:13.5px;line-height:2;margin-bottom:18px;}
+
+.versions{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  margin-bottom:20px;flex-wrap:wrap;
+}
+.ver{
+  background:var(--bg);border:1px solid var(--line);border-radius:12px;
+  padding:10px 18px;min-width:118px;
+}
+.ver .lab{font-size:11px;color:var(--muted-2);font-weight:700;letter-spacing:.5px;margin-bottom:4px;}
+.ver .num{font-family:var(--led);font-size:19px;font-weight:800;letter-spacing:1px;}
+.ver.cur .num{color:var(--danger);}
+.ver.req{border-color:rgba(34,197,94,.4);}
+.ver.req .num{color:#4ade80;text-shadow:0 0 10px rgba(34,197,94,.4);}
+.arrow{color:var(--muted-2);font-size:20px;font-weight:900;}
+
+/* شريط التقدّم */
+.bar-wrap{margin-bottom:20px;}
+.bar{
+  width:100%;height:7px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line);
+  border-radius:50px;overflow:hidden;
+}
+.fill{
+  width:0;height:100%;border-radius:50px;
+  background:linear-gradient(90deg,var(--primary-dim),var(--primary));
+  transition:width .25s ease;position:relative;
+}
+.fill::after{
+  content:"";position:absolute;top:0;right:0;
+  width:42px;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35));
+  opacity:.5;border-radius:50px;filter:blur(2px);
+}
+.pct{
+  margin-top:9px;font-family:var(--led);font-size:14px;font-weight:800;
+  color:var(--primary-bright);letter-spacing:1px;
+}
+
+.state{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-size:13.5px;font-weight:700;color:var(--ink);
+  min-height:26px;margin-bottom:14px;line-height:1.7;
+}
+.spin{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(6,182,212,.25);border-top-color:var(--primary);
+  animation:rot .8s linear infinite;flex:none;
+}
+@keyframes rot{to{transform:rotate(360deg);}}
+.state.err{color:#fda4a4;}
+.state.ok{color:#7ee2a8;}
+
+.actions{display:flex;flex-direction:column;gap:10px;}
+.btn{
+  width:100%;cursor:pointer;border:none;border-radius:12px;
+  padding:13px 16px;font-family:var(--ui);font-weight:800;font-size:14.5px;
+  background:linear-gradient(180deg,var(--primary),var(--primary-dim));color:#fff;
+  transition:transform .12s ease,filter .15s ease,box-shadow .15s ease;
+  box-shadow:0 8px 20px -8px rgba(6,182,212,.5),inset 0 1px 0 rgba(255,255,255,.22);
+  letter-spacing:.2px;
+}
+.btn:hover:not(:disabled){filter:brightness(1.08);box-shadow:0 10px 24px -8px rgba(6,182,212,.6),inset 0 1px 0 rgba(255,255,255,.28);}
+.btn:active:not(:disabled){transform:scale(.97);}
+.btn:disabled{opacity:.5;cursor:default;}
+.btn:focus-visible{outline:2px solid var(--primary-bright);outline-offset:2px;}
+
+.btn.ghost{
+  background:transparent;border:1px solid var(--line);color:var(--muted);
+  box-shadow:none;font-weight:700;font-size:13px;
+}
+.btn.ghost:hover{filter:none;border-color:rgba(255,255,255,.18);color:var(--ink);}
+
+.errbox{
+  background:rgba(239,68,68,.08);
+  border:1px solid rgba(239,68,68,.25);
+  border-radius:11px;padding:11px 14px;
+  font-size:12.5px;color:#fca5a5;line-height:1.8;
+  margin-bottom:14px;display:none;
+  word-break:break-word;
+}
+.errbox.show{display:block;}
+
+.foot{
+  margin-top:20px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:11.5px;color:var(--muted-2);line-height:1.8;
+}
+.foot b{color:var(--muted);font-weight:800;}
+
+/* ملاحظة: لا يوجد أي زر للإغلاق/التخطي — البوابة لا تُغلق إلا بالتحديث */
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><img src="../assets/images/logo.png" alt="" onerror="this.style.display='none'"></div>
+
+  <div class="badge"><span class="dot"></span>تحديث إجباري</div>
+
+  <h1>يجب تحديث البرنامج</h1>
+  <p class="msg">
+    هذا الإصدار أقدم من النسخة المطلوبة. لا يمكن فتح واجهة البرنامج الرئيسية
+    إلا بعد التحديث للنسخة الأحدث. التحديث يتم تلقائيًا — فقط انتظر.
+  </p>
+
+  <div class="versions">
+    <div class="ver cur"><div class="lab">النسخة الحالية</div><div class="num" id="vCur">—</div></div>
+    <div class="arrow">←</div>
+    <div class="ver req"><div class="lab">النسخة المطلوبة</div><div class="num" id="vReq">—</div></div>
+  </div>
+
+  <div class="bar-wrap">
+    <div class="bar"><div class="fill" id="fill" style="width:0"></div></div>
+    <div class="pct" id="pct"></div>
+  </div>
+
+  <div class="state" id="state"><span class="spin"></span><span id="stateTxt">جارٍ فحص التحديثات…</span></div>
+
+  <div class="errbox" id="errbox"></div>
+
+  <div class="actions">
+    <button class="btn" id="btnRetry" type="button" disabled>إعادة المحاولة</button>
+    <button class="btn ghost" id="btnHelp" type="button">تواصل مع المطوّر</button>
+  </div>
+
+  <div class="foot">
+    <b>ملاحظة:</b> البوابة مقفولة ولا يمكن تخطّيها — يجب إكمال التحديث أولاً.<br>
+    كوكي بارك — جميع الحقوق محفوظة
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var els = {
+    vCur:   document.getElementById("vCur"),
+    vReq:   document.getElementById("vReq"),
+    fill:   document.getElementById("fill"),
+    pct:    document.getElementById("pct"),
+    stateTxt: document.getElementById("stateTxt"),
+    state:  document.getElementById("state"),
+    errbox: document.getElementById("errbox"),
+    btnRetry: document.getElementById("btnRetry"),
+    btnHelp:  document.getElementById("btnHelp"),
+  };
+
+  function setVer(el, v){
+    if(el && v) el.textContent = String(v);
+  }
+
+  function setState(txt, cls){
+    if(els.stateTxt) els.stateTxt.textContent = txt;
+    if(els.state){
+      els.state.classList.remove("err","ok");
+      if(cls) els.state.classList.add(cls);
+      // أيقونة الدوران تظهر فقط أثناء العمليات الجارية
+      var spin = els.state.querySelector(".spin");
+      if(spin) spin.style.display = (cls === "err" || cls === "ok") ? "none" : "";
+    }
+  }
+
+  function showError(msg){
+    if(!els.errbox) return;
+    if(msg){
+      els.errbox.textContent = String(msg).slice(0, 300);
+      els.errbox.classList.add("show");
+    } else {
+      els.errbox.classList.remove("show");
+    }
+  }
+
+  function setProgress(p){
+    var pct = Math.max(0, Math.min(100, Math.round(p || 0)));
+    if(els.fill) els.fill.style.width = pct + "%";
+    if(els.pct)  els.pct.textContent  = (pct > 0 && pct < 100) ? pct + "%" : "";
+  }
+
+  function setBusy(busy){
+    if(els.btnRetry) els.btnRetry.disabled = !!busy;
+  }
+
+  /* --- الحالة الأولية من العملية الرئيسية --- */
+  try{
+    var info = window.malahyGate && window.malahyGate.init ? window.malahyGate.init() : null;
+    if(info){
+      setVer(els.vCur, info.installed);
+      setVer(els.vReq, info.required);
+    }
+  }catch(_){}
+
+  /* --- تحديثات الحالة القادمة من العملية الرئيسية --- */
+  if(window.malahyGate && window.malahyGate.onStatus){
+    window.malahyGate.onStatus(function(d){
+      if(!d) return;
+      if(d.installed) setVer(els.vCur, d.installed);
+      if(d.required) setVer(els.vReq, d.required);
+
+      switch(d.state){
+        case "checking":
+          showError("");
+          setProgress(0);
+          setState("جارٍ فحص التحديثات…", "");
+          setBusy(true);
+          break;
+        case "downloading":
+          showError("");
+          setState("جارٍ تنزيل التحديث…", "");
+          setProgress(d.percent);
+          setBusy(true);
+          break;
+        case "verifying":
+          showError("");
+          setState("جارٍ التحقق من ملف التحديث…", "");
+          setProgress(d.percent || 100);
+          setBusy(true);
+          break;
+        case "downloaded":
+          showError("");
+          setProgress(100);
+          setState("اكتمل التنزيل — جارٍ التثبيت وإعادة التشغيل…", "");
+          setBusy(true);
+          break;
+        case "error":
+          setProgress(0);
+          setState("تعذّر إكمال التحديث", "err");
+          showError(d.message || "حدث خطأ غير معروف. تأكد من اتصالك بالإنترنت ثم أعد المحاولة.");
+          setBusy(false);
+          break;
+        case "offline":
+          setProgress(0);
+          setState("لا يوجد اتصال بخادم التحديثات", "err");
+          showError("تعذّر الوصول إلى خادم التحديثات. تأكد من اتصالك بالإنترنت ثم اضغط «إعادة المحاولة». يجب تحديث البرنامج قبل استخدامه.");
+          setBusy(false);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  /* أزرار: إعادة المحاولة فقط + تواصل (لا يوجد تخطي/إغلاق) */
+  if(els.btnRetry){
+    els.btnRetry.addEventListener("click", function(){
+      if(window.malahyGate && window.malahyGate.retry) window.malahyGate.retry();
+    });
+  }
+  if(els.btnHelp){
+    els.btnHelp.addEventListener("click", function(){
+      var url = "https://wa.me/201100704812";
+      if(window.malahyShell && window.malahyShell.openExternal){
+        try{ window.malahyShell.openExternal(url); }catch(_){}
+      } else {
+        try{ window.open(url, "_blank", "noopener,noreferrer"); }catch(_){}
+      }
+    });
+  }
+
+  /* منع أي محاولة لفتح أدوات المطوّر أو الاختصارات داخل البوابة */
+  document.addEventListener("keydown", function(e){
+    // F12 / Ctrl+Shift+I / Ctrl+R / Ctrl+W ممنوعة
+    if(e.key === "F12"){ e.preventDefault(); return; }
+    if(e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i")){ e.preventDefault(); return; }
+    if(e.ctrlKey && (e.key === "r" || e.key === "R")){ e.preventDefault(); return; }
+  }, true);
+})();
+</script>
+</body>
+</html>

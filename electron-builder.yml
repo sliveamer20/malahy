@@ -1,0 +1,37 @@
+# electron-builder configuration — كوكي بارك (Malahy)
+# NSIS x64 installer + GitHub auto-update publishing.
+appId: com.malahy.fathallah
+productName: كوكي بارك
+artifactName: malahy-setup-${version}.${ext}
+directories:
+  output: dist
+files:
+  - main.js
+  - preload.js
+  - database.js
+  - activation.js
+  - update-gate.js
+  - index.html
+  - windows/**/*
+  - assets/**/*
+  - package.json
+  - "!backup/**"
+  - "!dist/**"
+asar: true
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icons/icon.ico
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: كوكي بارك
+publish:
+  - provider: github
+    owner: sliveamer20
+    repo: malahy
