@@ -1,6 +1,82 @@
+# ============================================================
+# كوكي بارك / Malahy — .gitignore
+# ============================================================
+
+# --- Dependencies ---
 node_modules/
+
+# --- Build output (electron-builder) ---
 dist/
-backup/
+release/
 releases/
-opencode.json
+out/
+build/
+*.exe
+*.exe.blockmap
+*.dmg
+*.AppImage
+*.snap
+*.deb
+*.rpm
+*.msi
+*.nupkg
+*.asar
+*.asar.unpacked/
+latest.yml
+app-update.yml
+builder-debug.yml
+builder-effective-config.yaml
+
+# --- Local runtime data (never commit user data) ---
+# The app stores its database in the OS user-data folder; these are
+# local-only copies/backups that must never enter the repository.
+database/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+malahy-data.json
+malahy-data.bak.json
+malahy-data.corrupt-*.json
+
+# --- Backups ---
+backup/
+backups/
+*.bak
+*.bak.*
+
+# --- Logs & crash dumps ---
 *.log
+logs/
+*.dump
+error.log
+
+# --- Secrets & local configuration ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.cert
+*.p12
+secrets.json
+opencode.json
+
+# --- Editors & IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS files ---
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# --- Test artifacts & coverage ---
+coverage/
+.nyc_output/
+test-results/
