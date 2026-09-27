@@ -193,6 +193,7 @@ ipcMain.handle("get-printers", async () => {
       displayName: p.displayName || p.name,
       isDefault: !!p.isDefault,
       status: p.status,
+      options: p.options || null,   /* معلومات الورق/الحجم إن وُجدت من الويندوز */
     }));
   } catch (e) {
     return [];
@@ -204,6 +205,8 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
   try {
     win = new BrowserWindow({
       show: false,
+      width: opts.paper === "a4" ? 900 : 420,
+      height: 700,
       webPreferences: { contextIsolation: true, javascript: false },
     });
     await win.loadURL(
@@ -216,6 +219,12 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
       margins: { marginType: "none" },
     };
     if (opts.printerName) printOpts.deviceName = opts.printerName;
+    /* الطابعات العادية: نستخدم حجم A4 حتى لا يُقص التقرير أو تتداخل الأعمدة.
+       الطابعات الحرارية: نترك حجم الورق الافتراضي للطابعة (رول 58/80مم). */
+    if (opts.paper === "a4") {
+      printOpts.pageSize = "A4";
+      printOpts.margins = { marginType: "custom", top: 0, bottom: 0, left: 0, right: 0 };
+    }
     const result = await new Promise((resolve) => {
       try {
         win.webContents.print(printOpts, (success, failureReason) =>

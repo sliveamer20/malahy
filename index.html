@@ -61,6 +61,22 @@
     /* ===== Glows & Focus ===== */
     --glow-primary:0 0 0 3px rgba(6,182,212,.25);
     --focus-ring:var(--glow-primary);
+    /* ===== Semantic surface tokens (تُعرّف هنا للداكن، وتُستبدل في الفاتح) ===== */
+    --hi:rgba(255,255,255,.045);                  /* لمسة فاتحة فوق الأسطح */
+    --hi-2:rgba(255,255,255,.065);
+    --line-2:rgba(255,255,255,.06);               /* حدود أرفع من --line */
+    --inset-hi:inset 0 1px 0 rgba(255,255,255,.05);
+    --ovl:rgba(8,6,14,.72);                        /* خلفية النوافذ المنبثقة */
+    --shadow-2:0 10px 28px -14px rgba(0,0,0,.55);
+    --topbar-bg:linear-gradient(180deg,rgba(21,42,70,.82),rgba(15,33,55,.88));
+    --scoreboard-bg:linear-gradient(180deg,#0e0b18,#0a0812);
+    --sc-big:#eafff6;
+    --shift-bg:linear-gradient(180deg,#0a2e1a,#061a0e);
+    --shift-color:#ecfdf5;
+    --banner-color:#f6d98a;
+    --banner-color-b:#ffe6a3;
+    --badge-soft:#fca5a5;
+    --pend-color:#fcd34d;
     /* ===== Typography ===== */
     --ui:'Cairo','Tajawal','Segoe UI',Tahoma,system-ui,sans-serif;
     --led:'Orbitron','Share Tech Mono',ui-monospace,'Courier New',monospace;
@@ -77,7 +93,7 @@
     /* ===== Text ===== */
     --ink:#0f172a;
     --muted:#475569;
-    --muted-2:#94a3b8;
+    --muted-2:#64748b;
     --text-primary:var(--ink);
     --text-secondary:var(--muted);
     --text-muted:var(--muted-2);
@@ -88,7 +104,7 @@
     /* ===== Primary - Cyan/Turquoise ===== */
     --primary:#0891b2;
     --primary-dim:#0e7490;
-    --primary-bright:#06b6d4;
+    --primary-bright:#0891b2;
     /* ===== Secondary - Gold ===== */
     --secondary:#d97706;
     --secondary-bright:#f59e0b;
@@ -97,14 +113,30 @@
     /* ===== Success - Green (reserved) ===== */
     --success:#16a34a;
     --success-dim:#15803d;
-    --success-bright:#22c55e;
+    --success-bright:#15803d;
     /* ===== Danger - Red (reserved) ===== */
     --danger:#dc2626;
-    --danger-bright:#ef4444;
+    --danger-bright:#dc2626;
     /* ===== Radius ===== */
     --shadow:0 18px 40px -18px rgba(0,0,0,.22);
     /* ===== Glows & Focus ===== */
     --glow-primary:0 0 0 3px rgba(6,182,212,.22);
+    /* ===== Semantic surface tokens (نسخة أغمق للخلفية الفاتحة) ===== */
+    --hi:rgba(15,23,42,.05);
+    --hi-2:rgba(15,23,42,.08);
+    --line-2:rgba(15,23,42,.08);
+    --inset-hi:inset 0 1px 0 rgba(255,255,255,.7);
+    --ovl:rgba(15,23,42,.34);
+    --shadow-2:0 10px 28px -16px rgba(15,23,42,.28);
+    --topbar-bg:linear-gradient(180deg,rgba(255,255,255,.94),rgba(241,245,249,.9));
+    --scoreboard-bg:linear-gradient(180deg,#ffffff,#eef2f7);
+    --sc-big:#0f172a;
+    --shift-bg:linear-gradient(180deg,#ecfdf5,#d1fae5);
+    --shift-color:#065f46;
+    --banner-color:#92400e;
+    --banner-color-b:#78350f;
+    --badge-soft:#b91c1c;
+    --pend-color:#92400e;
   }
 
   /* ===== Standard Icon Size ===== */
@@ -346,6 +378,17 @@
     border-radius:10px;
   }
   .theme-btn-h svg{width:18px;height:18px;flex:none;}
+  /* مجموعة زرّي المظهر في الهيدر: يدوي + تلقائي جنب بعض */
+  .theme-btn-group{display:flex;align-items:center;gap:8px;flex:none;}
+  /* زر المظهر التلقائي — الحالة الفعّالة واضحة بصريًا */
+  .theme-btn-h.at-on{
+    background:linear-gradient(180deg,var(--primary),var(--primary-dim));
+    border-color:transparent;color:#fff;
+    box-shadow:0 0 0 1px rgba(6,182,212,.45),0 6px 16px -6px rgba(6,182,212,.65), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .theme-btn-h.at-on:hover{filter:brightness(1.12);}
+  .theme-btn-h.at-off{opacity:.45;}
+  .theme-btn-h.at-off:hover{opacity:.85;border-color:var(--primary);}
 
   ::-webkit-scrollbar{width:10px;height:10px;}
   ::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:8px;}
@@ -557,8 +600,29 @@
   .rep-card.cash .rc-v{color:var(--success-bright);}
   .rep-card.elec .rc-v{color:var(--primary-bright);}
   /* ===== Settings modal (print + updates) ===== */
-  .set-modal{max-width:560px;width:100%;}
-  .set-card{background:var(--bg-2);border:1px solid var(--line-soft);border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 8px 22px -16px rgba(0,0,0,.5);}
+  /* ملاحظة specificity: نستخدم .modal.set-modal (0,2,0) لأن قاعدة .modal العادية
+     (0,1,0) مكتوبة بعد هذه القاعدة وبتطغى عليها، وهذا كان السبب في ضغط نافذة
+     الإعدادات في عمود ضيق بعرض 440px. */
+  .modal.set-modal{
+    width:100%;max-width:920px;
+    max-height:min(88vh,840px);
+    display:flex;flex-direction:column;overflow:hidden;
+    padding:20px 22px 16px;
+  }
+  .set-modal .set-title{flex:none;margin:0 0 12px;font-size:19px;font-weight:900;display:flex;align-items:center;gap:10px;}
+  /* حاوية البطاقات: شبكة متجاوبة بن عمودين على الشاشات العادية، وعمود واحد على
+     الشاشات الضيقة — مع تمرير داخلها لو زاد الارتفاع. */
+  .set-cards{
+    flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));
+    gap:14px;align-content:start;padding:2px 4px 6px;
+  }
+  .set-cards::-webkit-scrollbar{width:9px;}
+  .set-cards::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:8px;}
+  .set-cards::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+  .set-cards .set-card{margin-bottom:0;}
+  .set-modal .modal-actions{flex:none;margin-top:12px;}
+  .set-card{background:var(--bg-2);border:1px solid var(--line-soft);border-radius:14px;padding:16px 18px;box-shadow:0 8px 22px -16px rgba(0,0,0,.5);}
   .set-h{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:900;color:var(--ink);margin-bottom:14px;letter-spacing:-.2px;}
   .set-h .ic{font-size:15px;}
   .switch{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:14px;color:var(--ink);font-weight:700;margin-bottom:14px;}
@@ -717,6 +781,53 @@
   .stmt-acts button{flex:1;min-width:180px;}
   .ovl2{position:fixed;inset:0;background:rgba(8,6,14,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1200;padding:20px;animation:overlay-fade .2s ease;}
   .ovl2 .modal{max-width:440px;animation:modal-pop .22s cubic-bezier(.34,1.4,.64,1);}
+
+  /* ===== ربط المصروفات بالموظفين (سلف) ===== */
+  .add-row .in-emp{
+    font-family:var(--ui);font-size:12.5px;font-weight:700;color:var(--ink);
+    background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 10px;outline:none;
+    min-width:130px;max-width:170px;transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .add-row .in-emp:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14);}
+  .exp-emp-hint{font-size:11px;color:var(--muted-2);margin:-6px 0 12px;line-height:1.6;}
+  .exp-emp-hint b{color:var(--primary-bright);}
+  .item.adv-item{border-color:rgba(6,182,212,.35);background:rgba(6,182,212,.05);}
+  .adv-badge{
+    flex:none;font-size:10.5px;font-weight:800;color:var(--primary-bright);
+    border:1px solid rgba(6,182,212,.35);background:rgba(6,182,212,.08);
+    border-radius:50px;padding:3px 9px;white-space:nowrap;direction:ltr;
+  }
+
+  /* ===== التسجيل اليومي للموظفين ===== */
+  .dr-table td{vertical-align:middle;}
+  .dr-job{font-size:10.5px;color:var(--muted-2);margin-top:2px;}
+  .dr-cell{min-width:120px;}
+  .dr-time{font-size:13px;color:var(--success-bright);background:rgba(34,197,94,.08);
+    border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:3px 9px;display:inline-block;margin-bottom:5px;}
+  .dr-na{color:var(--muted-2);font-size:13px;}
+  .dr-btn{
+    cursor:pointer;border-radius:9px;padding:7px 12px;font-family:var(--ui);font-weight:800;font-size:12px;
+    border:1px solid;transition:.15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;
+  }
+  .dr-btn:active{transform:scale(.97);}
+  .dr-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+  .dr-in{color:var(--success-bright);border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.08);}
+  .dr-in:hover:not(:disabled){background:rgba(34,197,94,.18);border-color:rgba(34,197,94,.7);}
+  .dr-out{color:var(--gold);border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08);}
+  .dr-out:hover:not(:disabled){background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.7);}
+  .dr-amt{
+    width:92px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 9px;
+    color:var(--ink);font-family:var(--led);font-size:13px;text-align:center;direction:ltr;outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .dr-amt::placeholder{color:var(--muted-2);font-size:12px;}
+  .dr-amt:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14);}
+  .dr-amt:disabled{opacity:.55;cursor:not-allowed;}
+  .dr-status{font-size:11px;font-weight:800;border-radius:50px;padding:4px 10px;border:1px solid;white-space:nowrap;}
+  .dr-st-full{color:var(--success-bright);border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);}
+  .dr-st-in{color:var(--gold);border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.07);}
+  .dr-st-absent{color:var(--red);border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.06);}
+  .emp-days .dr-time{font-size:12px;margin-bottom:0;}
 
   /* ===== Ledger (expenses + gifts) ===== */
   .ledger{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
@@ -1197,6 +1308,122 @@
     .chart-bars{gap:8px;}
     .bar-col{min-width:38px;}
   }
+
+  /* ============================================================
+     الوضع الفاتح — إصلاح كل الألوان الداكنة الثابتة
+     كل القاعدات هنا مُقيّدة بـ [data-theme="light"] فلا تؤثر على الوضع
+     الداكن إطلاقًا. تعالج: خلفيات/نصوص ثابتة، حدود شبه شفافة على أبيض،
+     توهجات ونصوص فاتحة على خلفيات فاتحة، وأسطح النوافذ والتقارير.
+     ============================================================ */
+  [data-theme="light"] body{
+    background:
+      radial-gradient(1100px 520px at 82% -8%, rgba(6,182,212,.10), transparent 60%),
+      radial-gradient(900px 480px at 10% 108%, rgba(139,92,246,.05), transparent 55%),
+      var(--bg);
+  }
+  /* الهيدر */
+  [data-theme="light"] .topbar{
+    background:var(--topbar-bg);
+    border-color:var(--line);
+    box-shadow:0 10px 30px -18px rgba(15,23,42,.35), 0 2px 8px -6px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,.85);
+  }
+  [data-theme="light"] .clockbox{
+    background:var(--hi); border-color:var(--line-2);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.75);
+  }
+  [data-theme="light"] .clockbox .divider{background:var(--line);}
+  [data-theme="light"] .shift-chip{
+    background:var(--shift-bg); color:var(--shift-color);
+    border-color:rgba(22,163,74,.4);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 3px 10px -6px rgba(15,23,42,.22);
+  }
+  [data-theme="light"] .theme-btn{background:var(--panel);border-color:var(--line-2);}
+  /* لوحة النتائج */
+  [data-theme="light"] .scoreboard{
+    background:var(--scoreboard-bg);
+    border-color:var(--line);
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.85);
+  }
+  [data-theme="light"] .sc-big{color:var(--sc-big);text-shadow:0 0 12px rgba(34,197,94,.22);}
+  [data-theme="light"] .sc-cell{background:var(--hi);border-color:var(--line-2);box-shadow:var(--inset-hi);}
+  [data-theme="light"] .sc-cell:hover{background:var(--hi-2);border-color:var(--line);box-shadow:0 10px 22px -14px rgba(15,23,42,.3), var(--inset-hi);}
+  [data-theme="light"] .sc-cell.final{background:rgba(34,197,94,.09);border-color:rgba(22,163,74,.42);}
+  /* بطاقات الألعاب */
+  [data-theme="light"] .ticket{border-color:var(--line-2);box-shadow:0 8px 22px -14px rgba(15,23,42,.26), var(--inset-hi);}
+  [data-theme="light"] .ticket:hover{border-color:color-mix(in srgb,var(--c) 45%,var(--line-2));box-shadow:0 14px 30px -16px rgba(15,23,42,.34), 0 0 0 1px color-mix(in srgb,var(--c) 22%,transparent), var(--inset-hi);}
+  [data-theme="light"] .ticket .perf{border-top-color:var(--line);}
+  [data-theme="light"] .ticket .perf::before,
+  [data-theme="light"] .ticket .perf::after{border-color:var(--line-2);}
+  [data-theme="light"] .ticket .qty-in{background:var(--hi);border-color:var(--line-2);}
+  [data-theme="light"] .ticket .qty-in:focus{background:#fff;border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 16%,transparent);}
+  [data-theme="light"] .ticket .qty-add{background:var(--hi);border-color:var(--line-2);color:color-mix(in srgb,var(--c) 72%,#0f172a);}
+  [data-theme="light"] .ticket .qty-add:hover{background:color-mix(in srgb,var(--c) 12%,#fff);border-color:color-mix(in srgb,var(--c) 40%,var(--line-2));}
+  [data-theme="light"] .minus{background:var(--hi);border-color:var(--line-2);}
+  [data-theme="light"] .epay-btn{border-color:color-mix(in srgb,var(--primary) 45%,var(--line-2));background:linear-gradient(180deg,rgba(6,182,212,.13),rgba(6,182,212,.05));box-shadow:var(--inset-hi);}
+  [data-theme="light"] .ticket .brk{background:var(--hi);border-color:var(--line-soft);}
+  /* الأزرار */
+  [data-theme="light"] .abtn{border-color:var(--line-2);box-shadow:var(--inset-hi);}
+  [data-theme="light"] .abtn:hover{box-shadow:0 8px 18px -8px rgba(15,23,42,.3), var(--inset-hi);}
+  [data-theme="light"] .abtn.ghost{background:var(--hi);}
+  /* الحقول والمدخلات */
+  [data-theme="light"] .field input{background:#fff;border-color:var(--line-2);}
+  [data-theme="light"] .add-row input{background:#fff;}
+  [data-theme="light"] .set-card select{background:#fff;}
+  [data-theme="light"] .emp-form input,
+  [data-theme="light"] .emp-form select,
+  [data-theme="light"] .emp-form textarea,
+  [data-theme="light"] .emp-note-in,
+  [data-theme="light"] .emp-days td select,
+  [data-theme="light"] .emp-days td input,
+  [data-theme="light"] .emp-acts button,
+  [data-theme="light"] .emp-mini{background:#fff;}
+  /* النوافذ المنبثقة */
+  [data-theme="light"] .overlay{background:var(--ovl);}
+  [data-theme="light"] .ovl2{background:var(--ovl);}
+  [data-theme="light"] .modal{border-color:var(--line);box-shadow:0 24px 60px -20px rgba(15,23,42,.38), 0 0 0 1px rgba(15,23,42,.05);}
+  [data-theme="light"] .modal-actions button{border-color:var(--line-2);}
+  [data-theme="light"] .modal-actions .cancel{background:var(--hi);border-color:var(--line-2);}
+  [data-theme="light"] .act-card{border-color:var(--line);}
+  [data-theme="light"] .act-msg .phone{color:var(--ink);text-shadow:0 0 6px rgba(34,197,94,.3);}
+  /* الإعدادات */
+  [data-theme="light"] .testbtn{background:var(--hi);border-color:var(--line-2);box-shadow:var(--inset-hi);}
+  [data-theme="light"] .upd-actions button{background:var(--hi);border-color:var(--line-2);box-shadow:var(--inset-hi);}
+  /* جداول الموظفين */
+  [data-theme="light"] .emp-table tbody tr:nth-child(even){background:rgba(15,23,42,.035);}
+  [data-theme="light"] .emp-table tbody tr:nth-child(odd){background:rgba(15,23,42,.012);}
+  [data-theme="light"] .emp-table tr.emp-tot td,
+  [data-theme="light"] .emp-table tr.emp-tot:hover td{background:var(--hi-2);}
+  [data-theme="light"] .emp-empty,
+  [data-theme="light"] .rev-empty{background:var(--hi);}
+  /* السجل */
+  [data-theme="light"] .hist-item:hover{border-color:var(--line);box-shadow:0 6px 18px -12px rgba(15,23,42,.3);}
+  [data-theme="light"] .hist-row-del,
+  [data-theme="light"] .hist-row-print{background:var(--hi);border-color:var(--line-2);}
+  /* التقارير */
+  [data-theme="light"] .rep-xbtn{background:var(--hi);border-color:var(--line-2);box-shadow:var(--inset-hi);}
+  [data-theme="light"] .rep-tab{box-shadow:var(--inset-hi);}
+  [data-theme="light"] .rep-card{box-shadow:0 8px 24px -16px rgba(15,23,42,.3), var(--inset-hi);}
+  [data-theme="light"] .rep-card:hover{border-color:var(--line);box-shadow:0 16px 32px -16px rgba(15,23,42,.35), 0 0 0 1px rgba(6,182,212,.2), var(--inset-hi);}
+  [data-theme="light"] .bw-card:hover{border-color:var(--line);box-shadow:0 10px 24px -12px rgba(15,23,42,.3);}
+  /* عناصر القوائم */
+  [data-theme="light"] .item .del,
+  [data-theme="light"] .item .rep{background:var(--hi);border-color:var(--line-2);}
+  /* شارات وبانرات */
+  [data-theme="light"] .rev-badge{color:var(--badge-soft);border-color:rgba(220,38,38,.4);background:rgba(220,38,38,.08);}
+  [data-theme="light"] .emp-chip.locked{color:var(--badge-soft);border-color:rgba(220,38,38,.4);background:rgba(220,38,38,.07);}
+  [data-theme="light"] .emp-chip.pend{color:var(--pend-color);border-color:rgba(217,119,6,.4);background:rgba(217,119,6,.08);}
+  [data-theme="light"] .pass-banner{color:var(--banner-color);background:rgba(251,191,36,.16);border-color:rgba(217,119,6,.42);}
+  [data-theme="light"] .pass-banner b{color:var(--banner-color-b);}
+  [data-theme="light"] .pass-banner button{color:var(--banner-color);border-color:rgba(217,119,6,.45);background:rgba(251,191,36,.14);}
+  [data-theme="light"] .pass-banner button:hover{background:rgba(251,191,36,.26);border-color:rgba(217,119,6,.65);}
+  [data-theme="light"] .srow.final{background:rgba(34,197,94,.1);border-color:rgba(22,163,74,.42);}
+  /* أشرطة التمرير */
+  [data-theme="light"] ::-webkit-scrollbar-track,
+  [data-theme="light"] #empRoot::-webkit-scrollbar-track,
+  [data-theme="light"] .rep-body::-webkit-scrollbar-track,
+  [data-theme="light"] .rev-scroll::-webkit-scrollbar-track{background:rgba(15,23,42,.05);}
+  /* تلميحات لوحة المفاتيح على الأزرار الملوّنة يبقى نصها داكنًا */
+  [data-theme="light"] .add-btn::after{color:var(--ink);background:rgba(255,255,255,.55);border-color:rgba(15,23,42,.2);}
 </style>
 </head>
 <body>
@@ -1233,7 +1460,10 @@
         <div class="sub">نظام قطع التذاكر وحساب المبيعات اليومية</div>
       </div>
     </div>
-    <button class="theme-btn theme-btn-h" id="themeToggle" onclick="var cur=(_settings&&_settings.theme)||'dark';setTheme(cur==='dark'?'light':'dark');paintThemeBtn();" title="تبديل المظهر"></button>
+    <div class="theme-btn-group">
+      <button class="theme-btn theme-btn-h" id="themeToggle" onclick="toggleTheme()" title="تبديل المظهر"></button>
+      <button class="theme-btn theme-btn-h" id="autoThemeToggle" onclick="toggleAutoTheme()" title="المظهر التلقائي"></button>
+    </div>
     <div class="clockbox">
       <div class="time num" id="clock">--:--</div>
       <div class="date" id="todayDate">—</div>
@@ -1295,8 +1525,12 @@
       <div class="add-row">
         <input class="in-desc" id="expDesc" type="text" placeholder="بيان المصروف (مثال: بنزين المولد)">
         <input class="in-amt num" id="expAmount" type="number" min="0" step="any" placeholder="المبلغ">
+        <select class="in-emp" id="expEmp" title="اختر موظفًا لتسجيل المبلغ كسلفة تُخصم من راتبه">
+          <option value="">مصروف عادي</option>
+        </select>
         <button class="add-btn" onclick="addExpense()">إضافة</button>
       </div>
+      <div class="exp-emp-hint" id="expEmpHint">💬 لو اخترت موظفًا، المبلغ يُسجَّل <b>سلفة</b> (تُخصم تلقائيًا من راتبه الأسبوعي) بدل ما يكون مصروف عادي.</div>
       <div class="list" id="expenseList"></div>
       <div class="panel-total">
         <span class="lab">إجمالي المصروفات</span>
@@ -1309,7 +1543,7 @@
         <div class="tag">🎁</div>
         <div>
           <div class="ttl">الهدايا</div>
-          <div class="desc">تُخصم من الصافي (مصروف)</div>
+          <div class="desc">قيمتها تُضاف للإجمالي النهائي</div>
         </div>
       </div>
       <div class="add-row">
@@ -1334,7 +1568,7 @@
       <div class="srow sub"><span class="lab">↳ منها تحويل إلكتروني 💳</span><span class="amt num" id="sumElec">0</span></div>
       <div class="srow exp"><span class="lab"><span class="op">−</span>المصروفات</span><span class="amt num" id="sumExpenses">0</span></div>
       <div class="srow net"><span class="lab"><span class="op">=</span>الصافي</span><span class="amt num" id="sumNet">0</span></div>
-      <div class="srow gift"><span class="lab"><span class="op">−</span>الهدايا</span><span class="amt num" id="sumGifts">0</span></div>
+      <div class="srow gift"><span class="lab"><span class="op">+</span>الهدايا</span><span class="amt num" id="sumGifts">0</span></div>
       <div class="srow final"><span class="lab">الإجمالي النهائي</span><span class="amt num" id="sumFinal">0</span></div>
     </div>
   </div>
@@ -1349,6 +1583,7 @@
   <button class="abtn ghost" onclick="openReports()"><span class="ic">📊</span>التقارير والإحصائيات</button>
 
   <button class="abtn ghost" onclick="openEmployees()"><span class="ic">👥</span>الموظفون</button>
+  <button class="abtn ghost" onclick="openDailyReg()"><span class="ic">🕐</span>التسجيل اليومي للموظفين</button>
   <button class="abtn ghost" onclick="openSettings()"><span class="ic">⚙️</span>الإعدادات</button>
 </div>
 
@@ -1424,6 +1659,12 @@ const DEFAULT_PASS='1234';
 
 /* ============ Tiny helpers ============ */
 const $  = (s,r=document)=>r.querySelector(s);
+/* السمات المنطقية (boolean attributes): لازم نستخدم الخاصية مباشرةً بدال setAttribute.
+   setAttribute('disabled', false) بتكتب disabled="false" والـ HTML بيفسرها «مفعّل»
+   دايمًا، فالأزرار/الخلايا بتكون مقفولة للأبد. هنا بنستخدم الخاصية المنطقية الصحيحة. */
+const EL_BOOL={disabled:1,checked:1,readonly:1,selected:1,hidden:1,autofocus:1,
+  multiple:1,required:1,open:1,async:1,defer:1,controls:1,autoplay:1,loop:1,
+  muted:1,ismap:1,novalidate:1,formnovalidate:1,defaultSelected:1,indeterminate:1};
 function el(tag,attrs={},kids=[]){
   const n=document.createElement(tag);
   for(const[k,v]of Object.entries(attrs)){
@@ -1431,6 +1672,7 @@ function el(tag,attrs={},kids=[]){
     else if(k==='text')n.textContent=v;
     else if(k==='style'&&typeof v==='object')Object.assign(n.style,v);
     else if(k.startsWith('on')&&typeof v==='function')n.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(EL_BOOL[k])n[k]=!!v;
     else n.setAttribute(k,v);
   }
   (Array.isArray(kids)?kids:[kids]).forEach(c=>{if(c==null)return;n.appendChild(typeof c==='string'?document.createTextNode(c):c);});
@@ -1504,17 +1746,53 @@ function settings(){
   _settings=loadJSON(K_SETTINGS,null)||{};
   if(typeof _settings.autoPrint!=='boolean') _settings.autoPrint=true;
   if(typeof _settings.printerName!=='string') _settings.printerName='';
+  if(typeof _settings.paperWidth!=='string' || ['auto','58','80','a4'].indexOf(_settings.paperWidth)===-1) _settings.paperWidth='auto';
   if(typeof _settings.theme!=='string') _settings.theme='dark';
+  /* التفضيل اليدوي للمظهر — يُحفظ منفصلًا حتى لا يطغى عليه الوضع التلقائي.
+     من يرقي من نسخة قديمة كان اختياره محفوظًا في localStorage فقط. */
+  if(typeof _settings.manualTheme!=='string' || (_settings.manualTheme!=='light'&&_settings.manualTheme!=='dark')){
+    let lt='dark';
+    try{ lt=localStorage.getItem('malahy_theme')||'dark'; }catch(_){}
+    _settings.manualTheme=(lt==='light')?'light':'dark';
+  }
+  if(typeof _settings.autoTheme!=='boolean') _settings.autoTheme=false;
   return _settings;
 }
 function saveSettings(){ saveJSON(K_SETTINGS,_settings); }
+/* يطبّق المظهر على عنصر الجذر فقط (بدون حفظ) */
 function setTheme(t){
   if(t!=='light') t='dark';
-  _settings.theme=t;
-  try{ localStorage.setItem('malahy_theme',t); }catch(_){}
   var de=document.documentElement;
   if(t==='light') de.setAttribute('data-theme','light');
   else de.removeAttribute('data-theme');
+  try{ localStorage.setItem('malahy_theme',t); }catch(_){}
+}
+/* المظهر المفعّل حاليًا كما يظهر في الـ DOM */
+function currentTheme(){
+  return document.documentElement.getAttribute('data-theme')==='light' ? 'light' : 'dark';
+}
+/* الوقت الحقيقي للجهاز: النهار = فاتح (10:00 ص → 7:00 م) */
+function isDayTime(){
+  const h=new Date().getHours();
+  return h>=10 && h<19;
+}
+function autoThemeNow(){ return isDayTime() ? 'light' : 'dark'; }
+/* المظهر الفعّال: لو الوضع التلقائي شغّال يتبع الوقت، وإلا يتبع اختيار المستخدم */
+function effectiveTheme(){
+  const s=settings();
+  if(s.autoTheme) return autoThemeNow();
+  return s.manualTheme==='light' ? 'light' : 'dark';
+}
+function applyTheme(){ setTheme(effectiveTheme()); }
+/* اختيار المستخدم اليدوي: يلغي التلقائي ويحفظ التفضيل */
+function toggleTheme(){
+  const s=settings();
+  s.autoTheme=false;
+  const nx=(currentTheme()==='dark') ? 'light' : 'dark';
+  s.manualTheme=nx; s.theme=nx;
+  saveSettings();
+  setTheme(nx); paintThemeBtn();
+  toast(nx==='dark' ? 'تم التبديل إلى المظهر الداكن' : 'تم التبديل إلى المظهر الفاتح','ok');
 }
 let ticketSeq=loadJSON(K_SEQ,0)||0;
 let giftSeq=loadJSON(K_GSEQ,0)||0;
@@ -1555,7 +1833,7 @@ function logReview(entry){
 function reviewInRange(period){
   const list=loadReview();
   if(period==='all'||!period) return list.slice();
-  /* نفس منطق يوم العمل (يبدأ 3:00 فجرًا): مقارنة بمفتاح يوم العمل مش نافذة 24 ساعة متدحرجة */
+  /* نفس منطق يوم العمل (يبدأ 10:00 ص): مقارنة بمفتاح يوم العمل مش نافذة 24 ساعة متدحرجة */
   const nowKey=businessDayKey(Date.now());
   if(period==='today') return list.filter(function(r){ return businessDayKey(r.ts||0)===nowKey; });
   const days=(period==='week')?7:30;
@@ -1575,8 +1853,9 @@ function totals(){
   const expenses=state.expenses.reduce((s,x)=>s+(Number(x.amount)||0),0);
   const gifts=state.gifts.reduce((s,x)=>s+(Number(x.amount)||0),0);
   const net=revenue-expenses;
-  /* الهدايا مصروف إضافي يُخصم من الصافي: الإجمالي النهائي = المبيعات − المصروفات − الهدايا */
-  const finalNet=net-gifts;
+  /* الهدايا ليست مصروفًا ولا تُخصم من الربح: قيمتها تُضاف إلى الإجمالي
+     النهائي (مبلغ يُحصّل مع الحساب) حسب القاعدة المالية للنظام. */
+  const finalNet=net+gifts;
   return {revenue,tickets,expenses,gifts,net,finalNet,cashRevenue,elecRevenue,cashTickets,elecTickets};
 }
 
@@ -1645,13 +1924,18 @@ function renderList(which){
   arr.forEach(item=>{
     const kids=[
       el('span',{class:'i-desc',text:item.desc||'(بدون بيان)',title:item.desc||''}),
-      el('span',{class:'i-amt num',text:fmtNum(item.amount)}),
     ];
+    if(which==='exp'&&item.isAdvance){
+      /* وسم السلفة: اسم الموظف + التاريخ والوقت الدقيق (للمراجعة حتى لو اتغير الاسم) */
+      kids.push(el('span',{class:'adv-badge',title:'سلفة تُخصم من راتب الموظف'},
+        ['💵 سلفة', (item.empName?(' · '+item.empName):''), (item.ts?(' · '+fmtDMY(new Date(item.ts))+' '+fmtTime12(new Date(item.ts))):'')]));
+    }
+    kids.push(el('span',{class:'i-amt num',text:fmtNum(item.amount)}));
     if(which==='gift'){
       kids.push(el('button',{class:'rep',title:'إعادة طباعة تذكرة الهدية',onClick:()=>reprintGift(item.id)},'🖨️'));
     }
     kids.push(el('button',{class:'del',title:'حذف',onClick:()=>deleteItem(which,item.id)},'×'));
-    box.appendChild(el('div',{class:'item'},kids));
+    box.appendChild(el('div',{class:'item'+((which==='exp'&&item.isAdvance)?' adv-item':'')},kids));
   });
 }
 
@@ -1672,7 +1956,7 @@ function renderSummary(){
   $('#sumFinal').textContent=fmtNum(t.finalNet);
 }
 
-function renderAll(){ renderGames(); renderList('exp'); renderList('gift'); renderSummary(); updatePassBanner(); }
+function renderAll(){ renderGames(); renderList('exp'); renderList('gift'); renderSummary(); renderExpEmpOptions(); updatePassBanner(); }
 
 function refreshCounts(){
   GAMES.forEach(g=>{
@@ -1807,35 +2091,58 @@ function _addItem(which){
     amtEl.focus(); return;
   }
   const label=which==='exp'?'مصروف':'هدية';
-  openPasswordModal({
-    title: which==='exp'?'➕ إضافة مصروف':'➕ إضافة هدية',
-    message:'اكتب كلمة السر لتأكيد الإضافة.',
-    confirmText:'إضافة',
-    onOk:()=>{
-      const arr=which==='exp'?state.expenses:state.gifts;
-      const item={id:uid(),desc:desc||label,amount};
-      if(which==='gift'){
-        /* رقم متسلسل خاص بعمليات الهدايا + وقت العملية */
-        giftSeq++; saveJSON(K_GSEQ,giftSeq);
-        item.seq=giftSeq;
-        item.at=Date.now();
-      }
-      arr.push(item);
-      descEl.value=''; amtEl.value='';
-      /* التسجيل أولًا — الطباعة بعدين ومهما حصل فيها الهدية بتفضل مسجّلة */
-      persist(); renderList(which); renderSummary();
-      if(which==='exp'){ toast('تم إضافة مصروف','ok'); return; }
-      toast('تم إضافة هدية','ok');
-      const st=settings();
-      if(!st.autoPrint) return;
-      if(!(window.malahyPrint && window.malahyPrint.printTicket)) return;
-      printGiftTicket(item).then(function(ok){
-        if(!ok) toast('تم تسجيل الهدية بنجاح، ولكن حدث خطأ أثناء الطباعة.','warn');
-      }).catch(function(err){
-        logErr('addGift/print',err);
-        toast('تم تسجيل الهدية بنجاح، ولكن حدث خطأ أثناء الطباعة.','warn');
-      });
+  /* الموظف المختار في قسم المصروفات: لو فيه موظف، المبلغ يُسجَّل سلفة على راتبه */
+  const empSel=which==='exp'?$('#expEmp'):null;
+  const empId=empSel?empSel.value:'';
+  const emp=empId?empFind(empId):null;
+  if(empId&&!emp){ toast('الموظف المختار غير موجود','warn'); return; }
+  const doAdd=()=>{
+    const arr=which==='exp'?state.expenses:state.gifts;
+    const item={id:uid(),desc:desc||label,amount};
+    if(which==='gift'){
+      /* رقم متسلسل خاص بعمليات الهدايا + وقت العملية */
+      giftSeq++; saveJSON(K_GSEQ,giftSeq);
+      item.seq=giftSeq;
+      item.at=Date.now();
     }
+    if(which==='exp'&&emp){
+      /* سلفة لموظف: نخزّن رابطها برقم الموظف الثابت + لقطة اسمه + التاريخ الدقيق */
+      item.empId=emp.id; item.empName=emp.name; item.isAdvance=true; item.ts=Date.now();
+    }
+    arr.push(item);
+    descEl.value=''; amtEl.value='';
+    if(empSel) empSel.value='';
+    /* التسجيل أولًا — الطباعة بعدين ومهما حصل فيها الهدية بتفضل مسجّلة */
+    persist(); renderList(which); renderSummary();
+    if(which==='exp'){
+      if(emp){
+        /* ربط السلفة بأسبوع الموظف الحالي عشان تتنزل من الراتب تلقائيًا */
+        recordEmployeeAdvance(emp.id,amount,item.desc,item.id,item.ts);
+        toast('تم تسجيل سلفة بقيمة '+fmtNum(amount)+' ج لـ«'+emp.name+'» — هتتخصم من راتبه الأسبوعي','ok');
+      } else {
+        toast('تم إضافة مصروف','ok');
+      }
+      return;
+    }
+    toast('تم إضافة هدية','ok');
+    const st=settings();
+    if(!st.autoPrint) return;
+    if(!(window.malahyPrint && window.malahyPrint.printTicket)) return;
+    printGiftTicket(item).then(function(ok){
+      if(!ok) toast('تم تسجيل الهدية بنجاح، ولكن حدث خطأ أثناء الطباعة.','warn');
+    }).catch(function(err){
+      logErr('addGift/print',err);
+      toast('تم تسجيل الهدية بنجاح، ولكن حدث خطأ أثناء الطباعة.','warn');
+    });
+  };
+  /* الهدايا تُضاف مباشرةً من الكاشير بدون كلمة سر (قيمتها تُضاف للحساب).
+     المصروفات تظل تتطلّب تأكيد كلمة السر كالسابق (سواء مصروف عادي أو سلفة موظف). */
+  if(which==='gift'){ doAdd(); return; }
+  openPasswordModal({
+    title: emp?'💵 إضافة سلفة موظف':'➕ إضافة مصروف',
+    message: emp?('المبلغ '+fmtNum(amount)+' ج هيُسجَّل سلفة لـ«'+emp.name+'» ويُخصم من راتبه الأسبوعي. اكتب كلمة السر للتأكيد.'):'اكتب كلمة السر لتأكيد الإضافة.',
+    confirmText: emp?'تسجيل السلفة':'إضافة',
+    onOk:doAdd
   });
 }
 function deleteItem(which,itemId){
@@ -1845,7 +2152,12 @@ function deleteItem(which,itemId){
     confirmText:'حذف',
     danger:true,
     onOk:()=>{
-      if(which==='exp') state.expenses=state.expenses.filter(x=>x.id!==itemId);
+      if(which==='exp'){
+        /* حذف السلفة المرتبطة من راتب الموظف قبل حذف المصروف (حماية من التكرار) */
+        const it=state.expenses.find(x=>x.id===itemId);
+        if(it&&it.isAdvance&&it.empId) removeEmployeeAdvance(it.empId,itemId);
+        state.expenses=state.expenses.filter(x=>x.id!==itemId);
+      }
       else state.gifts=state.gifts.filter(x=>x.id!==itemId);
       persist(); renderList(which); renderSummary();
       toast('تم الحذف','ok');
@@ -1995,7 +2307,7 @@ function histItem(day){
   body.appendChild(line('مبيعات الألعاب',fmtNum(day.revenue)+' ج'));
   body.appendChild(line('− المصروفات',fmtNum(day.expenses)+' ج'));
   body.appendChild(line('= الصافي',fmtNum(day.net)+' ج'));
-  body.appendChild(line('− الهدايا',fmtNum(day.gifts)+' ج'));
+  body.appendChild(line('+ الهدايا',fmtNum(day.gifts)+' ج'));
   body.appendChild(line('= الإجمالي النهائي',fmtNum(calcFinalNet(day))+' ج'));
   if(day.breakdown&&day.breakdown.length){
     body.appendChild(el('h5',{text:'تفصيل الألعاب'}));
@@ -2007,7 +2319,10 @@ function histItem(day){
   }
   if(day.giftList&&day.giftList.length){
     body.appendChild(el('h5',{text:'الهدايا'}));
-    day.giftList.forEach(x=>body.appendChild(line(x.desc,fmtNum(x.amount)+' ج')));
+    day.giftList.forEach(x=>body.appendChild(line(
+      (x.desc||'هدية')+(x.seq?(' #'+pad(x.seq,6)):''),
+      fmtNum(x.amount)+' ج'+(x.at?(' · '+fmtDMY(new Date(x.at))+' '+fmtTime12(new Date(x.at))):'')
+    )));
   }
   item.appendChild(head); item.appendChild(body);
   return item;
@@ -2015,11 +2330,11 @@ function histItem(day){
 function line(lab,val){
   return el('div',{class:'line'},[el('span',{text:lab}),el('span',{class:'num',text:val})]);
 }
-/* الإجمالي النهائي يُحسب دائمًا من المصادر (المبيعات − المصروفات − الهدايا)
-   لضمان صحته حتى مع السجلات القديمة قبل اعتبار الهدايا مصروفًا. */
+/* الإجمالي النهائي يُحسب دائمًا من المصادر (المبيعات − المصروفات + الهدايا)
+    لضمان صحته حتى مع السجلات القديمة. الهدايا تُضاف ولا تُخصم. */
 function calcFinalNet(day){
   if(!day) return 0;
-  return (Number(day.revenue)||0)-(Number(day.expenses)||0)-(Number(day.gifts)||0);
+  return (Number(day.revenue)||0)-(Number(day.expenses)||0)+(Number(day.gifts)||0);
 }
 function deleteHistDay(id){
   openPasswordModal({
@@ -2083,23 +2398,37 @@ const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو',
 function pad2(n){return String(n).padStart(2,'0');}
 
 /* ============ الورديات (قاعدة موحّدة لكل التسميات والتقارير والفلاتر) ============ */
-/* الوردية الأولى: 10:00 ص → 3:00 م
-   الوردية الثانية: 3:00 م → 3:00 فجرًا (اليوم التالي)
-   الساعة 3:00 م تبدأ الوردية الثانية، والساعة 3:00 فجرًا ينتهي يوم العمل
-   وتبدأ وردية اليوم الجديد (ساعات 3:00 → 10:00 ص تُنسب لوردية اليوم الحالي الأولى). */
+/* الوردية الأولى: 10:00 ص → 7:00 م
+   الوردية الثانية: 7:00 م → 2:00 فجرًا (اليوم التالي)
+   الساعة 7:00 م تبدأ الوردية الثانية، والساعة 2:00 فجرًا تنتهي الوردية الثانية
+   ولا توجد أي وردية نشطة بين 2:00 فجرًا و10:00 ص (تُنسب لليوم السابق). */
 const SHIFT1_LABEL='الوردية الأولى';
 const SHIFT2_LABEL='الوردية الثانية';
+const NO_SHIFT_LABEL='لا توجد وردية';
+/* أرقام الورديات: 1 = أولى، 2 = ثانية، 0 = لا توجد وردية نشطة (2:00 ف → 10:00 ص) */
 function shiftOfDate(d){
   d=d||new Date();
   const h=d.getHours();
-  if(h>=15 || h<3) return 2;   /* 3:00 م → 3:00 فجرًا */
-  return 1;                     /* 10:00 ص → 3:00 م + ساعات الصباح الأولى */
+  if(h>=19 || h<2) return 2;   /* 7:00 م → 2:00 فجرًا (الوردية الثانية) */
+  if(h>=10) return 1;          /* 10:00 ص → 7:00 م (الوردية الأولى) */
+  return 0;                    /* 2:00 فجرًا → 10:00 ص: لا توجد وردية نشطة */
 }
 function shiftLabel(d){
-  return shiftOfDate(d)===2 ? SHIFT2_LABEL : SHIFT1_LABEL;
+  const s=shiftOfDate(d);
+  if(s===2) return SHIFT2_LABEL;
+  if(s===1) return SHIFT1_LABEL;
+  return NO_SHIFT_LABEL;
 }
 function shiftRangeLabel(n){
-  return n===2 ? '3:00 م → 3:00 ف' : '10:00 ص → 3:00 م';
+  if(n===2) return '7:00 م → 2:00 ف';
+  if(n===1) return '10:00 ص → 7:00 م';
+  return '2:00 ف → 10:00 ص';
+}
+/* نص وردية العملية لعرضه في السجلات والتقارير (0 = لا توجد وردية) */
+function shiftBadgeText(n){
+  if(n===2) return SHIFT2_LABEL;
+  if(n===1) return SHIFT1_LABEL;
+  return NO_SHIFT_LABEL;
 }
 /* نص طريقة الدفع لعرضها في سجل المرتجعات */
 function methodText(m){
@@ -2109,12 +2438,13 @@ function methodText(m){
   return '';
 }
 
-/* حدود يوم العمل: الوردية الثانية تنتهي 3:00 فجرًا، فأي وقت قبل 3:00 فجرًا
+/* حدود يوم العمل: يوم العمل يبدأ الساعة 10:00 ص. الوردية الثانية تمتد بعد
+   نص الليل حتى 2:00 فجرًا، وأي وقت قبل 10:00 ص (بما فيه 2:00 ف → 10:00 ص)
    يُنسب لليوم السابق (نفس اليوم الذي بدأت فيه وردية الليل). */
-const BUSINESS_DAY_START_HOUR=3;
+const BUSINESS_DAY_START_HOUR=10;
 function businessDateLabel(ts){
   const d=new Date(ts);
-  // الوردية الثانية بتمتد بعد نص الليل لحد 3:00 فجرًا -> تُنسب لليوم اللي بدأت فيه
+  // الساعات قبل 10:00 ص (0:00 → 9:59) تُنسب لليوم السابق
   if(d.getHours()<BUSINESS_DAY_START_HOUR){ d.setDate(d.getDate()-1); }
   return AR_DAYS[d.getDay()]+' '+d.getDate()+' '+AR_MONTHS[d.getMonth()]+' '+d.getFullYear();
 }
@@ -2132,10 +2462,21 @@ function tickClock(){
   const now=new Date();
   $('#clock').textContent=fmtTime12(now);
   $('#todayDate').textContent=AR_DAYS[now.getDay()]+' '+now.getDate()+' '+AR_MONTHS[now.getMonth()];
-  /* سطر الوردية يعكس القاعدة الموحّدة: أولى 10ص→3م / ثانية 3م→3ف */
+  /* سطر الوردية يعكس القاعدة الموحّدة: أولى 10ص→7م / ثانية 7م→2ف /
+     بين 2ف و10ص لا توجد وردية نشطة (تُنسب لليوم السابق) */
   const sh=shiftOfDate(now);
   const st=$('#shiftText');
-  if(st) st.textContent='الوردية: '+(sh===2?SHIFT2_LABEL:SHIFT1_LABEL)+' ('+shiftRangeLabel(sh)+')';
+  if(st) st.textContent=sh===0
+    ? 'الوردية: لا توجد وردية نشطة ('+shiftRangeLabel(0)+')'
+    : 'الوردية: '+(sh===2?SHIFT2_LABEL:SHIFT1_LABEL)+' ('+shiftRangeLabel(sh)+')';
+  /* المظهر التلقائي: يتغيّر لحظيًا على حدود 10:00 ص و7:00 م بدون إعادة تشغيل */
+  try{
+    const s=settings();
+    if(s.autoTheme){
+      const want=autoThemeNow();
+      if(want!==currentTheme()){ setTheme(want); paintThemeBtn(); }
+    }
+  }catch(_){}
 }
 
 /* Allow Enter to add from amount fields */
@@ -2166,17 +2507,19 @@ function buildReportData(period){
     revenue:t.revenue,expenses:t.expenses,gifts:t.gifts,net:t.net,finalNet:t.finalNet,tickets:t.tickets,
     cashRevenue:t.cashRevenue,elecRevenue:t.elecRevenue,cashTickets:t.cashTickets,elecTickets:t.elecTickets,
     breakdown:gameBreakdown(),
+    giftList:(state.gifts||[]).map(x=>({desc:x.desc,amount:x.amount,seq:x.seq||0,at:x.at||null})),
     isToday:true
   };
   const histRecs=hist.map(d=>{
     const revenue=d.revenue||0,expenses=d.expenses||0,gifts=d.gifts||0;
-    const net=revenue-expenses, finalNet=net-gifts;
+    const net=revenue-expenses, finalNet=net+gifts;
     const cashRevenue=(d.cashRevenue!=null)?d.cashRevenue:revenue;
     const elecRevenue=(d.elecRevenue!=null)?d.elecRevenue:0;
     return { dayKey:businessDayKey(d.startedAt||d.endedAt||Date.now()), dateLabel:d.dateLabel, startedAt:d.startedAt||d.endedAt,
              revenue,expenses,gifts,net,finalNet, tickets:d.tickets||0,
              cashRevenue,elecRevenue, cashTickets:d.cashTickets||0, elecTickets:d.elecTickets||0,
-             breakdown:d.breakdown||[] };
+             breakdown:d.breakdown||[],
+             giftList:(d.giftList||[]).map(x=>({desc:x.desc,amount:x.amount,seq:x.seq||0,at:x.at||null})) };
   });
   const all=[todayRec,...histRecs];
   const recs=filterRecords(all,period);
@@ -2280,12 +2623,13 @@ function openReports(period){
     el('button',{class:'abtn ghost',text:'إغلاق',onClick:closeOverlay}),
   ]);
   const dbPath=(window.malahyDB && window.malahyDB.file)?(window.malahyDB.file()||''):'';
-  const dataInfo=el('div',{style:{marginTop:'14px',padding:'10px 12px',border:'1px dashed rgba(255,255,255,.18)',borderRadius:'10px',fontSize:'12px',color:'#b9b3c9',textAlign:'center',lineHeight:'1.7'}},
-    dbPath?['💾 بيانات البرنامج محفوظة في ملف على هذا الجهاز:', el('div',{style:{direction:'ltr',wordBreak:'break-all',color:'#e7e2f5',marginTop:'4px',fontFamily:'Consolas,monospace'}},[dbPath])]:[]);
+  const dataInfo=el('div',{style:{marginTop:'14px',padding:'10px 12px',border:'1px dashed var(--line)',borderRadius:'10px',fontSize:'12px',color:'var(--muted)',textAlign:'center',lineHeight:'1.7'}},
+    dbPath?['💾 بيانات البرنامج محفوظة في ملف على هذا الجهاز:', el('div',{style:{direction:'ltr',wordBreak:'break-all',color:'var(--ink)',marginTop:'4px',fontFamily:'Consolas,monospace'}},[dbPath])]:[]);
   const review=reviewSection(_repPeriod);
+  const gifts=giftsSection(recs);
 
-  /* الترتيب: التبويبات ← الإحصائيات السريعة ← أفضل/أقل لعبة ← الرسوم ← اليومية ← حسب اللعبة ← سجل المرتجعات */
-  const body=el('div',{class:'rep-body'},[ tabs, cards, bw, charts, review, dataInfo ]);
+  /* الترتيب: التبويبات ← الإحصائيات السريعة ← أفضل/أقل لعبة ← الرسوم ← اليومية ← حسب اللعبة ← الهدايا ← سجل المرتجعات */
+  const body=el('div',{class:'rep-body'},[ tabs, cards, bw, charts, gifts, review, dataInfo ]);
   const head=el('div',{class:'rep-head'},[
     el('h3',{},['📊 التقارير والإحصائيات']),
     el('span',{class:'sp'}),
@@ -2325,7 +2669,7 @@ function reviewSection(period){
     const d=new Date(r.ts);
     totQty+=Number(r.qty)||0; totVal+=Number(r.total)||0;
     const mt=methodText(r.method);
-    const shLabel=(r.shift===2)?SHIFT2_LABEL:(r.shift===1?SHIFT1_LABEL:'');
+    const shLabel=shiftBadgeText(r.shift);
     const gameCell=el('td',{});
     gameCell.appendChild(el('div',{text:r.game||'—'}));
     if(mt||shLabel){
@@ -2360,7 +2704,7 @@ function reviewLogHTML(period){
     const d=new Date(r.ts);
     totQty+=Number(r.qty)||0; totVal+=Number(r.total)||0;
     const mt=methodText(r.method);
-    const shLabel=(r.shift===2)?SHIFT2_LABEL:(r.shift===1?SHIFT1_LABEL:'');
+    const shLabel=shiftBadgeText(r.shift);
     const meta=[mt,shLabel].filter(Boolean).join(' · ');
     rowsH+='<div class="rr">'
       +'<div class="rl"><b>'+esc(r.game||'—')+'</b> <span class="tp">'+esc(r.type||'خصم')+'</span></div>'
@@ -2371,17 +2715,7 @@ function reviewLogHTML(period){
       +'</div>';
   });
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-    +'@page{margin:0;}'
-    +'body{width:54mm;padding:3mm 2mm;color:#000;background:#fff;font-family:"Consolas","Courier New",monospace;font-size:12px;line-height:1.45;font-weight:700;}'
-    +'.c{text-align:center;}.b{font-weight:800;}.big{font-size:14px;}.s{font-size:10px;margin-top:1px;}'
-    +'.num{direction:ltr;unicode-bidi:embed;}'
-    +'.hr{white-space:nowrap;overflow:hidden;margin:3px 0;}'
-    +'.rr{border-bottom:1px dashed #000;padding:3px 0;}'
-    +'.rl{display:flex;justify-content:space-between;gap:6px;}'
-    +'.tp{font-weight:800;}'
-    +'.r2{display:flex;justify-content:space-between;gap:6px;font-size:10px;margin-top:1px;}'
-    +'.tot{display:flex;justify-content:space-between;margin-top:5px;font-weight:800;}'
+    +reportPaperCSS()
     +'</style></head><body>'
     +'<div class="c b big">كوكي بارك</div>'
     +'<div class="c b">تقرير سجل المرتجعات</div>'
@@ -2402,7 +2736,7 @@ async function printReviewLog(period){
   try{
     if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return; }
     const st=settings();
-    const res=await window.malahyPrint.printTicket({ html:reviewLogHTML(period), printerName:st.printerName||'', silent:true });
+    const res=await window.malahyPrint.printTicket({ html:reviewLogHTML(period), printerName:st.printerName||'', paper:paperKind(), silent:true });
     if(res && res.ok) toast('تم إرسال سجل المرتجعات للطابعة 🖨️','ok');
     else if(res && res.canceled){ }
     else toast('تعذّرت الطباعة — تأكد من الطابعة','warn');
@@ -2438,17 +2772,93 @@ function reportRows(period,agg,recs){
   /* سجل المرتجعات */
   const rev=reviewInRange(period);
   rows.push([]);
+  rows.push(['الهدايا']);
+  rows.push(['الوصف','التكلفة','التاريخ','الوقت','الوردية']);
+  (recs||[]).forEach(function(r){
+    (r.giftList||[]).forEach(function(x){
+      const when=new Date(x.at||r.startedAt||Date.now());
+      rows.push([x.desc||'هدية',x.amount||0,fmtDMY(when),fmtTime12(when),shiftBadgeText(shiftOfDate(when))]);
+    });
+  });
+  rows.push([]);
   rows.push(['سجل المرتجعات']);
   rows.push(['التاريخ','الوقت','الوردية','اللعبة','طريقة الدفع','نوع العملية','السبب','العدد','السعر','القيمة']);
   rev.forEach(function(r){
     const d=new Date(r.ts);
     rows.push([fmtDMY(d),fmtTime12(d),
-      (r.shift===2)?SHIFT2_LABEL:(r.shift===1?SHIFT1_LABEL:''),
+      shiftBadgeText(r.shift),
       r.game||'',methodText(r.method),r.type||'خصم',r.reason||'',r.qty,r.price,-(r.total||0)]);
   });
   return rows;
 }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* ---- بلوك الهدايا (وصف + تكلفة + تاريخ + وقت + الإجمالي) للتقرير المطبوع/PDF ---- */
+function giftsReportBlock(recs){
+  const list=[];
+  (recs||[]).forEach(function(r){
+    (r.giftList||[]).forEach(function(x){
+      const when=new Date(x.at||r.startedAt||Date.now());
+      list.push({desc:(x.desc||'هدية'), amount:Number(x.amount)||0,
+        date:(x.at?fmtDMY(when):esc(r.dateLabel||'—')),
+        time:(x.at?fmtTime12(when):'—'),
+        shift:shiftBadgeText(shiftOfDate(when)),
+        seq:x.seq||0});
+    });
+  });
+  let tot=0; list.forEach(function(g){ tot+=g.amount; });
+  if(!list.length) return '<h2>🎁 الهدايا</h2><table><tr><td>لا توجد هدايا في هذه الفترة.</td></tr></table>';
+  let rows=list.map(function(g){
+    return '<tr><td>'+esc(g.desc)+'</td><td class="n">'+fmtNum(g.amount)+' ج</td><td class="n">'+esc(g.date)+'</td><td class="n">'+esc(g.time)+'</td><td>'+esc(g.shift)+'</td><td class="n">'+(g.seq?pad(g.seq,6):'—')+'</td></tr>';
+  }).join('');
+  return '<h2>🎁 الهدايا</h2><table><tr><th>البيان</th><th class="n">التكلفة</th><th class="n">التاريخ</th><th class="n">الوقت</th><th>الوردية</th><th class="n">رقم العملية</th></tr>'
+    +rows
+    +'<tr class="final"><td>إجمالي الهدايا</td><td class="n">'+fmtNum(tot)+' ج</td><td colspan="4"></td></tr>'
+    +'</table>';
+}
+/* ---- قسم الهدايا داخل شاشة التقارير ---- */
+function giftsSection(recs){
+  const list=[];
+  (recs||[]).forEach(function(r){
+    (r.giftList||[]).forEach(function(x){
+      const when=new Date(x.at||r.startedAt||Date.now());
+      list.push({desc:(x.desc||'هدية'), amount:Number(x.amount)||0,
+        date:(x.at?fmtDMY(when):null), time:(x.at?fmtTime12(when):'—'),
+        dayLabel:(x.at?null:(r.dateLabel||'—')),
+        shift:shiftBadgeText(shiftOfDate(when)),
+        seq:x.seq||0});
+    });
+  });
+  let tot=0; list.forEach(function(g){ tot+=g.amount; });
+  const wrap=el('div',{class:'rev-sec'});
+  wrap.appendChild(el('div',{class:'rev-head'},[
+    el('div',{class:'rep-sec-title',style:{margin:'0'},text:'🎁 الهدايا'}),
+    el('span',{class:'sp',style:{flex:'1'}}),
+    el('span',{class:'rev-sub',style:{margin:'0'},text:'الإجمالي: '+fmtNum(tot)+' ج'}),
+  ]));
+  if(!list.length){
+    wrap.appendChild(el('div',{class:'rev-empty',text:'لا توجد هدايا في هذه الفترة.'}));
+    return wrap;
+  }
+  const tbl=el('table',{class:'rev-table'});
+  tbl.appendChild(el('tr',{},['البيان','التكلفة','التاريخ','الوقت','الوردية','رقم العملية'].map(function(h){return el('th',{text:h});})));
+  list.forEach(function(g){
+    tbl.appendChild(el('tr',{},[
+      el('td',{text:g.desc}),
+      el('td',{},[el('span',{class:'num',text:fmtNum(g.amount)+' ج'})]),
+      el('td',{},[el('span',{class:'num',text:g.date||g.dayLabel})]),
+      el('td',{},[el('span',{class:'num',text:g.time})]),
+      el('td',{text:g.shift}),
+      el('td',{},[el('span',{class:'num',text:g.seq?pad(g.seq,6):'—'})]),
+    ]));
+  });
+  tbl.appendChild(el('tr',{class:'rev-tot'},[
+    el('td',{text:'إجمالي الهدايا'}),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot)+' ج'})]),
+    el('td',{colspan:'4',text:''}),
+  ]));
+  wrap.appendChild(el('div',{class:'rev-box'},[ el('div',{class:'rev-scroll'},[tbl]) ]));
+  return wrap;
+}
 function reportHTML(period,agg,recs){
   const gameRows=(agg.games||[]).map(g=>'<tr><td>'+esc(g.name)+'</td><td class="n">'+fmtNum(g.count)+'</td><td class="n">'+fmtNum(g.cashCount)+'</td><td class="n">'+fmtNum(g.elecCount)+'</td><td class="n">'+fmtNum(g.price)+'</td><td class="n">'+fmtNum(g.total)+'</td></tr>').join('');
   const map={};
@@ -2485,6 +2895,7 @@ function reportHTML(period,agg,recs){
     +'</table>'
     +'<h2>المبيعات حسب اللعبة</h2><table><tr><th>اللعبة</th><th class="n">إجمالي التذاكر</th><th class="n">كاش</th><th class="n">إلكتروني</th><th class="n">السعر</th><th class="n">الإجمالي</th></tr>'+gameRows+'</table>'
     +'<h2>التفصيل اليومي</h2><table><tr><th>اليوم</th><th class="n">المبيعات</th><th class="n">المصروفات</th><th class="n">الصافي</th><th class="n">الهدايا</th><th class="n">النهائي</th><th class="n">التذاكر</th></tr>'+dayRows+'</table>'
+    +giftsReportBlock(recs)
     +reviewReportBlock(period)
     +'</body></html>';
 }
@@ -2497,7 +2908,7 @@ function reviewReportBlock(period){
   list.forEach(function(r){
     const d=new Date(r.ts);
     totQty+=Number(r.qty)||0; totVal+=Number(r.total)||0;
-    const shLabel=(r.shift===2)?SHIFT2_LABEL:(r.shift===1?SHIFT1_LABEL:'');
+    const shLabel=shiftBadgeText(r.shift);
     rows+='<tr><td class="n">'+fmtDMY(d)+'</td><td class="n">'+fmtTime12(d)+'</td><td>'+esc(shLabel||'—')+'</td><td>'+esc(r.game||'—')+'</td><td>'+esc(r.type||'خصم')+'</td><td>'+esc(r.reason||'—')+'</td><td class="n">'+fmtNum(r.qty)+'</td><td class="n">-'+fmtNum(r.total)+' ج</td></tr>';
   });
   return '<h2>🧾 سجل المرتجعات</h2><table><tr><th class="n">التاريخ</th><th class="n">الوقت</th><th>الوردية</th><th>اللعبة</th><th>نوع العملية</th><th>السبب</th><th class="n">العدد</th><th class="n">القيمة</th></tr>'
@@ -2529,6 +2940,87 @@ async function exportReportExcel(period){
 /* ============ الطباعة (تذاكر) + الإعدادات (طباعة/تحديثات) ============ */
 let _lastUpdate={state:'idle'};
 function pad(n,w){ n=String(n); while(n.length<w) n='0'+n; return n; }
+/* نوع/عرض الورق المختار — يكيّف التذكرة والتقارير مع الطابعة لمنع قص النص.
+   'auto' يستنتج العرض من اسم الطابعة (58/80 حراري، وإلا A4 للطابعات العادية). */
+function paperKind(){
+  const st=settings();
+  const w=st.paperWidth||'auto';
+  if(w==='58'||w==='80'||w==='a4') return w;
+  const nm=(st.printerName||'').toLowerCase();
+  if(/58/.test(nm)) return '58';
+  if(/80/.test(nm)) return '80';
+  if(/pdf|microsoft|onenote|fax|xps|note/.test(nm)) return 'a4';
+  return '80';   /* افتراضي: محتوى 80مم آمن على لفات 80مم، والمستخدم يختار 58 لو لزم */
+}
+/* CSS مشترك للتذاكر (نسبية الخط حسب عرض الورق) — 58/80مم حراري أو A4 */
+function ticketCSS(){
+  const pk=paperKind();
+  const small=(pk==='58');
+  const a4=(pk==='a4');
+  const bodyW=small?48:72;
+  const f=small
+    ? {shop:14,sub:10,title:13,row:11,big:15,pay:13,foot:11,tiny:9,cost:17,pad:'3mm 2mm'}
+    : {shop:16,sub:11,title:15,row:13,big:17,pay:15,foot:12,tiny:10,cost:21,pad:'4mm 3mm'};
+  return '*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    +(a4?'@page{size:A4;margin:10mm;}body{width:'+bodyW+'mm;margin:0 auto;}':'')
+    +'body{width:'+bodyW+'mm;padding:'+f.pad+';color:#000;}'
+    +'.c{text-align:center;} .num{direction:ltr;unicode-bidi:embed;}'
+    +'.shop{font-size:'+f.shop+'px;font-weight:800;line-height:1.3;}'
+    +'.sub{font-size:'+f.sub+'px;color:#333;margin-top:2px;}'
+    +'.title{font-size:'+f.title+'px;font-weight:800;margin:7px 0;padding:5px 0;border-top:2px dashed #000;border-bottom:2px dashed #000;}'
+    +'.row{display:flex;justify-content:space-between;gap:8px;font-size:'+f.row+'px;margin:4px 0;}'
+    +'.row .v{font-weight:800;}'
+    +'.big{font-size:'+f.big+'px;font-weight:800;}'
+    +'.pay{margin:9px 0;padding:7px;text-align:center;font-size:'+f.pay+'px;font-weight:800;border:2px solid #000;border-radius:8px;}'
+    +'.pay.e{background:#000;color:#fff;}'
+    +'.desc{margin:8px 0;padding:8px 6px;text-align:center;font-size:'+f.big+'px;font-weight:800;border:2px solid #000;border-radius:8px;word-break:break-word;line-height:1.4;}'
+    +'.cost{margin:9px 0;padding:9px;text-align:center;font-size:'+f.cost+'px;font-weight:800;border:2px solid #000;border-radius:8px;background:#000;color:#fff;}'
+    +'.hr{border-top:1px dashed #000;margin:7px 0;}'
+    +'.foot{text-align:center;font-size:'+f.foot+'px;margin-top:9px;font-weight:700;}'
+    +'.tiny{font-size:'+f.tiny+'px;color:#444;text-align:center;margin-top:4px;}';
+}
+/* CSS للتقارير الحرارية النصّية — يتكيّف مع 58/80مم */
+function reportPaperCSS(){
+  const pk=paperKind();
+  if(pk==='a4') return a4ReportCSS(13);
+  return thermalReportCSS(pk==='58'?48:72, pk==='58'?11:12);
+}
+function thermalReportCSS(bodyW,fs){
+  return '*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    +'@page{margin:0;}'
+    +'body{width:'+bodyW+'mm;padding:3mm 2mm;color:#000;background:#fff;'
+    +'font-family:"Consolas","Courier New",monospace;font-size:'+fs+'px;line-height:1.45;font-weight:700;}'
+    +'.c{text-align:center;} .b{font-weight:800;} .big{font-size:'+(fs+2)+'px;}'
+    +'.s{font-size:'+(fs-2)+'px;font-weight:700;margin-top:1px;}'
+    +'.num{direction:ltr;unicode-bidi:embed;}'
+    +'.hr{white-space:nowrap;overflow:hidden;font-size:'+fs+'px;letter-spacing:0;margin:3px 0;}'
+    +'.r{display:flex;justify-content:space-between;gap:6px;margin:2px 0;}'
+    +'.r .l{text-align:right;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
+    +'.sub2{font-size:'+(fs-2)+'px;font-weight:700;color:#000;margin:0 0 2px 4px;}'
+    +'.rr{border-bottom:1px dashed #000;padding:3px 0;}'
+    +'.rl{display:flex;justify-content:space-between;gap:6px;}'
+    +'.tp{font-weight:800;}'
+    +'.r2{display:flex;justify-content:space-between;gap:6px;font-size:'+(fs-2)+'px;margin-top:1px;}'
+    +'.tot{display:flex;justify-content:space-between;margin-top:5px;font-weight:800;}';
+}
+function a4ReportCSS(fs){
+  return '*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    +'@page{size:A4;margin:12mm;}'
+    +'body{color:#000;background:#fff;font-family:"Consolas","Courier New",monospace;'
+    +'font-size:'+fs+'px;line-height:1.6;font-weight:700;}'
+    +'.c{text-align:center;} .b{font-weight:800;} .big{font-size:'+(fs+3)+'px;}'
+    +'.s{font-size:'+(fs-1)+'px;font-weight:700;margin-top:2px;}'
+    +'.num{direction:ltr;unicode-bidi:embed;}'
+    +'.hr{border-top:1px dashed #000;margin:7px 0;}'
+    +'.r{display:flex;justify-content:space-between;gap:12px;margin:3px 0;}'
+    +'.r .l{text-align:right;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
+    +'.sub2{font-size:'+(fs-1)+'px;font-weight:700;color:#000;margin:0 0 3px 6px;}'
+    +'.rr{border-bottom:1px dashed #000;padding:5px 0;}'
+    +'.rl{display:flex;justify-content:space-between;gap:12px;}'
+    +'.tp{font-weight:800;}'
+    +'.r2{display:flex;justify-content:space-between;gap:12px;font-size:'+(fs-1)+'px;margin-top:2px;}'
+    +'.tot{display:flex;justify-content:space-between;margin-top:8px;font-weight:800;}';
+}
 function ticketStamp(d){
   d=d||new Date();
   const y=d.getFullYear(), mo=pad(d.getMonth()+1,2), da=pad(d.getDate(),2);
@@ -2540,20 +3032,7 @@ function ticketHTML(o){
   const isE=o.method==='elec';
   const payTxt=isE?'تحويل إلكتروني 💳':'كاش 💵';
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-    +'body{width:72mm;padding:4mm 3mm;color:#000;}'
-    +'.c{text-align:center;} .num{direction:ltr;unicode-bidi:embed;}'
-    +'.shop{font-size:16px;font-weight:800;line-height:1.3;}'
-    +'.sub{font-size:11px;color:#333;margin-top:2px;}'
-    +'.title{font-size:15px;font-weight:800;margin:7px 0;padding:5px 0;border-top:2px dashed #000;border-bottom:2px dashed #000;}'
-    +'.row{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin:4px 0;}'
-    +'.row .v{font-weight:800;}'
-    +'.big{font-size:17px;font-weight:800;}'
-    +'.pay{margin:9px 0;padding:7px;text-align:center;font-size:15px;font-weight:800;border:2px solid #000;border-radius:8px;}'
-    +'.pay.e{background:#000;color:#fff;}'
-    +'.hr{border-top:1px dashed #000;margin:7px 0;}'
-    +'.foot{text-align:center;font-size:12px;margin-top:9px;font-weight:700;}'
-    +'.tiny{font-size:10px;color:#444;text-align:center;margin-top:4px;}'
+    +ticketCSS()
     +'</style></head><body>'
     +'<div class="c shop">كوكي بارك</div>'
     +'<div class="c sub">إيصال تذكرة دخول</div>'
@@ -2578,27 +3057,14 @@ async function printTicket(id,qty,method){
   ticketSeq++; saveJSON(K_SEQ,ticketSeq);
   const html=ticketHTML({game:g.name,qty:qty,method:(method==='elec'?'elec':'cash'),price:g.price,total:qty*g.price,seq:ticketSeq,when:new Date()});
   try{
-    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', silent:true });
+    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
     if(res && res.ok===false && !res.canceled){ toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn'); }
   }catch(e){ toast('تعذّرت الطباعة','warn'); }
 }
-/* ============ تذكرة الهدية (نفس تصميم تذاكر الألعاب — 72mm) ============ */
+/* ============ تذكرة الهدية (نفس تصميم تذاكر الألعاب — تتكيّف مع عرض الورق) ============ */
 function giftTicketHTML(o){
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-    +'body{width:72mm;padding:4mm 3mm;color:#000;}'
-    +'.c{text-align:center;} .num{direction:ltr;unicode-bidi:embed;}'
-    +'.shop{font-size:16px;font-weight:800;line-height:1.3;}'
-    +'.sub{font-size:11px;color:#333;margin-top:2px;}'
-    +'.title{font-size:15px;font-weight:800;margin:7px 0;padding:5px 0;border-top:2px dashed #000;border-bottom:2px dashed #000;}'
-    +'.row{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin:4px 0;}'
-    +'.row .v{font-weight:800;}'
-    +'.big{font-size:17px;font-weight:800;}'
-    +'.desc{margin:8px 0;padding:8px 6px;text-align:center;font-size:16px;font-weight:800;border:2px solid #000;border-radius:8px;word-break:break-word;line-height:1.4;}'
-    +'.cost{margin:9px 0;padding:9px;text-align:center;font-size:21px;font-weight:800;border:2px solid #000;border-radius:8px;background:#000;color:#fff;}'
-    +'.hr{border-top:1px dashed #000;margin:7px 0;}'
-    +'.foot{text-align:center;font-size:12px;margin-top:9px;font-weight:700;}'
-    +'.tiny{font-size:10px;color:#444;text-align:center;margin-top:4px;}'
+    +ticketCSS()
     +'</style></head><body>'
     +'<div class="c shop">كوكي بارك</div>'
     +'<div class="c sub">إيصال هدية</div>'
@@ -2628,7 +3094,7 @@ async function printGiftTicket(item){
       seq:item.seq||0,
       when:new Date(item.at||Date.now())
     });
-    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', silent:true });
+    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
     return !!(res && res.ok);
   }catch(e){
     logErr('printGiftTicket',e);
@@ -2654,7 +3120,7 @@ async function printTestTicket(){
   const st=settings();
   const html=ticketHTML({game:'تذكرة تجريبية',qty:1,method:'cash',price:0,total:0,seq:0,when:new Date()});
   try{
-    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', silent:true });
+    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
     if(res && res.ok) toast('تم إرسال تذكرة تجريبية للطابعة','ok');
     else toast('تعذّرت الطباعة — تأكد من الطابعة','warn');
   }catch(e){ toast('تعذّرت الطباعة','warn'); }
@@ -2707,7 +3173,10 @@ function dayReportHTML(day){
   /* الهدايا */
   if(day.giftList && day.giftList.length){
     h+='<div class="b">الهدايا:</div>';
-    day.giftList.forEach(function(x){ h+=row((x.desc||'هدية')+(x.seq?(' #'+pad(x.seq,6)):''), money(x.amount)); });
+    day.giftList.forEach(function(x){
+      h+=row((x.desc||'هدية')+(x.seq?(' #'+pad(x.seq,6)):''), money(x.amount));
+      if(x.at) h+='<div class="sub2">'+esc(fmtDMY(new Date(x.at)))+' · '+esc(fmtTime12(new Date(x.at)))+'</div>';
+    });
     h+=row('إجمالي الهدايا', money(day.gifts));
     h+=hr;
   }
@@ -2715,25 +3184,14 @@ function dayReportHTML(day){
   h+=row('المبيعات', money(day.revenue));
   h+=row('− المصروفات', money(day.expenses));
   h+=row('= الصافي', money(day.net));
-  h+=row('− الهدايا', money(day.gifts));
+  h+=row('+ الهدايا', money(day.gifts));
   h+='<div class="r big b"><span class="l">الإجمالي النهائي</span><span class="v num">'+esc(money(calcFinalNet(day)))+'</span></div>';
   h+=hr;
   h+='<div class="c s">كوكي بارك</div>';
   h+='<div class="c s">© نظام الحسابات</div>';
 
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-    +'@page{margin:0;}'
-    /* عرض 58mm افتراضيًا — يشتغل تمام على 80mm كمان (المحتوى يتمدد) */
-    +'body{width:54mm;padding:3mm 2mm;color:#000;background:#fff;'
-    +'font-family:"Consolas","Courier New",monospace;font-size:12px;line-height:1.45;font-weight:700;}'
-    +'.c{text-align:center;} .b{font-weight:800;} .big{font-size:14px;}'
-    +'.s{font-size:10px;font-weight:700;margin-top:1px;}'
-    +'.num{direction:ltr;unicode-bidi:embed;}'
-    +'.hr{white-space:nowrap;overflow:hidden;font-size:12px;letter-spacing:0;margin:3px 0;}'
-    +'.r{display:flex;justify-content:space-between;gap:6px;margin:2px 0;}'
-    +'.r .l{text-align:right;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
-    +'.sub2{font-size:10px;font-weight:700;color:#000;margin:0 0 2px 4px;}'
+    +reportPaperCSS()
     +'</style></head><body>'+h+'</body></html>';
 }
 async function printDayReport(id){
@@ -2780,7 +3238,7 @@ function printDayReportObj(day, onCancel){
       const st=settings();
       let html=dayReportHTML(day);
       if(withReview){ html=html.replace('</body></html>', dayReviewAppendHTML(day)+'</body></html>'); }
-      const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', silent:true });
+      const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
       if(res && res.ok) toast('تم إرسال تقرير اليوم للطابعة 🖨️','ok');
       else if(res && res.canceled){ }
       else toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn');
@@ -2803,8 +3261,8 @@ function printDayReportObj(day, onCancel){
 /* جزء سجل المرتجعات المُلحق بتقرير اليوم (نفس يوم العمل) */
 function dayReviewAppendHTML(day){
   const L='------------------------------';
-  /* نعتمد على مفتاح يوم العمل (حد 3:00 فجرًا) بدل نافذة البداية/النهاية
-     عشان نطابق يوم العمل كاملًا حتى لو فيه مرتجعات بعد نص الليل. */
+  /* نعتمد على مفتاح يوم العمل (حد 10:00 ص) بدل نافذة البداية/النهاية
+      عشان نطابق يوم العمل كاملًا حتى لو فيه مرتجعات بعد نص الليل. */
   const dayKey=businessDayKey(day.startedAt||day.endedAt||Date.now());
   const list=loadReview().filter(function(r){ return businessDayKey(r.ts||0)===dayKey; });
   let rowsH='';
@@ -2813,7 +3271,7 @@ function dayReviewAppendHTML(day){
     const d=new Date(r.ts);
     totQty+=Number(r.qty)||0; totVal+=Number(r.total)||0;
     const mt=methodText(r.method);
-    const shLabel=(r.shift===2)?SHIFT2_LABEL:(r.shift===1?SHIFT1_LABEL:'');
+    const shLabel=shiftBadgeText(r.shift);
     const meta=[mt,shLabel].filter(Boolean).join(' · ');
     rowsH+='<div class="rr"><div class="rl"><b>'+esc(r.game||'—')+'</b> <span class="tp">'+esc(r.type||'خصم')+'</span></div>'
       +'<div class="r2"><span class="num">'+fmtTime12(d)+'</span><span class="num">'+fmtNum(r.qty)+'×'+fmtNum(r.price)+'=-'+fmtNum(r.total)+' ج</span></div>'
@@ -2875,11 +3333,26 @@ async function openSettings(){
     sel.appendChild(opt);
   });
   const chk=el('input',{type:'checkbox',id:'pset-auto'}); chk.checked=!!st.autoPrint;
+  /* اختيار عرض الورق: يكيّف التذكرة/التقرير مع الطابعة لمنع قص النص */
+  const paperSel=el('select',{id:'pset-paper'});
+  [['auto','تلقائي (حسب اسم الطابعة)'],['58','حراري 58مم'],['80','حراري 80مم'],['a4','طابعة عادية (A4)']].forEach(function(o){
+    const opt=el('option',{value:o[0],text:o[1]});
+    if((st.paperWidth||'auto')===o[0]) opt.selected=true;
+    paperSel.appendChild(opt);
+  });
+  /* عند اختيار طابعة حرارية معروفة نختار عرضها تلقائيًا لو كان الخيار "تلقائي" */
+  sel.addEventListener('change',function(){
+    if(paperSel.value!=='auto') return;
+    const nm=(sel.value||'').toLowerCase();
+    if(/58/.test(nm)) paperSel.value='58';
+    else if(/80/.test(nm)) paperSel.value='80';
+  });
   const printCard=el('div',{class:'set-card'},[
     el('div',{class:'set-h'},[el('span',{class:'ic',text:'🖨️'}),'الطباعة']),
     el('label',{class:'switch'},[chk,'طباعة تذكرة تلقائيًا عند قطع أي تذكرة']),
     el('div',{class:'field'},[el('label',{text:'الطابعة'}),sel]),
-    el('div',{class:'hintbox',text:'لو مش لاقي طابعتك في القائمة، تأكد إنها متوصلة ومتعرّفة في الويندوز. للطابعات الحرارية (رول 80مم) اختَرها من هنا أو خليها الطابعة الافتراضية.'}),
+    el('div',{class:'field'},[el('label',{text:'نوع/عرض الورق'}),paperSel]),
+    el('div',{class:'hintbox',text:'اختَر طابعتك وعرض الورق الصحيح لمنع قص النص أو الجداول. الطابعات الحرارية الشائعة 58مم و80مم؛ للطابعات العادية اختر A4. لو مش لاقي طابعتك في القائمة، تأكد إنها متوصلة ومتعرّفة في الويندوز.'}),
     el('button',{class:'testbtn',onClick:printTestTicket},[el('span',{class:'ic',text:'🧾'}),' طباعة تذكرة تجريبية']),
   ]);
   const updCard=el('div',{class:'set-card'},[
@@ -2887,27 +3360,33 @@ async function openSettings(){
     el('div',{class:'ver-line'},['الإصدار الحالي: ',el('b',{text:ver||'—'})]),
     el('div',{id:'updSection',class:'upd-section'}),
   ]);
+  /* مظهر تلقائي حسب الوقت — لا يطغى على تفضيل المستخدم اليدوي (محفوظ في manualTheme) */
+  const autoChk=el('input',{type:'checkbox',id:'pset-autotheme'});
+  autoChk.checked=!!st.autoTheme;
+  autoChk.addEventListener('change',function(){
+    _settings.autoTheme=this.checked;
+    saveSettings(); applyTheme(); paintThemeBtn();
+    toast(this.checked?'تم تفعيل المظهر التلقائي — فاتح نهارًا (10:00 ص → 7:00 م) وداكن ليلًا':'تم إلغاء المظهر التلقائي — التحكم يدوي','ok');
+  });
   const themeCard=el('div',{class:'set-card'},[
     el('div',{class:'set-h'},[el('span',{class:'ic',text:'🎨'}),'مظهر التطبيق']),
+    el('label',{class:'switch'},[autoChk,'مظهر تلقائي حسب وقت اليوم (نهارًا فاتح · ليلًا داكن)']),
     el('div',{class:'theme-row'},[
-      el('button',{class:'theme-btn',id:'themeToggle',onClick:function(){
-        const cur=(_settings&&_settings.theme)||'dark';
-        setTheme(cur==='dark'?'light':'dark');
-        toast(cur==='dark'?'تم التبديل إلى المظهر الفاتح':'تم التبديل إلى المظهر الداكن','ok');
-        paintThemeBtn();
-      }},[]),
-      el('div',{class:'hintbox',text:'المظهر الداكن مفعّل افتراضيًا. اضغط الزر للتبديل بين الوضع الفاتح والداكن.'})
+      el('button',{class:'theme-btn',id:'themeToggle',onClick:function(){ toggleTheme(); }},[]),
+      el('div',{class:'hintbox',text:'التبديل اليدوي يلغي المظهر التلقائي ويحفظ اختيارك (يبقى بعد إعادة التشغيل). المظهر التلقائي يستخدم توقيت جهازك: فاتح من 10:00 ص إلى 7:00 م، داكن باقي اليوم.'})
     ]),
   ]);
   const box=el('div',{class:'modal set-modal'},[
-    el('h3',{},['⚙️ الإعدادات']),
-    printCard, themeCard, updCard,
+    el('h3',{class:'set-title'},[el('span',{class:'ic',text:'⚙️'}),'الإعدادات']),
+    el('div',{class:'set-cards'},[printCard, themeCard, updCard]),
     el('div',{class:'modal-actions'},[
       el('button',{class:'cancel',text:'إغلاق',onClick:closeOverlay}),
-      el('button',{class:'confirm',text:'💾 حفظ إعدادات الطباعة',onClick:()=>{
+      el('button',{class:'confirm',text:'💾 حفظ الإعدادات',onClick:()=>{
         _settings.autoPrint=$('#pset-auto').checked;
         _settings.printerName=$('#pset-printer').value||'';
-        saveSettings(); toast('تم حفظ الإعدادات','ok');
+        _settings.paperWidth=$('#pset-paper').value||'auto';
+        saveSettings(); applyTheme(); paintThemeBtn();
+        toast('تم حفظ الإعدادات','ok');
       }}),
     ]),
   ]);
@@ -2916,13 +3395,47 @@ async function openSettings(){
   paintSettingsUpdate();
 }
 function paintThemeBtn(){
-  const b=$('#themeToggle'); if(!b) return;
-  const cur=(_settings&&_settings.theme)||'dark';
+  const btns=document.querySelectorAll('#themeToggle');
+  const s=settings();
+  const cur=currentTheme();
   const moon='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
   const sun='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>';
-  const isIcon=b.classList.contains('theme-btn-h');
-  if(cur==='light'){ b.innerHTML=sun+(isIcon?'':('<span>وضع داكن</span>')); b.title='التبديل إلى الوضع الداكن'; }
-  else { b.innerHTML=moon+(isIcon?'':('<span>وضع فاتح</span>')); b.title='التبديل إلى الوضع الفاتح'; }
+  const auto='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>';
+  const autoOff='<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/><path d="M5 19L19 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  btns.forEach(function(b){
+    const isIcon=b.classList.contains('theme-btn-h');
+    if(s.autoTheme){
+      b.innerHTML=auto+(isIcon?'':'<span>مظهر تلقائي</span>');
+      b.title='المظهر التلقائي مفعّل: فاتح نهارًا (10:00 ص → 7:00 م) وداكن ليلًا. اضغط لاختيار يدوي.';
+    } else if(cur==='light'){
+      b.innerHTML=sun+(isIcon?'':'<span>وضع داكن</span>');
+      b.title='التبديل إلى الوضع الداكن';
+    } else {
+      b.innerHTML=moon+(isIcon?'':'<span>وضع فاتح</span>');
+      b.title='التبديل إلى الوضع الفاتح';
+    }
+  });
+  /* زر المظهر التلقائي السريع في الهيدر — حالة واحدة مصدرها Settings */
+  document.querySelectorAll('#autoThemeToggle').forEach(function(ab){
+    ab.classList.toggle('at-on',!!s.autoTheme);
+    ab.classList.toggle('at-off',!s.autoTheme);
+    ab.innerHTML=s.autoTheme?auto:autoOff;
+    ab.setAttribute('aria-pressed',s.autoTheme?'true':'false');
+    ab.title=s.autoTheme
+      ? 'المظهر التلقائي: مفعّل ✅ (فاتح 10:00 ص → 7:00 م، داكن باقي اليوم). اضغط لإيقافه.'
+      : 'المظهر التلقائي: متوقف ⏸️ — التحكم يدوي. اضغط لتفعيله.';
+  });
+}
+/* زر المظهر التلقائي السريع: نفس الحالة الفعلية في Settings (مصدر واحد) */
+function toggleAutoTheme(){
+  const s=settings();
+  s.autoTheme=!s.autoTheme;
+  /* مزامنة مربع التبديل داخل نافذة الإعدادات لو كانت مفتوحة */
+  const chk=$('#pset-autotheme'); if(chk) chk.checked=s.autoTheme;
+  saveSettings(); applyTheme(); paintThemeBtn();
+  toast(s.autoTheme
+    ? 'تم تفعيل المظهر التلقائي — فاتح نهارًا (10:00 ص → 7:00 م) وداكن ليلًا'
+    : 'تم إيقاف المظهر التلقائي — التحكم يدوي','ok');
 }
 
 /* ============ نظام الموظفين والرواتب الأسبوعية (السبت → الجمعة) ============ */
@@ -2949,6 +3462,7 @@ function empMigrate(){
         changed=true;
       }
       if(!Array.isArray(w.advances)){ w.advances=[]; changed=true; }
+      if(!Array.isArray(w.deductions)){ w.deductions=[]; changed=true; }
       if(typeof w.weekNote!=='string'){ w.weekNote=''; changed=true; }
     });
   });
@@ -2973,22 +3487,70 @@ function newWeek(key,wage){
   return { key:key, startTs:weekStartFromKey(key).getTime(), endTs:weekEndFromKey(key).getTime(),
            dailyWage:Number(wage)||0,
            days:EMP_DAYS.map(function(){ return {status:'work',penalty:0,bonus:0,note:''}; }),
-           bonuses:[], penalties:[], advances:[], weekNote:'',
+           bonuses:[], penalties:[], advances:[], deductions:[], weekNote:'',
            paid:false, paidAt:null, snapshot:null };
 }
 /* أسبوع جديد تلقائيًا كل سبت — من غير ما يتمسح أي أسبوع قديم (المصروف وغير المصروف) */
 function ensureWeeks(){
   const key=empCurKey(); let changed=false;
   empLoad().forEach(function(e){
-    e.weeks=e.weeks||[];
-    if(!e.weeks.some(function(w){return w.key===key;})){ e.weeks.unshift(newWeek(key,e.dailyWage)); changed=true; }
-    e.weeks.sort(function(a,b){ return a.key<b.key?1:(a.key>b.key?-1:0); });
+    if(!empWeek(e,key)){ empWeekEnsure(e,key); changed=true; }
   });
   if(changed) empSave();
   return key;
 }
+/* ينشئ أسبوع الموظف لو مش موجود (بدل ما نعتمد على فتح نافذة الموظفين أول).
+   مطلوبة لربط السلف/الخصومات/المكافآت اليومية بأسبوع الموظف الصحيح. */
+function empWeekEnsure(e,key){
+  e.weeks=e.weeks||[];
+  let w=empWeek(e,key);
+  if(!w){
+    w=newWeek(key,e.dailyWage);
+    e.weeks.push(w);
+    e.weeks.sort(function(a,b){ return a.key<b.key?1:(a.key>b.key?-1:0); });
+  }
+  return w;
+}
 
-/* ---- الحسابات: (أيام العمل × الأجر) + مكافآت − جزاءات − سلف = الصافي ---- */
+/* ============ رابط المصروفات بالموظفين (سلف) ============ */
+/* تعبئة قائمة الموظفين في قسم المصروفات — بنربطها برقم الموظف الثابت. */
+function renderExpEmpOptions(){
+  const sel=$('#expEmp'); if(!sel) return;
+  const cur=sel.value||'';
+  sel.innerHTML='';
+  sel.appendChild(el('option',{value:'',text:'مصروف عادي'}));
+  empLoad().forEach(function(e){
+    sel.appendChild(el('option',{value:e.id,text:'💵 سلفة: '+e.name}));
+  });
+  /* نحافظ على الاختيار الحالي لو لسه موجود */
+  if(cur&&empFind(cur)) sel.value=cur;
+}
+/* تسجيل سلفة موظف داخل أسبوعه الحالي (ترتبط برقمه الثابت + التاريخ الدقيق). */
+function recordEmployeeAdvance(empId,amount,reason,expenseId,ts){
+  const e=empFind(empId); if(!e) return null;
+  ts=ts||Date.now();
+  const key=weekKeyOf(ts);
+  const w=empWeekEnsure(e,key);
+  const day=Math.max(0,Math.min(6,dayIdxInWeek(key,ts)));
+  if(w.paid){ toast('راتب أسبوع هذه السلفة تم صرفه بالفعل — السلفة اتسجلت كمصروف فقط','warn'); return null; }
+  const adv={ id:uid(), day:day, ts:ts, amount:Math.max(0,Number(amount)||0),
+              reason:reason||'سلفة من المصروفات', note:'', expenseId:expenseId||null };
+  w.advances.push(adv);
+  empSave();
+  return adv;
+}
+/* حذف السلفة المرتبطة بمصروف من راتب الموظف (عند حذف المصروف). */
+function removeEmployeeAdvance(empId,expenseId){
+  const e=empFind(empId); if(!e||!expenseId) return;
+  (e.weeks||[]).forEach(function(w){
+    if(Array.isArray(w.advances)&&w.advances.some(function(x){return x.expenseId===expenseId;})){
+      w.advances=w.advances.filter(function(x){return x.expenseId!==expenseId;});
+    }
+  });
+  empSave();
+}
+
+/* ---- الحسابات: (أيام العمل × الأجر) + مكافآت − جزاءات − سلف − خصومات = الصافي ---- */
 function sumAmt(a){ let t=0; (a||[]).forEach(function(x){ t+=Number(x.amount)||0; }); return t; }
 function sumDayField(days,f){ let t=0; (days||[]).forEach(function(d){ t+=Number(d[f])||0; }); return t; }
 function calcWeek(w){
@@ -2997,23 +3559,24 @@ function calcWeek(w){
   const bonus=Array.isArray(w.bonuses)?sumAmt(w.bonuses):sumDayField(w.days,'bonus');
   const pen  =Array.isArray(w.penalties)?sumAmt(w.penalties):sumDayField(w.days,'penalty');
   const adv  =sumAmt(w.advances);
+  const ded  =sumAmt(w.deductions);
   const gross=work*(Number(w.dailyWage)||0);
-  return {work:work,vac:vac,abs:abs,bonus:bonus,pen:pen,adv:adv,gross:gross,net:gross+bonus-pen-adv};
+  return {work:work,vac:vac,abs:abs,bonus:bonus,pen:pen,adv:adv,ded:ded,gross:gross,net:gross+bonus-pen-adv-ded};
 }
 /* بعد الصرف بنستخدم اللقطة المحفوظة عشان السجل ما يتغيرش أبدًا */
 function weekStats(w){
   const s=(w.paid&&w.snapshot)?w.snapshot:calcWeek(w);
-  const r={work:0,vac:0,abs:0,bonus:0,pen:0,adv:0,gross:0,net:0};
+  const r={work:0,vac:0,abs:0,bonus:0,pen:0,adv:0,ded:0,gross:0,net:0};
   Object.keys(r).forEach(function(k){ const v=Number(s[k]); r[k]=isNaN(v)?0:v; });
   return r;
 }
 function empDashboardStats(curKey){
-  const t={count:0,due:0,paid:0,unpaid:0,bonus:0,pen:0,adv:0,work:0,vac:0,abs:0};
+  const t={count:0,due:0,paid:0,unpaid:0,bonus:0,pen:0,adv:0,ded:0,work:0,vac:0,abs:0};
   const L=empLoad(); t.count=L.length;
   L.forEach(function(e){
     const w=(e.weeks||[]).find(function(x){return x.key===curKey;}); if(!w) return;
     const s=weekStats(w);
-    t.due+=s.net; t.bonus+=s.bonus; t.pen+=s.pen; t.adv+=s.adv; t.work+=s.work; t.vac+=s.vac; t.abs+=s.abs;
+    t.due+=s.net; t.bonus+=s.bonus; t.pen+=s.pen; t.adv+=s.adv; t.ded+=s.ded; t.work+=s.work; t.vac+=s.vac; t.abs+=s.abs;
     if(w.paid) t.paid+=s.net; else t.unpaid+=s.net;
   });
   return t;
@@ -3123,6 +3686,7 @@ function empDash(){
     repCard('💵 إجمالي السلف',fmtNum(st.adv),'elec'),
     repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift'),
     repCard('⚠️ إجمالي الجزاءات',fmtNum(st.pen),'exp'),
+    repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
     repCard('📅 أيام العمل',fmtNum(st.work),'rev'),
     repCard('🌴 الإجازات',fmtNum(st.vac),'gift'),
     repCard('❌ الغياب',fmtNum(st.abs),'exp'),
@@ -3142,16 +3706,17 @@ function empDash(){
   const sec=el('div',{class:'emp-sec'});
   sec.appendChild(el('div',{class:'emp-sec-h'},['📋 جدول الموظفين']));
   const tbl=el('table',{class:'emp-table compact'});
-  tbl.appendChild(el('tr',{},['الاسم','الوظيفة','الأجر اليومي','السلف','صافي الأسبوع','حالة الصرف','التفاصيل'].map(function(h){return el('th',{text:h});})));
+  tbl.appendChild(el('tr',{},['الاسم','الوظيفة','الأجر اليومي','السلف','الخصومات','صافي الأسبوع','حالة الصرف','التفاصيل'].map(function(h){return el('th',{text:h});})));
   L.forEach(function(e){
     const w=empWeek(e,cur);
-    const s=w?weekStats(w):{net:0,adv:0};
+    const s=w?weekStats(w):{net:0,adv:0,ded:0};
     const openIt=function(){ empGo('emp',e.id,cur); };
     const chip=(w&&w.paid)?el('span',{class:'emp-chip locked'},['🔒 تم الصرف']):el('span',{class:'emp-chip pend'},['⏳ لم يتم الصرف']);
     const acts=el('div',{class:'emp-acts'},[
       el('button',{class:'pri',onClick:openIt},['📂 التفاصيل']),
       el('button',{title:'كشف الحساب الأسبوعي',onClick:function(){ empGo('stmt',e.id,cur); }},['📄']),
       (w&&!w.paid)?el('button',{class:'pay',title:'صرف الراتب',onClick:function(){empPayOne(e.id,cur);}},['💰']):null,
+      el('button',{title:'تسجيل يومي (حضور/انصراف/خصم/مكافأة)',onClick:function(){ openDailyReg(e.id); }},['🕐']),
       el('button',{title:'تعديل بيانات الموظف',onClick:function(){empAskPass({title:'✏️ تعديل موظف',message:'اكتب كلمة السر لتعديل بيانات «'+e.name+'».',confirmText:'متابعة',onOk:function(){ empGo('form',e.id,null); }});}},['✏️']),
       el('button',{class:'del',title:'حذف الموظف',onClick:function(){empDelete(e.id);}},['🗑️']),
     ]);
@@ -3160,6 +3725,7 @@ function empDash(){
       el('td',{text:e.job||'—'}),
       el('td',{},[el('span',{class:'num',text:fmtNum(e.dailyWage)})]),
       el('td',{},[el('span',{class:'num emp-blue',text:s.adv?('-'+fmtNum(s.adv)):'0'})]),
+      el('td',{},[el('span',{class:'num emp-neg',text:s.ded?('-'+fmtNum(s.ded)):'0'})]),
       el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(s.net)})]),
       el('td',{},[chip]),
       el('td',{},[acts]),
@@ -3169,6 +3735,7 @@ function empDash(){
   tbl.appendChild(el('tr',{class:'emp-tot'},[
     el('td',{colspan:'3',text:'الإجمالي'}),
     el('td',{},[el('span',{class:'num emp-blue',text:t.tot.adv?('-'+fmtNum(t.tot.adv)):'0'})]),
+    el('td',{},[el('span',{class:'num emp-neg',text:t.tot.ded?('-'+fmtNum(t.tot.ded)):'0'})]),
     el('td',{},[el('span',{class:'num',text:fmtNum(t.tot.net)})]),
     el('td',{colspan:'2',text:''}),
   ]));
@@ -3247,7 +3814,8 @@ function empForm(empId){
 const EMP_KINDS={
   bonuses  :{ic:'🎁',title:'المكافآت',add:'➕ إضافة مكافأة',mt:'🎁 إضافة مكافأة',sign:'+',cls:'emp-pos',note:false,empty:'لا توجد مكافآت هذا الأسبوع'},
   penalties:{ic:'⚠️',title:'الجزاءات',add:'➕ إضافة جزاء',  mt:'⚠️ إضافة جزاء',  sign:'−',cls:'emp-neg',note:false,empty:'لا توجد جزاءات هذا الأسبوع'},
-  advances :{ic:'💵',title:'السلف',   add:'➕ إضافة سلفة',  mt:'💵 إضافة سلفة',  sign:'−',cls:'emp-blue',note:true, empty:'لا توجد سلف هذا الأسبوع'}
+  advances :{ic:'💵',title:'السلف',   add:'➕ إضافة سلفة',  mt:'💵 إضافة سلفة',  sign:'−',cls:'emp-blue',note:true, empty:'لا توجد سلف هذا الأسبوع'},
+  deductions:{ic:'➖',title:'الخصومات',add:'➕ إضافة خصم',  mt:'➖ إضافة خصم',   sign:'−',cls:'emp-neg',note:false,empty:'لا توجد خصومات هذا الأسبوع'}
 };
 function empMoneySection(w,kind,locked){
   const M=EMP_KINDS[kind];
@@ -3283,8 +3851,16 @@ function empMoneySection(w,kind,locked){
     ];
     if(kind==='advances') cells.push(el('td',{text:x.note||'—'}));
     cells.push(el('td',{},[ locked?null:el('button',{class:'emp-mini del',title:'حذف',onClick:function(){
-      w[kind]=(w[kind]||[]).filter(function(y){return y.id!==x.id;});
-      empSave(); paintEmp(); toast('تم الحذف','ok');
+      /* كل عملية حذف في البرنامج تتطلّب تأكيد كلمة السر */
+      empAskPass({
+        title:'🗑️ حذف عملية',
+        message:'حذف «'+M.title+'» بقيمة '+fmtNum(x.amount)+' ج نهائيًا؟ اكتب كلمة السر للتأكيد.',
+        confirmText:'حذف', danger:true,
+        onOk:function(){
+          w[kind]=(w[kind]||[]).filter(function(y){return y.id!==x.id;});
+          empSave(); paintEmp(); toast('تم الحذف','ok');
+        }
+      });
     }},['🗑️']) ]));
     t.appendChild(el('tr',{},cells));
   });
@@ -3315,6 +3891,7 @@ function empCalcBox(w,s){
     row('plus','إجمالي المكافآت','','+ '+fmtNum(s.bonus)+' ج'),
     row('minus','إجمالي الجزاءات','','- '+fmtNum(s.pen)+' ج'),
     row('minus','إجمالي السلف','','- '+fmtNum(s.adv)+' ج'),
+    row('minus','إجمالي الخصومات','','- '+fmtNum(s.ded)+' ج'),
     row('net','💵 صافي الراتب المستحق','',fmtNum(s.net)+' ج'),
   ]);
 }
@@ -3363,14 +3940,15 @@ function empView(empId,key){
     repCard('🎁 إجمالي المكافآت',fmtNum(s.bonus),'gift'),
     repCard('⚠️ إجمالي الجزاءات',fmtNum(s.pen),'exp'),
     repCard('💵 إجمالي السلف',fmtNum(s.adv),'elec'),
+    repCard('➖ إجمالي الخصومات',fmtNum(s.ded),'exp'),
     repCard('💵 صافي الراتب',fmtNum(s.net),'final'),
   ]));
 
-  /* 3) جدول الحضور — بعرض كامل */
+  /* 3) جدول الحضور — بعرض كامل (مع أوقات الحضور/الانصراف من التسجيل اليومي) */
   const attend=el('div',{class:'emp-sec'});
   attend.appendChild(el('div',{class:'emp-sec-h'},['📅 جدول الحضور']));
   const tbl=el('table',{class:'emp-table emp-days'});
-  tbl.appendChild(el('tr',{},['اليوم','التاريخ','الحالة','ملاحظات'].map(function(h){return el('th',{text:h});})));
+  tbl.appendChild(el('tr',{},['اليوم','التاريخ','الحضور','الانصراف','الحالة','ملاحظات'].map(function(h){return el('th',{text:h});})));
   (w.days||[]).forEach(function(d,i){
     const sel=el('select',{onChange:function(){ d.status=sel.value; empSave(); paintEmp(); }});
     [['work','✅ حضر'],['vacation','🌴 إجازة'],['absent','❌ غياب']].forEach(function(o){
@@ -3379,9 +3957,13 @@ function empView(empId,key){
     sel.disabled=locked;
     const note=el('input',{type:'text',placeholder:'—',onChange:function(){ d.note=note.value; empSave(); }});
     note.value=d.note||''; note.disabled=locked;
+    const dayKey=dateInputVal(dayDateOf(key,i).getTime());
+    const dr=drRec(empId,dayKey);
     tbl.appendChild(el('tr',{},[
       el('td',{},[el('b',{text:EMP_DAYS[i]})]),
       el('td',{},[el('span',{class:'num',style:{fontSize:'12px',color:'var(--muted-2)'},text:fmtDMY(dayDateOf(key,i))})]),
+      el('td',{},[el('span',{class:'num dr-time',text:dr&&dr.inTs?fmtTime12(new Date(dr.inTs)):'—'})]),
+      el('td',{},[el('span',{class:'num dr-time',text:dr&&dr.outTs?fmtTime12(new Date(dr.outTs)):'—'})]),
       el('td',{},[sel]),
       el('td',{},[note]),
     ]));
@@ -3389,12 +3971,13 @@ function empView(empId,key){
   attend.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
   wrap.appendChild(attend);
 
-  /* 4) شبكة: [المكافآت | الجزاءات] ثم [السلف | ملخص الحساب] */
+  /* 4) شبكة: [المكافآت | الجزاءات] ثم [السلف | الخصومات] ثم [ملخص الحساب] */
   wrap.appendChild(el('div',{class:'emp-grid'},[
     empMoneySection(w,'bonuses',locked),
     empMoneySection(w,'penalties',locked),
     empMoneySection(w,'advances',locked),
-    empCalcBox(w,s),
+    empMoneySection(w,'deductions',locked),
+    el('div',{class:'full'},[empCalcBox(w,s)]),
   ]));
 
   /* 5) صرف الراتب — بعرض كامل */
@@ -3415,7 +3998,7 @@ function empView(empId,key){
   const hist=el('div',{class:'emp-sec'});
   hist.appendChild(el('div',{class:'emp-sec-h'},['📜 سجل الرواتب']));
   const ht=el('table',{class:'emp-table compact'});
-  ht.appendChild(el('tr',{},['الأسبوع','عمل','غياب','إجازة','مكافآت','جزاءات','سلف','إجمالي الراتب','الصافي','الحالة',''].map(function(h){return el('th',{text:h});})));
+  ht.appendChild(el('tr',{},['الأسبوع','عمل','غياب','إجازة','مكافآت','جزاءات','سلف','خصومات','إجمالي الراتب','الصافي','الحالة',''].map(function(h){return el('th',{text:h});})));
   (e.weeks||[]).forEach(function(x){
     const xs=weekStats(x);
     const stTxt=x.paid?('تم الصرف'+(x.paidAt?(' '+fmtDMY(new Date(x.paidAt))):'')):'لم يتم الصرف';
@@ -3430,6 +4013,7 @@ function empView(empId,key){
       el('td',{},[el('span',{class:'num emp-pos',text:fmtNum(xs.bonus)})]),
       el('td',{},[el('span',{class:'num emp-neg',text:fmtNum(xs.pen)})]),
       el('td',{},[el('span',{class:'num emp-blue',text:fmtNum(xs.adv)})]),
+      el('td',{},[el('span',{class:'num emp-neg',text:fmtNum(xs.ded)})]),
       el('td',{},[el('span',{class:'num',text:fmtNum(xs.gross)})]),
       el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(xs.net)})]),
       el('td',{text:stTxt}),
@@ -3456,6 +4040,7 @@ function weekOps(w){
     (w.bonuses||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'bonus',amount:x.amount,reason:x.reason||''}); });
     (w.penalties||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'pen',amount:x.amount,reason:x.reason||''}); });
     (w.advances||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'adv',amount:x.amount,reason:x.reason||'',note:x.note||''}); });
+    (w.deductions||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'ded',amount:x.amount,reason:x.reason||''}); });
   });
   if(w.paid) ops.push({day:-1,kind:'paid',ts:w.paidAt});
   return ops;
@@ -3469,6 +4054,7 @@ function opInfo(o,key){
   if(o.kind==='bonus') return {ic:'🎁',cls:'b',title:'مكافأة',amount:'+'+fmtNum(o.amount)+' ج',extra:o.reason};
   if(o.kind==='pen')   return {ic:'⚠️',cls:'p',title:'جزاء',  amount:'−'+fmtNum(o.amount)+' ج',extra:o.reason};
   if(o.kind==='adv')   return {ic:'💵',cls:'a',title:'سلفة',  amount:'−'+fmtNum(o.amount)+' ج',extra:[o.reason,o.note].filter(Boolean).join(' — ')};
+  if(o.kind==='ded')   return {ic:'➖',cls:'p',title:'خصم',   amount:'−'+fmtNum(o.amount)+' ج',extra:o.reason};
   if(o.kind==='paid')  return {ic:'💰',cls:'paid',title:'تم صرف الراتب',amount:'',extra:(o.ts?ticketStamp(new Date(o.ts)):'')};
   return {ic:'•',cls:'',title:'',amount:'',extra:''};
 }
@@ -3546,7 +4132,7 @@ function empPayOne(empId,key){
   if(w.paid){ toast('راتب هذا الأسبوع تم صرفه بالفعل — لا يمكن الصرف مرتين','warn'); return; }
   const s=calcWeek(w);
   let msg='صرف راتب «'+e.name+'» عن أسبوع '+weekRangeLabel(key)+'.\n';
-  msg+='الأجر الأساسي '+fmtNum(s.gross)+' + مكافآت '+fmtNum(s.bonus)+' − جزاءات '+fmtNum(s.pen)+' − سلف '+fmtNum(s.adv)+' = الصافي '+fmtNum(s.net)+' جنيه.\nاكتب كلمة السر للتأكيد.';
+  msg+='الأجر الأساسي '+fmtNum(s.gross)+' + مكافآت '+fmtNum(s.bonus)+' − جزاءات '+fmtNum(s.pen)+' − سلف '+fmtNum(s.adv)+' − خصومات '+fmtNum(s.ded)+' = الصافي '+fmtNum(s.net)+' جنيه.\nاكتب كلمة السر للتأكيد.';
   empAskPass({
     title:'💰 صرف الراتب',
     message:msg,
@@ -3603,12 +4189,12 @@ function empStartNewWeek(){
 
 /* ---- تقارير الرواتب (كل الموظفين) ---- */
 function empWeekTableData(curKey){
-  const rows=[]; const tot={work:0,vac:0,abs:0,bonus:0,pen:0,adv:0,gross:0,net:0,paid:0,unpaid:0};
+  const rows=[]; const tot={work:0,vac:0,abs:0,bonus:0,pen:0,adv:0,ded:0,gross:0,net:0,paid:0,unpaid:0};
   empLoad().forEach(function(e){
     const w=empWeek(e,curKey); if(!w) return;
     const s=weekStats(w);
-    rows.push({name:e.name,job:e.job||'',wage:w.dailyWage,work:s.work,vac:s.vac,abs:s.abs,bonus:s.bonus,pen:s.pen,adv:s.adv,gross:s.gross,net:s.net,paid:!!w.paid,paidAt:w.paidAt||null});
-    tot.work+=s.work; tot.vac+=s.vac; tot.abs+=s.abs; tot.bonus+=s.bonus; tot.pen+=s.pen; tot.adv+=s.adv; tot.gross+=s.gross; tot.net+=s.net;
+    rows.push({name:e.name,job:e.job||'',wage:w.dailyWage,work:s.work,vac:s.vac,abs:s.abs,bonus:s.bonus,pen:s.pen,adv:s.adv,ded:s.ded,gross:s.gross,net:s.net,paid:!!w.paid,paidAt:w.paidAt||null});
+    tot.work+=s.work; tot.vac+=s.vac; tot.abs+=s.abs; tot.bonus+=s.bonus; tot.pen+=s.pen; tot.adv+=s.adv; tot.ded+=s.ded; tot.gross+=s.gross; tot.net+=s.net;
     if(w.paid) tot.paid+=s.net; else tot.unpaid+=s.net;
   });
   return {rows:rows,tot:tot};
@@ -3634,7 +4220,7 @@ function salaryReportHTML(curKey,d){
   const genAt=ticketStamp(new Date());
   let rowsH='';
   d.rows.forEach(function(r){
-    rowsH+='<tr><td>'+esc(r.name)+'</td><td>'+esc(r.job)+'</td><td class="n">'+fmtNum(r.wage)+'</td><td class="n">'+fmtNum(r.work)+'</td><td class="n">'+fmtNum(r.vac)+'</td><td class="n">'+fmtNum(r.abs)+'</td><td class="n">'+fmtNum(r.gross)+'</td><td class="n">'+fmtNum(r.bonus)+'</td><td class="n">'+fmtNum(r.pen)+'</td><td class="n">'+fmtNum(r.adv)+'</td><td class="n">'+fmtNum(r.net)+'</td><td>'+(r.paid?('تم الصرف'+(r.paidAt?(' '+fmtDMY(new Date(r.paidAt))):'')):'لم يتم الصرف')+'</td></tr>';
+    rowsH+='<tr><td>'+esc(r.name)+'</td><td>'+esc(r.job)+'</td><td class="n">'+fmtNum(r.wage)+'</td><td class="n">'+fmtNum(r.work)+'</td><td class="n">'+fmtNum(r.vac)+'</td><td class="n">'+fmtNum(r.abs)+'</td><td class="n">'+fmtNum(r.gross)+'</td><td class="n">'+fmtNum(r.bonus)+'</td><td class="n">'+fmtNum(r.pen)+'</td><td class="n">'+fmtNum(r.adv)+'</td><td class="n">'+fmtNum(r.ded)+'</td><td class="n">'+fmtNum(r.net)+'</td><td>'+(r.paid?('تم الصرف'+(r.paidAt?(' '+fmtDMY(new Date(r.paidAt))):'')):'لم يتم الصرف')+'</td></tr>';
   });
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{size:A4;margin:12mm;}'+RPT_CSS+'</style></head><body>'
     +'<div class="hd"><div><h1>💰 كشف رواتب الأسبوع — كوكي بارك</h1>'
@@ -3646,10 +4232,11 @@ function salaryReportHTML(curKey,d){
     +'<div class="card"><div class="k">إجمالي السلف</div><div class="v">'+fmtNum(d.tot.adv)+' ج</div></div>'
     +'<div class="card"><div class="k">إجمالي المكافآت</div><div class="v">'+fmtNum(d.tot.bonus)+' ج</div></div>'
     +'<div class="card"><div class="k">إجمالي الجزاءات</div><div class="v">'+fmtNum(d.tot.pen)+' ج</div></div>'
+    +'<div class="card"><div class="k">إجمالي الخصومات</div><div class="v">'+fmtNum(d.tot.ded)+' ج</div></div>'
     +'</div>'
-    +'<table><tr><th>الموظف</th><th>الوظيفة</th><th class="n">الأجر اليومي</th><th class="n">عمل</th><th class="n">إجازة</th><th class="n">غياب</th><th class="n">الأجر الأساسي</th><th class="n">مكافآت</th><th class="n">جزاءات</th><th class="n">سلف</th><th class="n">الصافي</th><th>الحالة</th></tr>'
+    +'<table><tr><th>الموظف</th><th>الوظيفة</th><th class="n">الأجر اليومي</th><th class="n">عمل</th><th class="n">إجازة</th><th class="n">غياب</th><th class="n">الأجر الأساسي</th><th class="n">مكافآت</th><th class="n">جزاءات</th><th class="n">سلف</th><th class="n">خصومات</th><th class="n">الصافي</th><th>الحالة</th></tr>'
     +rowsH
-    +'<tr class="tot"><td colspan="3">الإجمالي</td><td class="n">'+fmtNum(d.tot.work)+'</td><td class="n">'+fmtNum(d.tot.vac)+'</td><td class="n">'+fmtNum(d.tot.abs)+'</td><td class="n">'+fmtNum(d.tot.gross)+'</td><td class="n">'+fmtNum(d.tot.bonus)+'</td><td class="n">'+fmtNum(d.tot.pen)+'</td><td class="n">'+fmtNum(d.tot.adv)+'</td><td class="n">'+fmtNum(d.tot.net)+'</td><td></td></tr>'
+    +'<tr class="tot"><td colspan="3">الإجمالي</td><td class="n">'+fmtNum(d.tot.work)+'</td><td class="n">'+fmtNum(d.tot.vac)+'</td><td class="n">'+fmtNum(d.tot.abs)+'</td><td class="n">'+fmtNum(d.tot.gross)+'</td><td class="n">'+fmtNum(d.tot.bonus)+'</td><td class="n">'+fmtNum(d.tot.pen)+'</td><td class="n">'+fmtNum(d.tot.adv)+'</td><td class="n">'+fmtNum(d.tot.ded)+'</td><td class="n">'+fmtNum(d.tot.net)+'</td><td></td></tr>'
     +'</table>'
     +'<div class="foot">تم إنشاؤه بواسطة برنامج كوكي بارك</div>'
     +'</body></html>';
@@ -3672,12 +4259,12 @@ async function exportWeekExcel(){
   rows.push(['تقرير أسبوع الرواتب — كوكي بارك']);
   rows.push(['من','السبت '+fmtDMY(weekStartFromKey(cur)),'إلى','الجمعة '+fmtDMY(weekEndFromKey(cur))]);
   rows.push([]);
-  rows.push(['الموظف','الوظيفة','الأجر اليومي','أيام العمل','إجازة','غياب','الأجر الأساسي','مكافآت','جزاءات','سلف','صافي الراتب','حالة الصرف','تاريخ الصرف']);
+  rows.push(['الموظف','الوظيفة','الأجر اليومي','أيام العمل','إجازة','غياب','الأجر الأساسي','مكافآت','جزاءات','سلف','خصومات','صافي الراتب','حالة الصرف','تاريخ الصرف']);
   d.rows.forEach(function(r){
-    rows.push([r.name,r.job,r.wage,r.work,r.vac,r.abs,r.gross,r.bonus,r.pen,r.adv,r.net,(r.paid?'تم الصرف':'لم يتم الصرف'),(r.paidAt?fmtDMY(new Date(r.paidAt)):'')]);
+    rows.push([r.name,r.job,r.wage,r.work,r.vac,r.abs,r.gross,r.bonus,r.pen,r.adv,r.ded,r.net,(r.paid?'تم الصرف':'لم يتم الصرف'),(r.paidAt?fmtDMY(new Date(r.paidAt)):'')]);
   });
   rows.push([]);
-  rows.push(['الإجمالي','','',d.tot.work,d.tot.vac,d.tot.abs,d.tot.gross,d.tot.bonus,d.tot.pen,d.tot.adv,d.tot.net,'','']);
+  rows.push(['الإجمالي','','',d.tot.work,d.tot.vac,d.tot.abs,d.tot.gross,d.tot.bonus,d.tot.pen,d.tot.adv,d.tot.ded,d.tot.net,'','']);
   rows.push(['إجمالي المصروف',d.tot.paid]);
   rows.push(['إجمالي غير المصروف',d.tot.unpaid]);
   try{
@@ -3713,6 +4300,7 @@ function statementHTML(e,w,key,s){
     +'<tr><td>+ إجمالي المكافآت</td><td class="n">'+fmtNum(s.bonus)+' ج</td></tr>'
     +'<tr><td>− إجمالي الجزاءات</td><td class="n">'+fmtNum(s.pen)+' ج</td></tr>'
     +'<tr><td>− إجمالي السلف</td><td class="n">'+fmtNum(s.adv)+' ج</td></tr>'
+    +'<tr><td>− إجمالي الخصومات</td><td class="n">'+fmtNum(s.ded)+' ج</td></tr>'
     +'<tr class="tot"><td>💵 صافي الراتب المستحق</td><td class="n">'+fmtNum(s.net)+' ج</td></tr>'
     +'</table>'
     +'<h2>📋 تفاصيل العمليات</h2>'
@@ -3751,6 +4339,7 @@ async function exportStatementExcel(empId,key){
   rows.push(['+ إجمالي المكافآت',s.bonus]);
   rows.push(['- إجمالي الجزاءات',s.pen]);
   rows.push(['- إجمالي السلف',s.adv]);
+  rows.push(['- إجمالي الخصومات',s.ded]);
   rows.push(['صافي الراتب المستحق',s.net]);
   rows.push([]);
   rows.push(['تفاصيل العمليات']);
@@ -3769,7 +4358,278 @@ async function exportStatementExcel(empId,key){
   }catch(_){ toast('تعذّر حفظ الملف','warn'); }
 }
 
-/* ============ Auto-update UI ============ */
+/* ============ التسجيل اليومي للموظفين (حضور / انصراف / خصم / مكافأة) ============ */
+/* قسم مستقل مرتبط مباشرة بقاعدة بيانات الموظفين. كل سجل يومي يربط برقم الموظف
+   الثابت (empId) عشان السجل التاريخي يفضل محفوظ حتى لو اتغير اسم الموظف. */
+const K_DREG='malahy_daily_reg_v1';
+let _dreg={ list:null, dayKey:null, empId:null };
+
+function drLoad(){ if(!_dreg.list){ _dreg.list=loadJSON(K_DREG,[])||[]; } return _dreg.list; }
+function drSave(){ saveJSON(K_DREG,_dreg.list||[]); }
+/* مفتاح يوم العمل الحالي (نفس قواعد يوم العمل المطبّقة: قبل 10 ص → اليوم السابق) */
+function drTodayKey(){ return businessDayKey(Date.now()); }
+/* سجل يوم لموظف (بدون إنشاء) */
+function drRec(empId,dayKey){
+  return drLoad().find(function(r){ return r.empId===empId && r.dayKey===dayKey; })||null;
+}
+/* سجل يوم لموظف (ينشئه لو مش موجود) */
+function drEnsureRec(empId,dayKey){
+  let r=drRec(empId,dayKey);
+  if(!r){
+    r={ id:uid(), empId:empId, dayKey:dayKey, inTs:null, outTs:null, deduction:0, bonus:0, updatedAt:null };
+    drLoad().push(r);
+  }
+  return r;
+}
+/* اسم اليوم التفصيلي لمفتاح يوم (بدون قواعد الساعات — اليوم نفسه) */
+function drDayLabel(dayKey){
+  const d=keyToDate(dayKey);
+  return AR_DAYS[d.getDay()]+' '+d.getDate()+' '+AR_MONTHS[d.getMonth()]+' '+d.getFullYear();
+}
+/* أسبوع الموظف اللي يقع فيه اليوم ده (مع حساب اليوم داخله) */
+function drWeekOf(e,dayKey){
+  const ts=keyToDate(dayKey).getTime();
+  return { key:weekKeyOf(ts), w:empWeek(e,weekKeyOf(ts)), ts:ts, idx:dayIdxInWeek(weekKeyOf(ts),ts) };
+}
+
+/* ============ الحضور والانصراف ============ */
+function drRecordIn(empId,dayKey){
+  const e=empFind(empId); if(!e) return;
+  const r=drRec(empId,dayKey);
+  if(r&&r.inTs){ toast('⛔ '+e.name+' — تم تسجيل الحضور مسبقًا هذا اليوم ('+fmtTime12(new Date(r.inTs))+')','warn'); return; }
+  const now=Date.now();
+  const nr=drEnsureRec(empId,dayKey);
+  nr.inTs=now; nr.updatedAt=now;
+  drSave();
+  toast('✅ تم تسجيل حضور '+e.name+' — '+fmtTime12(new Date(now)),'ok');
+  paintDreg();
+}
+function drRecordOut(empId,dayKey){
+  const e=empFind(empId); if(!e) return;
+  const r=drRec(empId,dayKey);
+  if(r&&r.outTs){ toast('⛔ '+e.name+' — تم تسجيل الانصراف مسبقًا هذا اليوم ('+fmtTime12(new Date(r.outTs))+')','warn'); return; }
+  const now=Date.now();
+  const nr=drEnsureRec(empId,dayKey);
+  nr.outTs=now; nr.updatedAt=now;
+  drSave();
+  toast('🏠 تم تسجيل انصراف '+e.name+' — '+fmtTime12(new Date(now)),'ok');
+  paintDreg();
+}
+
+/* ============ الخصم والمكافأة (يتزامنوا مع الراتب الأسبوعي) ============ */
+/* تحديث قيمة الخصم أو المكافأة في السجل اليومي + مرآتها داخل أسبوع الموظف.
+   المرآة بتستبدل القديم (عن طريق dregId) فمفيش تكرار، وبتحافظ على التاريخ الدقيق. */
+function drSetAmount(empId,dayKey,field,amount){
+  const e=empFind(empId); if(!e) return false;
+  const kind=field==='deduction'?'deductions':'bonuses';
+  const label=field==='deduction'?'خصم يومي':'مكافأة يومية';
+  const pos=drWeekOf(e,dayKey);
+  if(pos.w&&pos.w.paid){ toast('🔒 أسبوع هذا اليوم تم صرف راتبه — لا يمكن التعديل','warn'); return false; }
+  const r=drEnsureRec(empId,dayKey);
+  r[field]=Math.max(0,Number(amount)||0);
+  r.updatedAt=Date.now();
+  const w=pos.w||empWeekEnsure(e,pos.key);
+  if(!Array.isArray(w[kind])) w[kind]=[];
+  const arr=w[kind];
+  const i=arr.findIndex(function(x){return x.dregId===r.id;});
+  if(r[field]>0){
+    const entry={ id:(i>=0?arr[i].id:uid()), dregId:r.id, day:pos.idx, ts:pos.ts, amount:r[field], reason:label, src:'daily' };
+    if(i>=0) arr[i]=entry; else arr.push(entry);
+  } else {
+    if(i>=0) arr.splice(i,1);
+  }
+  empPruneAutoWeeks(e);
+  drSave(); empSave();
+  paintDregSummary();
+  return true;
+}
+/* تنظيف الأسابيع الفارغة اللي أنشأها التسجيل اليومي (ماعدا الأسبوع الحالي والمصروف) */
+function empPruneAutoWeeks(e){
+  const cur=empCurKey();
+  e.weeks=(e.weeks||[]).filter(function(w){
+    if(!w.auto) return true;
+    if(w.key===cur) return true;
+    if(w.paid) return true;
+    const has=(w.bonuses&&w.bonuses.length)||(w.penalties&&w.penalties.length)||(w.advances&&w.advances.length)||(w.deductions&&w.deductions.length);
+    return !!has;
+  });
+}
+
+/* ============ ملخص اليوم ============ */
+function drDayStats(dayKey){
+  const t={present:0,departed:0,ded:0,bonus:0};
+  drLoad().forEach(function(r){
+    if(r.dayKey!==dayKey) return;
+    if(r.inTs) t.present++;
+    if(r.outTs) t.departed++;
+    t.ded+=Number(r.deduction)||0;
+    t.bonus+=Number(r.bonus)||0;
+  });
+  return t;
+}
+
+/* ============ النافذة الرئيسية للقسم ============ */
+function openDailyReg(empId){
+  _emp.list=null; empLoad(); ensureWeeks();
+  _dreg.list=null; drLoad();
+  _dreg.dayKey=drTodayKey();
+  _dreg.empId=empId||null;
+  const wrap=el('div',{class:'modal emp-modal'},[ el('div',{id:'drRoot'}) ]);
+  showModal(wrap);
+  paintDreg();
+}
+function paintDreg(){
+  const root=$('#drRoot'); if(!root) return;
+  root.innerHTML='';
+  root.appendChild(drBody());
+}
+function drGo(dayKey){ _dreg.dayKey=dayKey; paintDreg(); }
+
+/* شاشة الجدول اليومي */
+function drBody(){
+  const dayKey=_dreg.dayKey||drTodayKey();
+  const wrap=el('div',{});
+  wrap.appendChild(el('h3',{},['🕐 التسجيل اليومي للموظفين']));
+
+  /* شريط التاريخ: تنقّل بين الأيام + اختيار يدوي */
+  const prevBtn=el('button',{class:'emp-back',style:{margin:'0',padding:'8px 12px'},onClick:function(){
+    const d=keyToDate(dayKey); d.setDate(d.getDate()-1); drGo(businessDayKey(d.getTime()));
+  }},['→ اليوم السابق']);
+  const nextBtn=el('button',{class:'emp-back',style:{margin:'0',padding:'8px 12px'},onClick:function(){
+    const d=keyToDate(dayKey); d.setDate(d.getDate()+1); drGo(businessDayKey(d.getTime()));
+  }},['اليوم التالي ←']);
+  const dateIn=el('input',{type:'date',value:dayKey,onChange:function(){
+    if(!dateIn.value) return;
+    const p=dateIn.value.split('-').map(Number);
+    if(p.length===3&&p[0]>0&&p[1]>0&&p[2]>0) drGo(businessDayKey(new Date(p[0],p[1]-1,p[2]).getTime()));
+  }});
+  const todayBtn=el('button',{class:'emp-back',style:{margin:'0',padding:'8px 12px'},onClick:function(){ drGo(drTodayKey()); }},['📍 اليوم']);
+
+  const isToday=(dayKey===drTodayKey());
+  const bar=el('div',{class:'emp-week-bar'},[
+    el('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},[prevBtn,nextBtn,todayBtn,dateIn]),
+    el('div',{style:{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}},[
+      el('span',{},['التاريخ: ',el('b',{text:drDayLabel(dayKey)})]),
+      isToday?el('span',{class:'emp-chip cur'},['🟢 اليوم الحالي']):el('span',{class:'emp-chip pend'},['🗓️ يوم سابق'])
+    ])
+  ]);
+  wrap.appendChild(bar);
+
+  if(_dreg.empId){
+    const e=empFind(_dreg.empId);
+    if(e){
+      bar.appendChild(el('span',{class:'emp-chip pend'},['👤 مفلتر: '+e.name]));
+      wrap.appendChild(el('div',{style:{marginBottom:'12px'}},[
+        el('button',{class:'emp-back',style:{margin:'0'},onClick:function(){ _dreg.empId=null; paintDreg(); }},['← عرض كل الموظفين'])
+      ]));
+    }
+  }
+
+  /* ملخص اليوم */
+  const st=drDayStats(dayKey);
+  const L=_dreg.empId?(empFind(_dreg.empId)?[empFind(_dreg.empId)]:[]):empLoad();
+  wrap.appendChild(el('div',{class:'rep-cards emp-c5',id:'drSummary'},[
+    repCard('👥 عدد الموظفين',fmtNum(L.length),'tickets'),
+    repCard('✅ الحضور',fmtNum(st.present),'rev'),
+    repCard('🏠 الانصراف',fmtNum(st.departed),'gift'),
+    repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
+    repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift'),
+  ]));
+
+  if(!L.length){
+    wrap.appendChild(el('div',{class:'emp-empty'},['لا يوجد موظفون بعد — أضف موظفًا من قسم «الموظفون» أولًا عشان يظهر هنا.']));
+    return wrap;
+  }
+
+  /* هل أسبوع هذا اليوم تم صرف راتبه؟ (يُقفل التعديل للقراءة فقط) */
+  let dayLocked=false;
+  L.forEach(function(e){ const pos=drWeekOf(e,dayKey); if(pos.w&&pos.w.paid) dayLocked=true; });
+
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['📋 جدول التسجيل اليومي']));
+  sec.appendChild(el('div',{class:'emp-hint',style:{marginTop:'0',marginBottom:'10px'}},[
+    '✅ «حضور» و 🏠 «انصراف» بيسجّلوا الوقت الدقيق للضغطة (مرة واحدة فقط في اليوم). ',
+    '➖ الخصم و 🎁 المكافأة بيظهروا تلقائيًا في الراتب الأسبوعي للموظف. الأيام اللي تم صرف راتب أسبوعها تبقى للقراءة فقط.'
+  ]));
+  const tbl=el('table',{class:'emp-table dr-table'});
+  tbl.appendChild(el('tr',{},['الموظف','الحضور','الانصراف','الخصم (ج)','المكافأة (ج)','حالة اليوم','تفاصيل'].map(function(h){return el('th',{text:h});})));
+
+  L.forEach(function(e){
+    const r=drRec(e.id,dayKey);
+    const pos=drWeekOf(e,dayKey);
+    const locked=!!(pos.w&&pos.w.paid);
+    const canPunch=isToday&&!locked;
+
+    /* الحضور */
+    const inKids=[];
+    if(r&&r.inTs) inKids.push(el('span',{class:'num dr-time',text:fmtTime12(new Date(r.inTs))}));
+    if(canPunch) inKids.push(el('button',{class:'dr-btn dr-in',disabled:!!(r&&r.inTs),onClick:function(){ drRecordIn(e.id,dayKey); }},[r&&r.inTs?'✓ تم':'✅ حضور']));
+    else if(!r||!r.inTs) inKids.push(el('span',{class:'dr-na',text:'—'}));
+
+    /* الانصراف */
+    const outKids=[];
+    if(r&&r.outTs) outKids.push(el('span',{class:'num dr-time',text:fmtTime12(new Date(r.outTs))}));
+    if(canPunch) outKids.push(el('button',{class:'dr-btn dr-out',disabled:!!(r&&r.outTs),onClick:function(){ drRecordOut(e.id,dayKey); }},[r&&r.outTs?'✓ تم':'🏠 انصراف']));
+    else if(!r||!r.outTs) outKids.push(el('span',{class:'dr-na',text:'—'}));
+
+    /* الخصم */
+    const dedIn=el('input',{class:'dr-amt num',type:'number',min:'0',step:'any',placeholder:'0',
+      value:(r&&r.deduction)?String(r.deduction):'', disabled:locked,
+      onChange:function(){
+        const v=parseFloat(dedIn.value);
+        if(isNaN(v)||v<0){ toast('اكتب قيمة خصم صحيحة','warn'); return; }
+        if(drSetAmount(e.id,dayKey,'deduction',v)) toast('تم حفظ خصم '+e.name+' — '+fmtNum(v)+' ج','ok');
+      }});
+    /* المكافأة */
+    const bonIn=el('input',{class:'dr-amt num',type:'number',min:'0',step:'any',placeholder:'0',
+      value:(r&&r.bonus)?String(r.bonus):'', disabled:locked,
+      onChange:function(){
+        const v=parseFloat(bonIn.value);
+        if(isNaN(v)||v<0){ toast('اكتب قيمة مكافأة صحيحة','warn'); return; }
+        if(drSetAmount(e.id,dayKey,'bonus',v)) toast('تم حفظ مكافأة '+e.name+' — '+fmtNum(v)+' ج','ok');
+      }});
+
+    /* حالة اليوم */
+    let statusTxt='غياب', statusCls='dr-st-absent';
+    if(r&&r.inTs&&r.outTs){ statusTxt='حضر وانصرف'; statusCls='dr-st-full'; }
+    else if(r&&r.inTs){ statusTxt='حضر (لم ينصرف)'; statusCls='dr-st-in'; }
+    else if(locked){ statusTxt='—'; statusCls=''; }
+
+    tbl.appendChild(el('tr',{},[
+      el('td',{},[el('span',{class:'emp-name',onClick:function(){ openDailyReg(e.id); }},[e.name]),el('div',{class:'dr-job',text:e.job||'—'})]),
+      el('td',{class:'dr-cell'},inKids),
+      el('td',{class:'dr-cell'},outKids),
+      el('td',{},[dedIn]),
+      el('td',{},[bonIn]),
+      el('td',{},[el('span',{class:'dr-status '+statusCls,text:statusTxt})]),
+      el('td',{},[el('button',{class:'emp-mini',title:'فتح صفحة الموظف والراتب',onClick:function(){
+        closeOverlay(); openEmployees(); empGo('emp',e.id,empCurKey());
+      }},['📂'])]),
+    ]));
+  });
+  sec.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
+  wrap.appendChild(sec);
+
+  if(dayLocked){
+    wrap.appendChild(el('div',{class:'emp-hint'},['🔒 تم صرف راتب هذا الأسبوع — سجل هذا اليوم للقراءة فقط (محفوظ للمراجعة).']));
+  }
+  return wrap;
+}
+/* إعادة رسم ملخص اليوم فقط (بدل ما نعيد الجدول كله ونفقد التركيز) */
+function paintDregSummary(){
+  const box=$('#drSummary'); if(!box) return;
+  const dayKey=_dreg.dayKey||drTodayKey();
+  const st=drDayStats(dayKey);
+  const L=_dreg.empId?(empFind(_dreg.empId)?[empFind(_dreg.empId)]:[]):empLoad();
+  box.innerHTML='';
+  [repCard('👥 عدد الموظفين',fmtNum(L.length),'tickets'),
+   repCard('✅ الحضور',fmtNum(st.present),'rev'),
+   repCard('🏠 الانصراف',fmtNum(st.departed),'gift'),
+   repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
+   repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift')].forEach(function(c){ box.appendChild(c); });
+}
+
+
 function setUpdateBar(msg,showBtn,icon){
   const bar=$('#updateBar'); if(!bar) return;
   bar.classList.add('show');
@@ -3793,12 +4653,8 @@ function initUpdateUI(){
 /* ============ Boot ============ */
 getPass();
 (function(){
-  var t='dark';
-  try{ t=localStorage.getItem('malahy_theme')||'dark'; }catch(_){}
-  var de=document.documentElement;
-  if(t==='light') de.setAttribute('data-theme','light');
-  settings(); /* init _settings before setTheme reads it */
-  setTheme(t);
+  settings();          /* تهيئة الإعدادات (تتضمن التفضيل اليدوي وحالة الوضع التلقائي) */
+  applyTheme();        /* يطبّق المظهر الفعّال: تلقائي حسب الوقت، أو يدوي محفوظ */
   paintThemeBtn();
 })();
 renderAll();

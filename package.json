@@ -1,12 +1,12 @@
 {
   "name": "malahy",
-  "version": "2.4.6",
+  "version": "2.4.7",
   "description": "كوكي بارك — نظام قطع التذاكر وحساب المبيعات اليومية",
   "main": "main.js",
   "author": "Mohamed Farouk Amer",
   "license": "ISC",
   "scripts": {
-    "start": "electron .",
+    "start": "node launch.js",
     "dist": "electron-builder --win --publish never",
     "publish": "electron-builder --win --publish always"
   },
