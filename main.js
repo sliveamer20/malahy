@@ -199,10 +199,35 @@ ipcMain.handle("get-printers", async () => {
     return [];
   }
 });
+/* أسماء الطابعات المثبّتة في الويندوز (للتحقق من الطابعة المختارة قبل الطباعة).
+   تُرجع null لو تعذّر سرد الطابعات، وحينها نكتفي بالاسم المطلوب كما هو. */
+async function installedPrinterNames() {
+  try {
+    const wc = mainWindow && mainWindow.webContents;
+    if (!wc) return null;
+    const list = await wc.getPrintersAsync();
+    return (list || []).map((p) => (p && p.name) || "");
+  } catch (e) {
+    return null;
+  }
+}
+
 ipcMain.handle("print-ticket", async (_e, opts) => {
   opts = opts || {};
   let win = null;
   try {
+    /* 1) التحقق من الطابعة المختارة: لو الاسم محفوظ لكنه غير موجود بين طابعات
+          الويندوز (طابعة غير موصّلة أو أُزيلت) نُرجع سببًا واضحًا للواجهة بدل
+          رسالة "تعذّرت الطباعة" المبهمة. لو تعذّر السرد نكمل بالاسم كما هو. */
+    const printerName = typeof opts.printerName === "string" ? opts.printerName : "";
+    if (printerName) {
+      const installed = await installedPrinterNames();
+      if (installed && installed.indexOf(printerName) === -1) {
+        appendLog("print-ticket: الطابعة المختارة غير مثبّتة: " + printerName);
+        return { ok: false, reason: "printer-not-found", available: installed };
+      }
+    }
+
     win = new BrowserWindow({
       show: false,
       width: opts.paper === "a4" ? 900 : 420,
@@ -213,18 +238,27 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
       "data:text/html;charset=utf-8," + encodeURIComponent(opts.html || "")
     );
     await new Promise((r) => setTimeout(r, 250));
+
+    /* 2) خيارات الطباعة — يجب أن يكون حجم الورق صالحًا دائمًا. حسب عقد إلكترون:
+          لو لم نُمرّر pageSize ولم نفعّل usePrinterDefaultPageSize (افتراضه false)
+          يُرمى خطأ "Invalid printer settings" وتفشل الطباعة على الطابعات العادية.
+          - الورق العادي A4: حجم صريح A4، مع هوامش الطابعة الافتراضية (الهوامش
+            الصفرية المخصّصة قد تجعل المساحة القابلة للطباعة فارغة على بعض المحركات).
+          - الرول الحراري 58/80مم: الطابعة تستخدم حجم رولها الافتراضي (وإلكترون
+          يتحوّل احتياطيًا إلى A4 لو لم يُبلّغ المحرك عن حجم افتراضي).
+          ملاحظة: لا يجوز الجمع بين pageSize و usePrinterDefaultPageSize. */
     const printOpts = {
       silent: opts.silent !== false,
       printBackground: true,
-      margins: { marginType: "none" },
+      margins: { marginType: opts.paper === "a4" ? "default" : "none" },
     };
-    if (opts.printerName) printOpts.deviceName = opts.printerName;
-    /* الطابعات العادية: نستخدم حجم A4 حتى لا يُقص التقرير أو تتداخل الأعمدة.
-       الطابعات الحرارية: نترك حجم الورق الافتراضي للطابعة (رول 58/80مم). */
+    if (printerName) printOpts.deviceName = printerName;
     if (opts.paper === "a4") {
       printOpts.pageSize = "A4";
-      printOpts.margins = { marginType: "custom", top: 0, bottom: 0, left: 0, right: 0 };
+    } else {
+      printOpts.usePrinterDefaultPageSize = true;
     }
+
     const result = await new Promise((resolve) => {
       try {
         win.webContents.print(printOpts, (success, failureReason) =>
@@ -236,9 +270,14 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
     });
     try { if (win && !win.isDestroyed()) win.destroy(); } catch (_) {}
     win = null;
+    if (!result.success) {
+      appendLog("print-ticket: فشلت الطباعة: " + (result.failureReason || "unknown") +
+        " | printer=" + printerName + " paper=" + opts.paper);
+    }
     return { ok: !!result.success, reason: result.failureReason || "" };
   } catch (err) {
     try { if (win && !win.isDestroyed()) win.destroy(); } catch (_) {}
+    appendLog("print-ticket: استثناء: " + String(err));
     return { ok: false, error: String(err) };
   }
 });

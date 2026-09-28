@@ -745,6 +745,32 @@
   .emp-stmtbtn:hover{filter:brightness(1.15);}
   .emp-stmtbtn:active{transform:scale(.99);}
   .emp-empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px;font-size:13.5px;background:rgba(255,255,255,.015);}
+
+  /* ===== إدارة الألعاب والتذاكر ===== */
+  .overlay .modal.gm-modal{
+    width:min(1000px,94vw); max-width:1000px;
+    max-height:90vh; padding:20px 22px;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  #gmRoot{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-inline-end:10px;}
+  #gmRoot::-webkit-scrollbar{width:10px;}
+  #gmRoot::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:8px;}
+  #gmRoot::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+  #gmRoot::-webkit-scrollbar-thumb:hover{background:var(--primary);}
+  .gm-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+    background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px;padding:11px 15px;margin-bottom:14px;
+    font-size:13px;color:var(--muted);}
+  .gm-bar b{color:var(--ink);font-weight:800;}
+  .gm-chip{display:inline-flex;align-items:center;gap:6px;border-radius:50px;padding:5px 11px;font-size:12px;font-weight:800;border:1px solid;white-space:nowrap;}
+  .gm-chip.on{color:var(--success-bright);border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.08);}
+  .gm-chip.off{color:#fcd34d;border-color:rgba(252,211,77,.4);background:rgba(252,211,77,.07);}
+  .gm-dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-inline-end:8px;flex:none;box-shadow:0 0 0 2px color-mix(in srgb,currentcolor 18%,transparent);}
+  .gm-in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--ink);font-family:var(--ui);font-size:14px;outline:none;transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;}
+  .gm-in::placeholder{color:var(--muted-2);opacity:1;}
+  .gm-in:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14), 0 0 18px -6px rgba(6,182,212,.35);}
+  .gm-in.num{font-family:var(--led);direction:ltr;text-align:center;font-size:16px;}
+  @media(max-width:760px){ .gm-bar{justify-content:flex-start;} }
+
   .emp-form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-bottom:6px;}
   .emp-form .full{grid-column:1/-1;}
   .emp-form .field{margin-bottom:0;}
@@ -1580,6 +1606,7 @@
   <button class="abtn ghost" onclick="printTodayReport()"><span class="ic">🖨️</span>طباعة تقرير اليوم</button>
   <button class="abtn ghost" onclick="openChangePass()"><span class="ic">🔑</span>تغيير كلمة السر</button>
   <button class="abtn ghost" onclick="openHistory()"><span class="ic">📋</span>السجل</button>
+  <button class="abtn ghost" onclick="openGameMgmt()"><span class="ic">🎮</span>إدارة الألعاب والتذاكر</button>
   <button class="abtn ghost" onclick="openReports()"><span class="ic">📊</span>التقارير والإحصائيات</button>
 
   <button class="abtn ghost" onclick="openEmployees()"><span class="ic">👥</span>الموظفون</button>
@@ -1641,12 +1668,129 @@
 "use strict";
 
 /* ============ Config ============ */
-const GAMES = [
+/* ============ كتالوج الألعاب (إدارة الألعاب والتذاكر) ============ */
+/* الألعاب قابلة للإضافة والتعديل والتفعيل/التعطيل من داخل البرنامج،
+   ومحفوظة على الجهاز في ملف البيانات (نفس ملفJSONاللي بتستخدمه بقية الأقسام).
+   - الألعاب الأصلية الأربعة هي نقطة البداية (seed) لو الملف لسه فاضي.
+   - لو اللعبة معطّلة (active===false) بتختفي من شاشة البيع لكن بياناتها
+     التاريخية والعدّادات بتظل كما هي. */
+const K_GAMES='malahy_pos_games_v1';
+/* الألعاب الافتراضية (تُستخدم فقط عند أول تشغيل أو لو البيانات فاضية) */
+const SEED_GAMES=[
   { id:'vr',      name:'لعبة VR',        price:75,  color:'#22d3ee' },
   { id:'cars',    name:'لعبة العربيات',  price:100, color:'#fb923c' },
   { id:'ballhockey', name:'بيت الكور والهوكي', price:40, color:'#f472b6' },
   { id:'rockers', name:'ألعاب الهزازات', price:30,  color:'#a3e635' },
 ];
+/* ألوان جاهزة للألعاب الجديدة (دوّار ثابت عشان كل لعبة جديدة تاخد لون مختلف) */
+const GAME_COLORS=['#22d3ee','#fb923c','#f472b6','#a3e635','#c084fc','#facc15','#60a5fa','#34d399','#f87171','#e879f9'];
+const GAMES=[];
+/* هل اللعبة نشطة (تظهر في شاشة البيع)؟ اللعبة المحذوفة/المعطّلة بتختفي من
+   شاشة البيع بس بتفضل موجودة في الإدارة ولها سجل مبيعات. */
+function gameIsActive(g){ return g && g.active!==false; }
+/* كل ألعاب الكتالوج (النشطة وغير النشطة) — للإدارة والتقارير */
+function allGames(){ return GAMES; }
+/* ألعاب شاشة البيع فقط (النشطة) بترتيب ثابت */
+function activeGames(){ return GAMES.filter(gameIsActive); }
+/* whether any catalog changes need a UI refresh after the current paint */
+let _gamesDirty=false;
+/* تعبئة الكتالوج من التخزين مع الترحيل الآمن من أي إصدار سابق */
+function loadGames(){
+  GAMES.length=0;
+  let list=loadJSON(K_GAMES,null);
+  if(!Array.isArray(list)){
+    /* أول تشغيل: نكتب الألعاب الافتراضية في ملف البيانات */
+    list=SEED_GAMES.map(function(g){ return {id:g.id,name:g.name,price:g.price,color:g.color,active:true,seq:0,createdAt:Date.now()}; });
+    saveJSON(K_GAMES,list);
+  }
+  list.forEach(function(g){
+    if(!g||typeof g!=='object') return;
+    GAMES.push({
+      id:String(g.id||''),
+      name:String(g.name||''),
+      price:Number(g.price)||0,
+      color:String(g.color||GAME_COLORS[0]),
+      active:g.active!==false,          /* غياب المفتاح = نشطة (توافق مع الإصدارات السابقة) */
+      seq:Number(g.seq)||0,
+      createdAt:Number(g.createdAt)||0,
+    });
+  });
+  /* ضمان ترتيب ثابت: الألعاب الأصلية بأترتيبها، بعدين حسب ترتيب الإضافة */
+  GAMES.sort(function(a,b){
+    const ai=SEED_GAMES.findIndex(function(s){return s.id===a.id;});
+    const bi=SEED_GAMES.findIndex(function(s){return s.id===b.id;});
+    if(ai>=0&&bi>=0) return ai-bi;
+    if(ai>=0) return -1;
+    if(bi>=0) return 1;
+    return (a.createdAt||0)-(b.createdAt||0);
+  });
+}
+function saveGames(){ return saveJSON(K_GAMES,GAMES); }
+/* البحث عن لعبة بالرقم الثابت */
+function gameFind(id){ return GAMES.find(function(g){return g.id===id;}); }
+/* نص حالة اللعبة للعرض */
+function gameStatusText(g){ return gameIsActive(g)?'متاح':'غير متاح'; }
+
+/* === سجل حركات الألعاب (لقطات تاريخية للأسماء والأسعار) === */
+/* أي تعديل للعبة (اسم/سعر/حالة) يُسجَّل هنا بلقطة من القيم قبل التغيير،
+   حتى يظل سجل المبيعات القديم صالحًا للقراءة والتقارير. */
+const K_GAMEAUDIT='malahy_pos_gameaudit_v1';
+function loadGameAudit(){ return loadJSON(K_GAMEAUDIT,[])||[]; }
+function logGameAudit(gameId,action,note){
+  try{
+    const g=gameFind(gameId);
+    const list=loadGameAudit();
+    list.unshift({
+      id:uid(), ts:Date.now(), gameId:gameId,
+      action:action,                        /* rename / price / disable / enable / archive / restore / delete */
+      note:(note||'').slice(0,200),
+      name:(g&&g.name)||'',
+      price:(g&&Number(g.price))||0,
+    });
+    saveJSON(K_GAMEAUDIT,list.slice(0,200));
+  }catch(e){ logErr('logGameAudit',e); }
+}
+
+/* === لقطات ألعاب البيع (تحمي الأسعار التاريخية) === */
+/* أي تعديل للعبة يخزّن لقطة كاملة للكتالوج في تلك اللحظة (بالأسماء والأسعار)،
+   تُستخدم لقراءة سجل المعاملات القديم بالسعر الذي تم التحصيل به فعليًا. */
+const K_SNAPSHOTS='malahy_pos_gamesnaps_v1';
+const SNAPSHOT_MAX=60;
+function loadSnapshots(){ return loadJSON(K_SNAPSHOTS,[])||[]; }
+function saveGameSnapshot(reason){
+  try{
+    const list=loadSnapshots();
+    const last=list[0];
+    const cur=GAMES.map(function(g){ return {id:g.id,name:g.name,price:Number(g.price)||0,active:gameIsActive(g)}; });
+    /* تجنّب تكرار لقطات متطابقة تمامًا */
+    if(last&&JSON.stringify(last.games)===JSON.stringify(cur)) return;
+    list.unshift({ id:uid(), ts:Date.now(), reason:String(reason||'edit'), games:cur });
+    saveJSON(K_SNAPSHOTS,list.slice(0,SNAPSHOT_MAX));
+  }catch(e){ logErr('saveGameSnapshot',e); }
+}
+/* أقرب لقطة كتالوج عند أو قبل وقت عملية البيع (أقدم لقطة متوفرة لو مفيش) */
+function gameSnapshotAt(ts){
+  const list=loadSnapshots();
+  if(!list.length) return null;
+  let found=null;
+  for(let i=0;i<list.length;i++){ if(list[i].ts<=ts){ found=list[i]; break; } }
+  return found||list[list.length-1];
+}
+
+/* === سجل معاملات التذاكر (Ticket Transaction Log) === */
+/* كل عملية بيع تذكرة تُسجَّل بلقطة كاملة: اسم اللعبة + سعر الوحدة وقت البيع +
+   العدد + الإجمالي + طريقة الدفع + الوقت + رقم العملية. ده مستقل عن الكتالوج
+   الحالي، فأي تغيير في السعر أو الاسم لا يمسح أو يعيد حساب أي عملية سابقة. */
+const K_TXLOG='malahy_pos_txlog_v1';
+function loadTxLog(){ return loadJSON(K_TXLOG,[])||[]; }
+function appendTxLog(entry){
+  try{
+    const list=loadTxLog();
+    list.unshift(entry);
+    saveJSON(K_TXLOG,list.slice(0,2000));
+  }catch(e){ logErr('appendTxLog',e); }
+}
+
 const K_STATE='malahy_pos_state_v1';
 const K_PASS ='malahy_pos_pass_v1';
 const K_HIST ='malahy_pos_history_v1';
@@ -1714,6 +1858,9 @@ function saveJSON(key,val){
   __mem[key]=val; return true;
 }
 
+/* تحميل كتالوج الألعاب من التخزين (يلزم أن يكون قبل تهيئة State و renderAll) */
+loadGames();
+
 /* ============ State ============ */
 let state=loadJSON(K_STATE,null);
 if(!state||typeof state!=='object'){
@@ -1722,6 +1869,7 @@ if(!state||typeof state!=='object'){
 state.counts=state.counts||{};
 state.expenses=state.expenses||[];
 state.gifts=state.gifts||[];
+state.pprices=state.pprices||{};
 /* دمج بيت الكور + الهوكي في تذكرة واحدة (ترحيل أي أعداد قديمة) */
 let _migrated=false;
 if(('ballpit' in state.counts)||('hockey' in state.counts)){
@@ -1845,10 +1993,10 @@ function reviewInRange(period){
 function totals(){
   let revenue=0, tickets=0, cashRevenue=0, elecRevenue=0, cashTickets=0, elecTickets=0;
   GAMES.forEach(g=>{
-    const c=state.counts[g.id]||0, e=(state.ecounts&&state.ecounts[g.id])||0;
-    revenue+=(c+e)*g.price; tickets+=c+e;
-    cashRevenue+=c*g.price; elecRevenue+=e*g.price;
-    cashTickets+=c; elecTickets+=e;
+    const st=gameSalesTotals(g.id);
+    revenue+=st.total; tickets+=st.count;
+    cashRevenue+=st.cashTotal; elecRevenue+=st.elecTotal;
+    cashTickets+=st.cashCount; elecTickets+=st.elecCount;
   });
   const expenses=state.expenses.reduce((s,x)=>s+(Number(x.amount)||0),0);
   const gifts=state.gifts.reduce((s,x)=>s+(Number(x.amount)||0),0);
@@ -1859,12 +2007,80 @@ function totals(){
   return {revenue,tickets,expenses,gifts,net,finalNet,cashRevenue,elecRevenue,cashTickets,elecTickets};
 }
 
+/* ============ حماية الأسعار التاريخية ============ */
+/* لكل لعبة نخزّن سعر الوحدة الفعلي لكل تذكرة مباعة (كاش/إلكتروني منفصلين).
+   تغيير سعر اللعبة من «إدارة الألعاب» يؤثر على التذاكر الجديدة فقط،
+   أما التذاكر التي بيعت قبل التغيير فتبقى مسجّلة بالسعر الذي تحصّل به فعليًا. */
+function txPrices(gameId){
+  state.pprices=state.pprices||{};
+  let byGame=state.pprices[gameId];
+  if(!byGame){ byGame={cash:[],elec:[]}; state.pprices[gameId]=byGame; }
+  if(!Array.isArray(byGame.cash)) byGame.cash=[];
+  if(!Array.isArray(byGame.elec)) byGame.elec=[];
+  return byGame;
+}
+/* تسجيل أسعار تذاكر جديدة باعت (تُضاف نهاية القائمة) */
+function txPricesPush(gameId,method,qty,unitPrice){
+  try{
+    qty=Math.max(0,Math.floor(Number(qty)||0));
+    if(!qty) return;
+    const arr=txPrices(gameId)[method==='elec'?'elec':'cash'];
+    const p=Math.round((Number(unitPrice)||0)*100)/100;
+    for(let i=0;i<qty;i++) arr.push(p);
+    /* سقف عملي لحجم القائمة (موازنة الذاكرة مع دقة الأسعار) */
+    if(arr.length>5000) arr.splice(0,arr.length-5000);
+  }catch(e){ logErr('txPricesPush',e); }
+}
+/* إزالة تذاكر من سجل الأسعار عند الخصم (من الأحدث) — تُرجع آخر سعر فعلي */
+function txPricesPop(gameId,fromCashQty,fromElecQty){
+  let lastUnit=0;
+  try{
+    const byGame=(state.pprices&&state.pprices[gameId])||null;
+    if(!byGame) return 0;
+    const popN=function(arr,n){
+      if(!Array.isArray(arr)||n<=0) return 0;
+      let last=0;
+      for(let i=0;i<n&&arr.length;i++){ const v=arr.pop(); last=Number(v)||0; }
+      return last;
+    };
+    if(fromCashQty>0) lastUnit=popN(byGame.cash,fromCashQty)||lastUnit;
+    if(fromElecQty>0) lastUnit=popN(byGame.elec,fromElecQty)||lastUnit;
+  }catch(e){ logErr('txPricesPop',e); }
+  return lastUnit;
+}
+/* إجمالي مبيعات لعبة من سجل الأسعار الفعلي؛ الفرق بين الأعداد الحالية
+   والأسعار المسجّلة (بيانات قديمة قبل الميزة) يُحسب بسعر الكتالوج الحالي. */
+function gameSalesTotals(gameId){
+  const c=Math.max(0,Number(state.counts[gameId])||0);
+  const e=Math.max(0,Number((state.ecounts&&state.ecounts[gameId])||0));
+  const g=gameFind(gameId);
+  const cur=Math.round((Number(g&&g.price)||0)*100)/100;
+  const byGame=(state.pprices&&state.pprices[gameId])||null;
+  if(!byGame){
+    return { count:c+e, total:(c+e)*cur, cashCount:c, cashTotal:c*cur, elecCount:e, elecTotal:e*cur, price:cur };
+  }
+  const part=function(arr,n){
+    if(n<=0) return 0;
+    const list=Array.isArray(arr)?arr:[];
+    const have=Math.min(n,list.length);
+    let s=0;
+    for(let i=list.length-have;i<list.length;i++) s+=Number(list[i])||0;
+    /* الجزء الناقص من القائمة (بيانات قديمة) يُحسب بسعر الكتالوج الحالي */
+    return s+(n-have)*cur;
+  };
+  const cashTotal=Math.round(part(byGame.cash,c)*100)/100;
+  const elecTotal=Math.round(part(byGame.elec,e)*100)/100;
+  const count=c+e;
+  return { count:count, total:cashTotal+elecTotal, cashCount:c, cashTotal:cashTotal, elecCount:e, elecTotal:elecTotal,
+           price: count>0?Math.round(((cashTotal+elecTotal)/count)*100)/100 : cur };
+}
+
 /* ============ تفصيل الألعاب (كاش/إلكتروني) للأرشفة والتقارير ============ */
 function gameBreakdown(){
   return GAMES.map(g=>{
-    const c=state.counts[g.id]||0, e=(state.ecounts&&state.ecounts[g.id])||0;
-    return { name:g.name, price:g.price, count:c+e, cashCount:c, elecCount:e,
-             total:(c+e)*g.price, cashTotal:c*g.price, elecTotal:e*g.price };
+    const st=gameSalesTotals(g.id);
+    return { name:g.name, price:st.price, count:st.count, cashCount:st.cashCount, elecCount:st.elecCount,
+             total:st.total, cashTotal:st.cashTotal, elecTotal:st.elecTotal };
   }).filter(x=>x.count>0);
 }
 
@@ -1872,8 +2088,9 @@ function gameBreakdown(){
 function renderGames(){
   const grid=$('#gamesGrid');
   grid.innerHTML='';
-  GAMES.forEach(g=>{
-    const cc=state.counts[g.id]||0, ec=(state.ecounts&&state.ecounts[g.id])||0, count=cc+ec;
+  activeGames().forEach(g=>{
+    const st=gameSalesTotals(g.id);
+    const cc=st.cashCount, ec=st.elecCount, count=st.count;
     const card=el('div',{class:'ticket',style:{'--c':g.color}},[
       el('div',{class:'top'}),
       el('div',{class:'stub'},[
@@ -1959,13 +2176,13 @@ function renderSummary(){
 function renderAll(){ renderGames(); renderList('exp'); renderList('gift'); renderSummary(); renderExpEmpOptions(); updatePassBanner(); }
 
 function refreshCounts(){
-  GAMES.forEach(g=>{
-    const c=state.counts[g.id]||0, e=(state.ecounts&&state.ecounts[g.id])||0, tot=c+e;
+  activeGames().forEach(g=>{
+    const st=gameSalesTotals(g.id);
     const cn=$('#cnt-'+g.id), tn=$('#tot-'+g.id), ca=$('#cash-'+g.id), ea=$('#elec-'+g.id);
-    if(cn)cn.textContent=String(tot);
-    if(tn)tn.textContent=fmtNum(tot*g.price);
-    if(ca)ca.textContent=String(c);
-    if(ea)ea.textContent=String(e);
+    if(cn)cn.textContent=String(st.count);
+    if(tn)tn.textContent=fmtNum(st.total);
+    if(ca)ca.textContent=String(st.cashCount);
+    if(ea)ea.textContent=String(st.elecCount);
   });
   renderSummary();
 }
@@ -1980,9 +2197,15 @@ function addTicket(id,method){
     if(!state.ecounts || typeof state.ecounts!=='object') state.ecounts={};
     const g=GAMES.find(x=>x.id===id);
     if(!g){ throw new Error('لعبة غير معروفة: '+id); }
+    /* اللعبة المعطّلة لا تظهر في شاشة البيع أصلًا — حماية إضافية */
+    if(!gameIsActive(g)){ throw new Error('اللعبة غير متاحة للبيع: '+g.name); }
 
     if(method==='elec'){ state.ecounts[id]=(Number(state.ecounts[id])||0)+1; }
     else { state.counts[id]=(Number(state.counts[id])||0)+1; }
+    /* لقطة سعر الوحدة الفعلي لهذه التذكرة (تحمي الأسعار التاريخية) */
+    txPricesPush(id,method,1,g.price);
+    appendTxLog({ id:uid(), ts:Date.now(), shift:shiftOfDate(new Date()), gameId:id, game:g.name,
+      unitPrice:g.price, qty:1, total:g.price, method:method, kind:'ticket' });
 
     const saved=persist();
     refreshCounts();
@@ -2026,6 +2249,8 @@ function deductBatch(id){
       const fromCash=Math.min(c,need); state.counts[id]=c-fromCash; need-=fromCash;
       let fromElec=0;
       if(need>0){ fromElec=Math.min(e,need); state.ecounts[id]=e-fromElec; }
+      /* إزالة الأسعار الفعلية للتعويض من السجل التاريخي */
+      txPricesPop(id,fromCash,fromElec);
       inp.value='';
       persist(); refreshCounts();
       /* تسجيل العملية في سجل المرتجعات (مستقل عن خصم المبيعات) */
@@ -2053,8 +2278,8 @@ function deductOne(id){
     onOk:(reason)=>{
       const c=state.counts[id]||0, e=(state.ecounts&&state.ecounts[id])||0;
       let method='';
-      if(c>0){ state.counts[id]=c-1; method='cash'; }
-      else if(e>0){ state.ecounts[id]=e-1; method='elec'; }
+      if(c>0){ state.counts[id]=c-1; method='cash'; txPricesPop(id,1,0); }
+      else if(e>0){ state.ecounts[id]=e-1; method='elec'; txPricesPop(id,0,1); }
       else return;
       persist(); refreshCounts();
       logReview({gameId:id,game:g.name,qty:1,price:g.price,type:'خصم',method:method,reason:reason});
@@ -2068,12 +2293,15 @@ function addBatch(id){
   const inp=$('#qty-'+id);
   const q=parseInt(inp.value,10);
   if(isNaN(q)||q<=0){ toast('اكتب عددًا صحيحًا','warn'); inp.focus(); inp.select(); return; }
-  state.counts[id]=(state.counts[id]||0)+q;
+  const g=GAMES.find(x=>x.id===id);
+  state.counts[id]=(Number(state.counts[id])||0)+q;
+  txPricesPush(id,'cash',q,g.price);
+  appendTxLog({ id:uid(), ts:Date.now(), shift:shiftOfDate(new Date()), gameId:id, game:g.name,
+    unitPrice:g.price, qty:q, total:q*g.price, method:'cash', kind:'batch' });
   inp.value='';
   persist(); refreshCounts();
   const card=$('#cnt-'+id)?.closest('.ticket');
   if(card){ card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash'); }
-  const g=GAMES.find(x=>x.id===id);
   toast('تم إضافة '+q+' تذكرة (كاش) — '+g.name,'ok');
   printTicket(id,q,'cash');
 }
@@ -2190,7 +2418,7 @@ function doRestart(){
       return;
     }
   }
-  state={ startedAt:Date.now(), counts:{}, ecounts:{}, expenses:[], gifts:[] };
+  state={ startedAt:Date.now(), counts:{}, ecounts:{}, expenses:[], gifts:[], pprices:{} };
   GAMES.forEach(g=>{ state.counts[g.id]=0; state.ecounts[g.id]=0; });
   persist(); renderAll();
   toast(hasData?'تم بدء يوم جديد (اتأرشف اليوم السابق)':'تم بدء يوم جديد','ok');
@@ -2941,7 +3169,7 @@ async function exportReportExcel(period){
 let _lastUpdate={state:'idle'};
 function pad(n,w){ n=String(n); while(n.length<w) n='0'+n; return n; }
 /* نوع/عرض الورق المختار — يكيّف التذكرة والتقارير مع الطابعة لمنع قص النص.
-   'auto' يستنتج العرض من اسم الطابعة (58/80 حراري، وإلا A4 للطابعات العادية). */
+    'auto' يستنتج العرض من اسم الطابعة (58/80 حراري، وإلا A4 للطابعات العادية). */
 function paperKind(){
   const st=settings();
   const w=st.paperWidth||'auto';
@@ -2949,8 +3177,10 @@ function paperKind(){
   const nm=(st.printerName||'').toLowerCase();
   if(/58/.test(nm)) return '58';
   if(/80/.test(nm)) return '80';
-  if(/pdf|microsoft|onenote|fax|xps|note/.test(nm)) return 'a4';
-  return '80';   /* افتراضي: محتوى 80مم آمن على لفات 80مم، والمستخدم يختار 58 لو لزم */
+  /* كل ما عداها طابعة عادية (A4): الطابعات الحرارية يُكتشف اسمها (58/80)
+    أعلاه أو يحدّدها المستخدم صراحةً من الإعدادات. افتراض A4 يمنع معاملة
+    الطابعة العادية كطابعة حرارية وإرسال خيارات طباعة غير صالحة. */
+  return 'a4';
 }
 /* CSS مشترك للتذاكر (نسبية الخط حسب عرض الورق) — 58/80مم حراري أو A4 */
 function ticketCSS(){
@@ -3049,6 +3279,20 @@ function ticketHTML(o){
     +'<div class="tiny">'+esc(o.game)+' · '+(isE?'مدفوعة إلكترونياً':'مدفوعة كاش')+'</div>'
     +'</body></html>';
 }
+/* تفسير نتيجة الطباعة القادمة من العملية الرئيسية: تسجّل السبب الفعلي للفشل
+   في سجل الجهاز (بدل إخفائه)، وعرض رسالة واضحة للمستخدم. تُرجع true/false. */
+function printResultToast(res,okMsg){
+  if(res && res.ok){ if(okMsg) toast(okMsg,'ok'); return true; }
+  const reason=(res && (res.reason||res.error))||'';
+  if(reason==='printer-not-found'){
+    toast('الطابعة المختارة غير متوفرة الآن — افتح «الإعدادات» واختر طابعة متصلة','warn');
+  }else{
+    toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn');
+  }
+  if(reason){ try{ logErr('printTicket',reason); }catch(e){} }
+  return false;
+}
+
 async function printTicket(id,qty,method){
   const st=settings();
   if(!st.autoPrint) return;
@@ -3058,8 +3302,8 @@ async function printTicket(id,qty,method){
   const html=ticketHTML({game:g.name,qty:qty,method:(method==='elec'?'elec':'cash'),price:g.price,total:qty*g.price,seq:ticketSeq,when:new Date()});
   try{
     const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
-    if(res && res.ok===false && !res.canceled){ toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn'); }
-  }catch(e){ toast('تعذّرت الطباعة','warn'); }
+    printResultToast(res);
+  }catch(e){ logErr('printTicket',e); toast('تعذّرت الطباعة','warn'); }
 }
 /* ============ تذكرة الهدية (نفس تصميم تذاكر الألعاب — تتكيّف مع عرض الورق) ============ */
 function giftTicketHTML(o){
@@ -3095,6 +3339,9 @@ async function printGiftTicket(item){
       when:new Date(item.at||Date.now())
     });
     const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
+    if(!(res && res.ok) && res && (res.reason||res.error)){
+      logErr('printGiftTicket',(res.reason||res.error));
+    }
     return !!(res && res.ok);
   }catch(e){
     logErr('printGiftTicket',e);
@@ -3121,9 +3368,8 @@ async function printTestTicket(){
   const html=ticketHTML({game:'تذكرة تجريبية',qty:1,method:'cash',price:0,total:0,seq:0,when:new Date()});
   try{
     const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
-    if(res && res.ok) toast('تم إرسال تذكرة تجريبية للطابعة','ok');
-    else toast('تعذّرت الطباعة — تأكد من الطابعة','warn');
-  }catch(e){ toast('تعذّرت الطباعة','warn'); }
+    printResultToast(res,'تم إرسال تذكرة تجريبية للطابعة');
+  }catch(e){ logErr('printTestTicket',e); toast('تعذّرت الطباعة','warn'); }
 }
 
 /* ============ تقرير اليوم على الطابعة الحرارية (نصّي — 58mm / 80mm) ============ */
@@ -4629,6 +4875,246 @@ function paintDregSummary(){
    repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift')].forEach(function(c){ box.appendChild(c); });
 }
 
+
+/* ============ إدارة الألعاب والتذاكر ============ */
+/* شاشة إدارة كتالوج الألعاب: إضافة/تعديل/تفعيل/تعطيل/حذف.
+   العمليات الحساسة محميّة بكلمة سر النظام (نفس آلية الخصم/المصروفات).
+   التعطيل يُخفي اللعبة من شاشة البيع ويُبقي بياناتها التاريخية كما هي. */
+function openGameMgmt(){
+  const wrap=el('div',{class:'modal gm-modal'},[ el('div',{id:'gmRoot'}) ]);
+  showModal(wrap);
+  paintGm();
+}
+function paintGm(){
+  const root=$('#gmRoot'); if(!root) return;
+  root.innerHTML='';
+  root.appendChild(gmBody());
+}
+/* رسم أي عقدة (نموذج/قائمة محذوفة) مكان شاشة الإدارة الحالية */
+function paintGmNode(node){
+  const root=$('#gmRoot'); if(!root){ return; }
+  root.innerHTML='';
+  root.appendChild(node);
+}
+
+/* نص الحالة + لون الشارة */
+function gmStatusChip(g){
+  if(g.archived) return el('span',{class:'gm-chip off'},['🗄️ محذوفة']);
+  if(gameIsActive(g)) return el('span',{class:'gm-chip on'},['🟢 متاح']);
+  return el('span',{class:'gm-chip off'},['⏸️ غير متاح']);
+}
+
+/* جسم شاشة إدارة الألعاب */
+function gmBody(){
+  const wrap=el('div',{});
+  wrap.appendChild(el('h3',{},['🎮 إدارة الألعاب والتذاكر']));
+  wrap.appendChild(el('p',{text:'أضف الألعاب أو عدّل أسماءها وأسعارها. الألعاب المعطّلة تختفي من شاشة البيع فقط ويبقى سجل مبيعاتها.'}));
+
+  const list=allGames().filter(function(g){ return !g.archived; });
+  const activeCount=list.filter(gameIsActive).length;
+  wrap.appendChild(el('div',{class:'gm-bar'},[
+    el('div',{},['عدد الألعاب: ',el('b',{text:fmtNum(list.length)}),
+      ' · المتاح منها: ',el('b',{text:fmtNum(activeCount)}),
+      (GAMES.some(function(g){return g.archived;})?(' · محذوفة: '+fmtNum(GAMES.filter(function(g){return g.archived;}).length)):'')]),
+    el('span',{class:'gm-chip on'},['🟢 متاح']),
+    el('span',{class:'gm-chip off'},['⏸️ غير متاح']),
+  ]));
+
+  wrap.appendChild(el('div',{class:'emp-quick'},[
+    el('button',{class:'pri',onClick:function(){ gmForm(null); }},['➕ إضافة لعبة جديدة']),
+    el('button',{onClick:gmShowArchived},['🗄️ الألعاب المحذوفة']),
+    el('button',{onClick:function(){ closeOverlay(); }},['رجوع لشاشة البيع']),
+  ]));
+
+  if(!list.length){
+    wrap.appendChild(el('div',{class:'emp-empty'},['لا توجد ألعاب بعد — اضغط «➕ إضافة لعبة جديدة» لإضافة أول لعبة.']));
+    return wrap;
+  }
+
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['📋 قائمة الألعاب']));
+  const tbl=el('table',{class:'emp-table',id:'gmListTable'});
+  tbl.appendChild(el('tr',{},['اسم اللعبة','سعر التذكرة','الحالة','تذاكر اليوم','إجراءات'].map(function(h){return el('th',{text:h});})));
+  list.forEach(function(g){
+    const st=gameSalesTotals(g.id);
+    const acts=el('div',{class:'emp-acts'},[
+      el('button',{title:'تعديل الاسم والسعر',onClick:function(){ gmForm(g.id); }},['✏️ تعديل']),
+      gameIsActive(g)
+        ? el('button',{title:'تعطيل اللعبة (تبقى بياناتها التاريخية)',onClick:function(){ gmToggle(g.id,false); }},['⏸️ تعطيل'])
+        : el('button',{class:'pri',title:'تفعيل اللعبة لتظهر في شاشة البيع',onClick:function(){ gmToggle(g.id,true); }},['▶ تفعيل']),
+      el('button',{class:'del',title:'حذف اللعبة من شاشة البيع (يُحتفظ بسجل المبيعات)',onClick:function(){ gmDelete(g.id); }},['🗑️ حذف']),
+    ]);
+    tbl.appendChild(el('tr',{},[
+      el('td',{},[el('span',{class:'gm-dot',style:{background:g.color}}),el('span',{class:'emp-name',text:g.name}),
+        el('div',{class:'dr-job',text:'الرقم الداخلي: '+g.id})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(g.price)}),el('span',{text:' ج'})]),
+      el('td',{},[gmStatusChip(g)]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(st.count)}),
+        (st.count>0?el('div',{class:'dr-job',text:fmtNum(st.total)+' ج'}):null),
+      ]),
+      el('td',{},[acts]),
+    ]));
+  });
+  sec.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
+  wrap.appendChild(sec);
+  return wrap;
+}
+
+/* ---- شاشة الألعاب المحذوفة (استعادة) ---- */
+function gmShowArchived(){
+  paintGmNode(gmShowArchivedBuild());
+}
+function gmShowArchivedBuild(){
+  const arch=allGames().filter(function(g){ return g.archived; });
+  const wrap=el('div',{});
+  wrap.appendChild(el('button',{class:'emp-back',onClick:paintGm},['← رجوع لإدارة الألعاب']));
+  wrap.appendChild(el('h3',{},['🗄️ الألعاب المحذوفة']));
+  wrap.appendChild(el('p',{text:'هذه الألعاب لا تظهر في شاشة البيع. يمكنك استعادة أي منها في أي وقت، وتبقى سجلات مبيعاتها التاريخية محفوظة.'}));
+  if(!arch.length){
+    wrap.appendChild(el('div',{class:'emp-empty'},['لا توجد ألعاب محذوفة.']));
+    return wrap;
+  }
+  const tbl=el('table',{class:'emp-table',id:'gmArchTable'});
+  tbl.appendChild(el('tr',{},['اسم اللعبة','السعر','السجل التاريخي','استعادة'].map(function(h){return el('th',{text:h});})));
+  arch.forEach(function(g){
+    const st=gameSalesTotals(g.id);
+    tbl.appendChild(el('tr',{},[
+      el('td',{},[el('span',{class:'gm-dot',style:{background:g.color}}),el('span',{text:g.name})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(g.price)}),el('span',{text:' ج'})]),
+      el('td',{text:st.count>0?(fmtNum(st.count)+' تذكرة — '+fmtNum(st.total)+' ج'):'لا توجد مبيعات مسجّلة'}),
+      el('td',{},[el('button',{class:'pri',onClick:function(){
+        g.archived=false; g.active=true;
+        saveGames(); logGameAudit(g.id,'restore','استعادة لعبة محذوفة');
+        paintGm(); toast('تمت استعادة «'+g.name+'» وأصبحت متاحة في شاشة البيع','ok');
+      }},['↩ استعادة'])]),
+    ]));
+  });
+  wrap.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
+  return wrap;
+}
+
+/* ---- نموذج إضافة/تعديل لعبة ---- */
+function gmForm(gameId){
+  paintGmNode(gmFormBuild(gameId));
+}
+function gmFormBuild(gameId){
+  const editing=!!gameId;
+  const g=editing?gameFind(gameId):null;
+  const wrap=el('div',{});
+  wrap.appendChild(el('button',{class:'emp-back',onClick:paintGm},['← رجوع لإدارة الألعاب']));
+  wrap.appendChild(el('h3',{},[editing?'✏️ تعديل لعبة':'➕ إضافة لعبة جديدة']));
+  wrap.appendChild(el('p',{text:editing?'عدّل اسم اللعبة أو سعر التذكرة. الأسعار الجديدة تنطبق على التذاكر الجديدة فقط.'
+    :'أدخل اسم اللعبة وسعر التذكرة. تظهر اللعبة فورًا في شاشة البيع بعد الحفظ.'}));
+
+  const nameIn=el('input',{type:'text',placeholder:'اسم اللعبة (مثال: لعبة VR)',class:'gm-in'});
+  if(g) nameIn.value=g.name||'';
+  const priceIn=el('input',{type:'number',min:'0',step:'any',placeholder:'0',class:'gm-in num'});
+  if(g) priceIn.value=String(g.price||0);
+  const err=el('div',{class:'modal-err'});
+
+  const submit=function(){
+    const name=(nameIn.value||'').trim();
+    const price=Number(priceIn.value);
+    if(!name){ err.textContent='اكتب اسم اللعبة'; try{nameIn.focus();}catch(_){} return; }
+    if(name.length>60){ err.textContent='اسم اللعبة طويل جدًا (الحد 60 حرفًا)'; return; }
+    if(!isFinite(price)||price<0){ err.textContent='اكتب سعر تذكرة صحيح (رقم موجب)'; try{priceIn.focus();}catch(_){} return; }
+    /* منع تكرار الأسماء (مقارنة بعد تقطيع المسافات وتجاهل الفارقة) */
+    const norm=function(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); };
+    const dup=allGames().find(function(x){
+      return x.id!==gameId && norm(x.name)===norm(name);
+    });
+    if(dup){ err.textContent='توجد لعبة بنفس الاسم بالفعل: «'+dup.name+'». اختر اسمًا آخر.'; return; }
+
+    if(editing){
+      const changes=[];
+      if(norm(g.name)!==norm(name)) changes.push('الاسم: «'+g.name+'» ← «'+name+'»');
+      if(Number(g.price)!==price) changes.push('السعر: '+fmtNum(g.price)+' ← '+fmtNum(price)+' ج');
+      if(!changes.length){ err.textContent='لا يوجد أي تغيير للحفظ'; return; }
+      g.name=name; g.price=Math.round(price*100)/100;
+      saveGames(); logGameAudit(g.id,'edit',changes.join(' · '));
+      /* لقطة كتالوج لحماية الأسعار التاريخية */
+      saveGameSnapshot('edit:'+g.id);
+      paintGm(); renderAll();
+      toast('تم حفظ تعديلات «'+g.name+'» — السعر الجديد يطبّق على التذاكر الجديدة فقط','ok');
+      return;
+    }
+    /* لعبة جديدة: رقم داخلي فريد + لون من الدوّار */
+    const gameSeq=(GAMES.reduce(function(m,x){ return Math.max(m,Number(x.seq)||0); },0))+1;
+    const ng={
+      id:'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      name:name, price:Math.round(price*100)/100,
+      color:GAME_COLORS[(gameSeq-1)%GAME_COLORS.length],
+      active:true, seq:gameSeq, createdAt:Date.now(), archived:false,
+    };
+    GAMES.push(ng);
+    state.counts=state.counts||{}; if(typeof state.counts[ng.id]!=='number') state.counts[ng.id]=0;
+    state.ecounts=state.ecounts||{}; if(typeof state.ecounts[ng.id]!=='number') state.ecounts[ng.id]=0;
+    saveGames(); persist();
+    logGameAudit(ng.id,'add','إضافة لعبة جديدة بسعر '+fmtNum(ng.price)+' ج');
+    saveGameSnapshot('add:'+ng.id);
+    paintGm(); renderAll();
+    toast('تمت إضافة «'+ng.name+'» — ظهرت في شاشة البيع','ok');
+  };
+
+  wrap.appendChild(el('div',{class:'emp-grid'},[
+    el('div',{class:'field'},[el('label',{text:'اسم اللعبة'}),nameIn]),
+    el('div',{class:'field'},[el('label',{text:'سعر التذكرة (جنيه)'}),priceIn]),
+  ]));
+  if(editing){
+    wrap.appendChild(el('div',{class:'hintbox'},['📌 سعر هذه اللعبة الآن ',el('b',{text:fmtNum(g.price)}),
+      ' ج. تغيير السعر لا يلمس أي عملية بيع سابقة — التذاكر القديمة تُحسب بالسعر الذي بيعت به فعليًا.']));
+  }
+  wrap.appendChild(err);
+  wrap.appendChild(el('div',{class:'modal-actions'},[
+    el('button',{class:'cancel',text:'إلغاء',onClick:paintGm}),
+    el('button',{class:'confirm',text:editing?'💾 حفظ التعديلات':'💾 إضافة اللعبة',onClick:submit}),
+  ]));
+  nameIn.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); priceIn.focus(); } });
+  priceIn.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); submit(); } });
+  return wrap;
+}
+
+/* ---- تفعيل / تعطيل لعبة ---- */
+function gmToggle(gameId,on){
+  const g=gameFind(gameId); if(!g) return;
+  const apply=function(){
+    g.active=!!on;
+    saveGames(); logGameAudit(gameId,on?'enable':'disable',on?'تفعيل اللعبة':'تعطيل اللعبة');
+    paintGm(); renderAll();
+    toast(on?('تم تفعيل «'+g.name+'» — عادت لشاشة البيع'):('تم تعطيل «'+g.name+'» — اختفت من شاشة البيع (السجل التاريخي محفوظ)'),'ok');
+  };
+  if(on){ apply(); return; }
+  /* التعطيل والحذف عمليتان حساستن → كلمة سر النظام. الطبقة المنبثقة الثانوية
+     (empAskPass) تُستخدم هنا عشان ما تقفلش شاشة الإدارة الأساسية أثناء طلب
+     كلمة السر — نفس النمط المستخدم في نظام الموظفين. */
+  empAskPass({
+    title:'⏸️ تعطيل لعبة',
+    message:'اكتب كلمة السر عشان تعطّل «'+g.name+'». اللعبة هتختفي من شاشة البيع بس تفضل موجودة في الإدارة وسجل المبيعات.',
+    confirmText:'تعطيل اللعبة',
+    danger:true,
+    onOk:apply
+  });
+}
+
+/* ---- حذف لعبة (أرشفة) ---- */
+function gmDelete(gameId){
+  const g=gameFind(gameId); if(!g) return;
+  const st=gameSalesTotals(gameId);
+  empAskPass({
+    title:'🗑️ حذف لعبة',
+    message:'اكتب كلمة السر عشان تحذف «'+g.name+'» من شاشة البيع والإدارة النشطة.'
+      +(st.count>0?(' هذه اللعبة عليها '+fmtNum(st.count)+' تذكرة بيعت في التيار الحالي وسجلاتها التاريخية تظل محفوظة.'):'')
+      +' يمكنك استعادتها لاحقًا من «الألعاب المحذوفة».',
+    confirmText:'حذف اللعبة',
+    danger:true,
+    onOk:function(){
+      g.archived=true; g.active=false;
+      saveGames(); logGameAudit(gameId,'archive','حذف اللعبة من البيع');
+      paintGm(); renderAll();
+      toast('تم حذف «'+g.name+'» — السجل التاريخي محفوظ ويمكنك استعادتها من «الألعاب المحذوفة»','ok');
+    }
+  });
+}
 
 function setUpdateBar(msg,showBtn,icon){
   const bar=$('#updateBar'); if(!bar) return;
