@@ -442,7 +442,12 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
   }
   .clockbox .time{font-size:21px;letter-spacing:1px;color:var(--ink);font-weight:700;}
-  .clockbox .date{font-size:12px;color:var(--muted-2);white-space:nowrap;}
+  /* التاريخ: لون أوضح من السابق (var(--muted) بدل var(--muted-2)) ليكون
+     مقروءًا في الخلفية الداكنة دون بهران زائد. */
+  .clockbox .date{font-size:12.5px;color:var(--muted);white-space:nowrap;}
+  /* رقم اليوم بارز ومنفصل بصريًا (مشكلة الوضع الداكن: كان رقم اليوم
+     باهتًا وغير مقروء) — نلوّنه بلون النص الأساسي ونكبره قليلًا. */
+  .clockbox .date .dnum{font-size:15px;font-weight:900;color:var(--ink);font-family:var(--ui);margin-inline:2px;letter-spacing:0;}
   .clockbox .divider{width:1px;height:28px;background:rgba(255,255,255,.1);border-radius:1px;}
   .shift-chip{
     display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;
@@ -634,6 +639,32 @@
   .hintbox{font-size:13px;color:var(--muted-2);line-height:1.7;background:var(--bg);border:1px dashed var(--line);border-radius:11px;padding:10px 12px;margin:10px 0;}
   .testbtn{cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:var(--ink);border-radius:12px;padding:11px 16px;font-family:var(--ui);font-weight:800;font-size:13.5px;transition:transform .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);}
   .testbtn:hover{transform:translateY(-1px);border-color:rgba(6,182,212,.4);color:var(--primary-bright);box-shadow:0 4px 12px -4px rgba(6,182,212,.25), inset 0 1px 0 rgba(255,255,255,.05);}
+  /* ===== هوية النشاط (الاسم + الشعار) ===== */
+  .brand-name-in{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 12px;
+    color:var(--ink);font-family:var(--ui);font-size:15px;font-weight:700;direction:rtl;text-align:right;
+    outline:none;height:46px;transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .brand-name-in::placeholder{color:var(--muted-2);font-weight:600;}
+  .brand-name-in:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14), 0 0 18px -6px rgba(6,182,212,.35);}
+  .brand-name-hint{font-size:12px;color:var(--muted-2);margin-top:7px;line-height:1.6;}
+  .logo-prev-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .logo-prev-box{
+    width:96px;height:96px;flex:none;border-radius:14px;
+    background:var(--bg);border:1px dashed var(--line);
+    display:grid;place-items:center;overflow:hidden;padding:8px;
+  }
+  .logo-prev-box .logo-prev-img{width:100%;height:100%;object-fit:contain;display:block;}
+  .logo-prev-acts{flex:1;min-width:220px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;}
+  .logo-prev-acts .hintbox{margin:0;width:100%;}
+  .brand-restore{display:flex;gap:10px;flex-wrap:wrap;}
+  .restore-confirm{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.32);border-radius:11px;padding:8px 10px;
+  }
+  .restore-confirm .rc-txt{font-size:12.5px;color:var(--muted);font-weight:700;flex:1;min-width:160px;}
+  .testbtn.danger{color:var(--red);}
+  .testbtn.danger:hover{border-color:rgba(239,68,68,.5);color:var(--red);box-shadow:0 4px 12px -4px rgba(239,68,68,.3), inset 0 1px 0 rgba(255,255,255,.05);}
   .ver-line{font-size:13.5px;color:var(--muted);margin-bottom:14px;}
   .ver-line b{color:var(--ink);font-family:var(--led);}
   .upd-section{display:flex;flex-direction:column;}
@@ -1413,6 +1444,10 @@
   [data-theme="light"] .act-msg .phone{color:var(--ink);text-shadow:0 0 6px rgba(34,197,94,.3);}
   /* الإعدادات */
   [data-theme="light"] .testbtn{background:var(--hi);border-color:var(--line-2);box-shadow:var(--inset-hi);}
+  [data-theme="light"] .brand-name-in{background:#fff;border-color:var(--line-2);}
+  [data-theme="light"] .logo-prev-box{background:#fff;border-color:var(--line-2);}
+  [data-theme="light"] .restore-confirm{background:rgba(217,119,6,.07);border-color:rgba(217,119,6,.3);}
+  [data-theme="light"] .restore-confirm .rc-txt{color:var(--muted);}
   [data-theme="light"] .upd-actions button{background:var(--hi);border-color:var(--line-2);box-shadow:var(--inset-hi);}
   /* جداول الموظفين */
   [data-theme="light"] .emp-table tbody tr:nth-child(even){background:rgba(15,23,42,.035);}
@@ -1904,6 +1939,11 @@ function settings(){
     _settings.manualTheme=(lt==='light')?'light':'dark';
   }
   if(typeof _settings.autoTheme!=='boolean') _settings.autoTheme=false;
+  /* هوية النشاط (الاسم + الشعار) — تُخزّن داخل الإعدادات (نفس نظام التخزين
+     المستخدم) بدون مسّ أي بيانات إنتاجية. brandLogo سلسلة data URL للصورة
+     المختارة، أو '' لاستخدام الشعار الافتراضي. */
+  if(typeof _settings.brandName!=='string') _settings.brandName='';
+  if(typeof _settings.brandLogo!=='string') _settings.brandLogo='';
   return _settings;
 }
 function saveSettings(){ saveJSON(K_SETTINGS,_settings); }
@@ -1941,6 +1981,96 @@ function toggleTheme(){
   saveSettings();
   setTheme(nx); paintThemeBtn();
   toast(nx==='dark' ? 'تم التبديل إلى المظهر الداكن' : 'تم التبديل إلى المظهر الفاتح','ok');
+}
+
+/* ============ هوية النشاط (اسم الملاهي + شعارها) ============ */
+/* مصدر واحد للحقيقة: كل أماكن عرض الاسم/الشعار تقرأ من هنا فقط. */
+const DEFAULT_BRAND_NAME='كوكي بارك';
+/* الشعار الافتراضي = الشعار المضمّن أصلاً في رأس البرنامج (نفس شعار
+   الإصدار 2.4.9). نلتقطه من الصورة الموجودة بدل تكرار بياناته الضخمة،
+   وهكذا «استعادة الشعار الافتراضي» تُرجِع مظهر الإصدار الحالي بالضبط. */
+const DEFAULT_LOGO_SRC=(function(){
+  const img=document.querySelector('.brand .logo-img');
+  return (img && img.getAttribute('src')) || 'assets/images/logo.png';
+})();
+/* الاسم المحفوظ بعد تنظيف المسافات الزائدة — لا يُسمح باسم فارغ */
+function brandName(){
+  const s=settings();
+  const n=(typeof s.brandName==='string')?s.brandName.trim():'';
+  return n || DEFAULT_BRAND_NAME;
+}
+/* الشعار المحفوظ (data URL للصورة المختارة) أو الافتراضي.
+   لا نخزّن مسار ملف مطلق حتى لا ينكسر الشعار لو نُقل الملف الأصلي. */
+function brandLogo(){
+  const s=settings();
+  return (typeof s.brandLogo==='string' && s.brandLogo) ? s.brandLogo : DEFAULT_LOGO_SRC;
+}
+/* هل الشعار الحالي هو الافتراضي (لا يوجد شعار مخصص محفوظ)؟ */
+function isDefaultLogo(){
+  const s=settings();
+  return !(typeof s.brandLogo==='string' && s.brandLogo);
+}
+/* تطبيق الهوية على أماكن عرضها (الرأس + عنوان النافذة) */
+function applyBranding(){
+  const nm=brandName();
+  const h1=document.querySelector('.brand h1');
+  if(h1) h1.textContent=nm;
+  const img=document.querySelector('.brand .logo-img');
+  if(img) img.src=brandLogo();
+  document.title=nm;
+}
+/* حفظ اسم النشاط مع التحقق: لا فارغ، وتنظيف المسافات. تُرجع true لو تم الحفظ */
+function saveBrandName(raw){
+  const nm=String(raw==null?'':raw).trim();
+  if(!nm) return false;              /* اسم فارغ مرفوض */
+  const s=settings();
+  s.brandName=nm;
+  return saveSettings();
+}
+/* حفظ شعار جديد (data URL) فورًا وتطبيقه */
+function saveBrandLogo(dataUrl){
+  const s=settings();
+  s.brandLogo=String(dataUrl||'');
+  const ok=saveSettings();
+  applyBranding();
+  return ok;
+}
+/* استعادة الشعار الافتراضي وحفظ الحالة */
+function restoreDefaultLogo(){
+  const s=settings();
+  s.brandLogo='';
+  const ok=saveSettings();
+  applyBranding();
+  return ok;
+}
+/* اختيار صورة الشعار من الجهاز (نافذة اختيار ويندوز العادية) —
+   يُفضّل PNG لدعمه الشفافية. نقرأ الصورة كـ data URL ونخزّنها كما هي
+   بدون ضغط/تكبير، فتبقى الجودة والشفافية كما هما. */
+function pickBrandLogo(fileInput,onPicked){
+  try{
+    const f=fileInput.files && fileInput.files[0];
+    if(!f) return;
+    const allowed=['image/png','image/jpeg','image/webp','image/gif'];
+    if(allowed.indexOf(f.type)===-1){
+      toast('الرجاء اختيار صورة بصيغة PNG (الأفضل للشفافية) أو JPG أو WEBP أو GIF','warn');
+      fileInput.value=''; return;
+    }
+    if(f.size > 5*1024*1024){
+      toast('حجم الصورة كبير جدًا — اختر صورة أقل من 5 ميجا بايت','warn');
+      fileInput.value=''; return;
+    }
+    const reader=new FileReader();
+    reader.onload=function(){
+      const dataUrl=String(reader.result||'');
+      if(!/^data:image\//i.test(dataUrl)){ toast('تعذّر قراءة الصورة المختارة','warn'); return; }
+      saveBrandLogo(dataUrl);
+      if(typeof onPicked==='function') onPicked(dataUrl);
+      toast('تم حفظ الشعار الجديد ✓','ok');
+    };
+    reader.onerror=function(){ toast('تعذّر قراءة الصورة المختارة','warn'); };
+    reader.readAsDataURL(f);
+  }catch(e){ logErr('pickBrandLogo',e); toast('تعذّر تحميل الصورة','warn'); }
+  try{ fileInput.value=''; }catch(_){}
 }
 let ticketSeq=loadJSON(K_SEQ,0)||0;
 let giftSeq=loadJSON(K_GSEQ,0)||0;
@@ -2647,10 +2777,14 @@ function shiftLabel(d){
   if(s===1) return SHIFT1_LABEL;
   return NO_SHIFT_LABEL;
 }
+/* نطاق وقت الوردية. التطبيق عربي RTL: في اتجاه القراءة (يمين→يسار)
+   السهم يجب أن يشير لليسار ليعكس التقدّم من وقت البداية (يمين) لوقت النهاية (يسار).
+   استخدام "→" يجعله يشير بصريًا نحو وقت البداية، أي معكوسًا.
+   القيم نفسها (البداية/النهاية) وترتيبها المنطقي لم يتغير — تغيّر شكل الحرف فقط. */
 function shiftRangeLabel(n){
-  if(n===2) return '7:00 م → 2:00 ف';
-  if(n===1) return '10:00 ص → 7:00 م';
-  return '2:00 ف → 10:00 ص';
+  if(n===2) return '7:00 م ← 2:00 ف';
+  if(n===1) return '10:00 ص ← 7:00 م';
+  return '2:00 ف ← 10:00 ص';
 }
 /* نص وردية العملية لعرضه في السجلات والتقارير (0 = لا توجد وردية) */
 function shiftBadgeText(n){
@@ -2689,7 +2823,9 @@ function fmtTime12(d){
 function tickClock(){
   const now=new Date();
   $('#clock').textContent=fmtTime12(now);
-  $('#todayDate').textContent=AR_DAYS[now.getDay()]+' '+now.getDate()+' '+AR_MONTHS[now.getMonth()];
+  /* رقم اليوم داخل عنصر بارز (b.dnum) ليكون واضح القراءة في الوضع الداكن.
+     القيم كلها ثوابت داخلية وآمنة (اسم اليوم/الشهر من مصفوفاتنا ورقم اليوم رقم). */
+  $('#todayDate').innerHTML=AR_DAYS[now.getDay()]+' <b class="dnum">'+now.getDate()+'</b> '+AR_MONTHS[now.getMonth()];
   /* سطر الوردية يعكس القاعدة الموحّدة: أولى 10ص→7م / ثانية 7م→2ف /
      بين 2ف و10ص لا توجد وردية نشطة (تُنسب لليوم السابق) */
   const sh=shiftOfDate(now);
@@ -2945,7 +3081,7 @@ function reviewLogHTML(period){
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
     +reportPaperCSS()
     +'</style></head><body>'
-    +'<div class="c b big">كوكي بارك</div>'
+    +'<div class="c b big">'+esc(brandName())+'</div>'
     +'<div class="c b">تقرير سجل المرتجعات</div>'
     +'<div class="c s">الفترة: '+esc(periodLabel(period))+'</div>'
     +'<div class="c s">تاريخ التقرير: '+esc(fmtDMY(new Date()))+'</div>'
@@ -2957,7 +3093,7 @@ function reviewLogHTML(period){
     +'<div class="tot"><span>إجمالي التذاكر المرتجعة</span><span class="num">'+fmtNum(totQty)+'</span></div>'
     +'<div class="tot"><span>إجمالي قيمة المرتجعات</span><span class="num">-'+fmtNum(totVal)+' ج</span></div>'
     +'<div class="hr">'+L+'</div>'
-    +'<div class="c s">كوكي بارك</div>'
+    +'<div class="c s">'+esc(brandName())+'</div>'
     +'</body></html>';
 }
 async function printReviewLog(period){
@@ -2972,7 +3108,7 @@ async function printReviewLog(period){
 }
 function reportRows(period,agg,recs){
   const rows=[];
-  rows.push(['تقرير كوكي بارك']);
+  rows.push(['تقرير '+brandName()]);
   rows.push(['الفترة',periodLabel(period)]);
   rows.push(['تاريخ التقرير',businessDateLabel(Date.now())]);
   rows.push([]);
@@ -3104,7 +3240,7 @@ function reportHTML(period,agg,recs){
     +'td.n,th.n{text-align:left;direction:ltr;}'
     +'.sum td:first-child{color:#555;} .final td{font-weight:bold;background:#f0fbf5;}'
     +'</style></head><body>'
-    +'<h1>كوكي بارك</h1>'
+    +'<h1>'+esc(brandName())+'</h1>'
     +'<div class="sub">تقرير — '+esc(periodLabel(period))+' · '+esc(businessDateLabel(Date.now()))+'</div>'
     +'<h2>الملخص</h2><table class="sum">'
     +'<tr><td>المبيعات</td><td class="n">'+fmtNum(agg.revenue)+' ج</td></tr>'
@@ -3264,7 +3400,7 @@ function ticketHTML(o){
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
     +ticketCSS()
     +'</style></head><body>'
-    +'<div class="c shop">كوكي بارك</div>'
+    +'<div class="c shop">'+esc(brandName())+'</div>'
     +'<div class="c sub">إيصال تذكرة دخول</div>'
     +'<div class="title c">🎟️ '+esc(o.game)+'</div>'
     +'<div class="row"><span>عدد التذاكر</span><span class="v num">'+fmtNum(o.qty)+'</span></div>'
@@ -3310,7 +3446,7 @@ function giftTicketHTML(o){
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
     +ticketCSS()
     +'</style></head><body>'
-    +'<div class="c shop">كوكي بارك</div>'
+    +'<div class="c shop">'+esc(brandName())+'</div>'
     +'<div class="c sub">إيصال هدية</div>'
     +'<div class="title c">🎁 هدية</div>'
     +'<div class="row"><span>نوع العملية</span><span class="v">هدية</span></div>'
@@ -3323,7 +3459,7 @@ function giftTicketHTML(o){
     +'<div class="row"><span>التاريخ</span><span class="v num">'+esc(fmtDMY(o.when))+'</span></div>'
     +'<div class="row"><span>الوقت</span><span class="v num">'+esc(fmtTime12(o.when))+'</span></div>'
     +'<div class="hr"></div>'
-    +'<div class="foot">كوكي بارك</div>'
+    +'<div class="foot">'+esc(brandName())+'</div>'
     +'<div class="foot">شكراً لزيارتكم ❤️</div>'
     +'</body></html>';
 }
@@ -3382,7 +3518,7 @@ function dayReportHTML(day){
   };
   const hr='<div class="hr">'+L+'</div>';
   let h='';
-  h+='<div class="c b big">كوكي بارك</div>';
+  h+='<div class="c b big">'+esc(brandName())+'</div>';
   h+='<div class="c">تقرير حساب اليوم</div>';
   h+=hr;
   h+='<div class="c b">'+esc(day.dateLabel||'يوم')+'</div>';
@@ -3433,7 +3569,7 @@ function dayReportHTML(day){
   h+=row('+ الهدايا', money(day.gifts));
   h+='<div class="r big b"><span class="l">الإجمالي النهائي</span><span class="v num">'+esc(money(calcFinalNet(day)))+'</span></div>';
   h+=hr;
-  h+='<div class="c s">كوكي بارك</div>';
+  h+='<div class="c s">'+esc(brandName())+'</div>';
   h+='<div class="c s">© نظام الحسابات</div>';
 
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
@@ -3622,16 +3758,74 @@ async function openSettings(){
       el('div',{class:'hintbox',text:'التبديل اليدوي يلغي المظهر التلقائي ويحفظ اختيارك (يبقى بعد إعادة التشغيل). المظهر التلقائي يستخدم توقيت جهازك: فاتح من 10:00 ص إلى 7:00 م، داكن باقي اليوم.'})
     ]),
   ]);
+  /* ---- بطاقة هوية النشاط: اسم الملاهي + شعارها (مصدر واحد لكل أماكن العرض) ---- */
+  const brandNameIn=el('input',{type:'text',class:'brand-name-in',id:'pset-brandname',
+    value:brandName(),maxlength:60,placeholder:DEFAULT_BRAND_NAME,
+    autocomplete:'off',dir:'auto'});
+  const logoPreview=el('img',{class:'logo-prev-img',id:'pset-logo-preview',alt:'معاينة الشعار'});
+  logoPreview.src=brandLogo();
+  /* نافذة اختيار الملف العادية (يفتحها ويندوز) — مخفية ونشغّلها بالزر */
+  const logoFile=el('input',{type:'file',id:'pset-logofile',
+    accept:'.png,image/png,image/jpeg,image/webp,image/gif',style:{display:'none'}});
+  logoFile.addEventListener('change',function(){
+    pickBrandLogo(logoFile,function(dataUrl){
+      logoPreview.src=dataUrl;       /* تحديث المعاينة فورًا */
+      resetRestore();                /* إعادة زر الاستعادة لحالته العادية */
+    });
+  });
+  /* زر الاستعادة يطلب تأكيدًا أولًا (داخل البطاقة نفسها حتى تبقى المعاينة ظاهرة) */
+  const restoreBox=el('div',{class:'brand-restore'});
+  const restoreBtn=el('button',{class:'testbtn',type:'button'},[el('span',{class:'ic',text:'↩️'}),' استعادة الشعار الافتراضي']);
+  function resetRestore(){ restoreBox.innerHTML=''; restoreBox.appendChild(restoreBtn); }
+  restoreBtn.addEventListener('click',function(){
+    restoreBox.innerHTML='';
+    restoreBox.appendChild(el('div',{class:'restore-confirm'},[
+      el('span',{class:'rc-txt',text:'⚠️ سيُستبدل الشعار الحالي بالشعار الأصلي للبرنامج.'}),
+      el('button',{class:'testbtn danger',type:'button',text:'نعم، استعادة الافتراضي',onClick:function(){
+        restoreDefaultLogo();
+        logoPreview.src=brandLogo();  /* تحديث المعاينة فورًا */
+        resetRestore();
+        toast('تم استعادة الشعار الافتراضي ✓','ok');
+      }}),
+      el('button',{class:'testbtn',type:'button',text:'تراجع',onClick:resetRestore}),
+    ]));
+  });
+  resetRestore();
+  const brandCard=el('div',{class:'set-card'},[
+    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🏷️'}),'هوية النشاط']),
+    el('div',{class:'field'},[
+      el('label',{text:'اسم النشاط / الملاهي'}),
+      brandNameIn,
+      el('div',{class:'brand-name-hint',text:'يظهر في رأس البرنامج وعلى التذاكر والتقارير. لا يمكن تركه فارغًا.'}),
+    ]),
+    el('div',{class:'logo-prev-row'},[
+      el('div',{class:'logo-prev-box'},[logoPreview]),
+      el('div',{class:'logo-prev-acts'},[
+        el('button',{class:'testbtn',type:'button',onClick:function(){ logoFile.click(); }},
+          [el('span',{class:'ic',text:'🖼️'}),' اختيار شعار جديد']),
+        restoreBox,
+        el('div',{class:'hintbox',text:'يُفضّل صورة PNG بخلفية شفافة لأفضل جودة (الحد الأقصى 5 ميجا). الشعار يُحفظ على هذا الجهاز ويظهر فورًا في رأس البرنامج، ويبقى بعد إعادة التشغيل. لا نخزّن مسار الملف حتى لا ينكسر الشعار لو نُقل.'}),
+      ]),
+    ]),
+    logoFile,   /* مدخل اختيار الملف مخفيًا داخل البطاقة */
+  ]);
   const box=el('div',{class:'modal set-modal'},[
     el('h3',{class:'set-title'},[el('span',{class:'ic',text:'⚙️'}),'الإعدادات']),
-    el('div',{class:'set-cards'},[printCard, themeCard, updCard]),
+    el('div',{class:'set-cards'},[brandCard, printCard, themeCard, updCard]),
     el('div',{class:'modal-actions'},[
       el('button',{class:'cancel',text:'إغلاق',onClick:closeOverlay}),
       el('button',{class:'confirm',text:'💾 حفظ الإعدادات',onClick:()=>{
         _settings.autoPrint=$('#pset-auto').checked;
         _settings.printerName=$('#pset-printer').value||'';
         _settings.paperWidth=$('#pset-paper').value||'auto';
-        saveSettings(); applyTheme(); paintThemeBtn();
+        /* اسم النشاط: تنظيف + رفض الفارغ (نُبقي الاسم الحالي وننبه المستخدم) */
+        const nm=$('#pset-brandname').value;
+        if(!nm.trim()){
+          toast('لا يمكن ترك اسم النشاط فارغًا — بقي الاسم الحالي محفوظًا','warn');
+        }else{
+          saveBrandName(nm);
+        }
+        saveSettings(); applyTheme(); paintThemeBtn(); applyBranding();
         toast('تم حفظ الإعدادات','ok');
       }}),
     ]),
@@ -4469,7 +4663,7 @@ function salaryReportHTML(curKey,d){
     rowsH+='<tr><td>'+esc(r.name)+'</td><td>'+esc(r.job)+'</td><td class="n">'+fmtNum(r.wage)+'</td><td class="n">'+fmtNum(r.work)+'</td><td class="n">'+fmtNum(r.vac)+'</td><td class="n">'+fmtNum(r.abs)+'</td><td class="n">'+fmtNum(r.gross)+'</td><td class="n">'+fmtNum(r.bonus)+'</td><td class="n">'+fmtNum(r.pen)+'</td><td class="n">'+fmtNum(r.adv)+'</td><td class="n">'+fmtNum(r.ded)+'</td><td class="n">'+fmtNum(r.net)+'</td><td>'+(r.paid?('تم الصرف'+(r.paidAt?(' '+fmtDMY(new Date(r.paidAt))):'')):'لم يتم الصرف')+'</td></tr>';
   });
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{size:A4;margin:12mm;}'+RPT_CSS+'</style></head><body>'
-    +'<div class="hd"><div><h1>💰 كشف رواتب الأسبوع — كوكي بارك</h1>'
+    +'<div class="hd"><div><h1>💰 كشف رواتب الأسبوع — '+esc(brandName())+'</h1>'
     +'<div class="sub">الأسبوع: '+weekRangeLabel(curKey)+' · تاريخ الإصدار: '+genAt+'</div></div></div>'
     +'<div class="cards">'
     +'<div class="card"><div class="k">إجمالي المستحق</div><div class="v">'+fmtNum(d.tot.net)+' ج</div></div>'
@@ -4484,7 +4678,7 @@ function salaryReportHTML(curKey,d){
     +rowsH
     +'<tr class="tot"><td colspan="3">الإجمالي</td><td class="n">'+fmtNum(d.tot.work)+'</td><td class="n">'+fmtNum(d.tot.vac)+'</td><td class="n">'+fmtNum(d.tot.abs)+'</td><td class="n">'+fmtNum(d.tot.gross)+'</td><td class="n">'+fmtNum(d.tot.bonus)+'</td><td class="n">'+fmtNum(d.tot.pen)+'</td><td class="n">'+fmtNum(d.tot.adv)+'</td><td class="n">'+fmtNum(d.tot.ded)+'</td><td class="n">'+fmtNum(d.tot.net)+'</td><td></td></tr>'
     +'</table>'
-    +'<div class="foot">تم إنشاؤه بواسطة برنامج كوكي بارك</div>'
+    +'<div class="foot">تم إنشاؤه بواسطة برنامج '+esc(brandName())+'</div>'
     +'</body></html>';
 }
 async function exportSalaryPDF(){
@@ -4502,7 +4696,7 @@ async function exportWeekExcel(){
   if(!d.rows.length){ toast('لا يوجد موظفون لعمل تقرير','warn'); return; }
   if(!(window.malahyExport&&window.malahyExport.saveCSV)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
   const rows=[];
-  rows.push(['تقرير أسبوع الرواتب — كوكي بارك']);
+  rows.push(['تقرير أسبوع الرواتب — '+brandName()]);
   rows.push(['من','السبت '+fmtDMY(weekStartFromKey(cur)),'إلى','الجمعة '+fmtDMY(weekEndFromKey(cur))]);
   rows.push([]);
   rows.push(['الموظف','الوظيفة','الأجر اليومي','أيام العمل','إجازة','غياب','الأجر الأساسي','مكافآت','جزاءات','سلف','خصومات','صافي الراتب','حالة الصرف','تاريخ الصرف']);
@@ -4532,7 +4726,7 @@ function statementHTML(e,w,key,s){
   });
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{size:A4;margin:13mm;}'+RPT_CSS+'</style></head><body>'
     +'<div class="hd"><div><h1>📄 كشف الحساب الأسبوعي</h1>'
-    +'<div class="sub">كوكي بارك · تاريخ الإصدار: '+genAt+'</div></div>'
+    +'<div class="sub">'+esc(brandName())+' · تاريخ الإصدار: '+genAt+'</div></div>'
     +'<div class="badge '+(w.paid?'ok':'no')+'">'+esc(paidTxt)+'</div></div>'
     +'<h2>👤 بيانات الموظف</h2>'
     +'<table>'
@@ -4555,7 +4749,7 @@ function statementHTML(e,w,key,s){
     +'<table><tr><th>الحالة</th><td>'+esc(paidTxt)+'</td><th class="n">المبلغ</th><td class="n">'+fmtNum(s.net)+' ج</td></tr></table>'
     +'<h2>📝 ملاحظات</h2>'
     +'<div class="note">'+esc(w.weekNote||'—')+'</div>'
-    +'<div class="foot">تم إنشاؤه بواسطة برنامج كوكي بارك</div>'
+    +'<div class="foot">تم إنشاؤه بواسطة برنامج '+esc(brandName())+'</div>'
     +'</body></html>';
 }
 async function exportStatementPDF(empId,key){
@@ -4575,7 +4769,7 @@ async function exportStatementExcel(empId,key){
   if(!(window.malahyExport&&window.malahyExport.saveCSV)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
   const s=weekStats(w);
   const rows=[];
-  rows.push(['كشف الحساب الأسبوعي — كوكي بارك']);
+  rows.push(['كشف الحساب الأسبوعي — '+brandName()]);
   rows.push(['الموظف',e.name,'الوظيفة',e.job||'','الأجر اليومي',w.dailyWage]);
   rows.push(['بداية الأسبوع','السبت '+fmtDMY(weekStartFromKey(key)),'نهاية الأسبوع','الجمعة '+fmtDMY(weekEndFromKey(key))]);
   rows.push(['أيام العمل',s.work,'أيام الغياب',s.abs,'الإجازات',s.vac]);
@@ -5142,6 +5336,7 @@ getPass();
   settings();          /* تهيئة الإعدادات (تتضمن التفضيل اليدوي وحالة الوضع التلقائي) */
   applyTheme();        /* يطبّق المظهر الفعّال: تلقائي حسب الوقت، أو يدوي محفوظ */
   paintThemeBtn();
+  applyBranding();     /* يطبّق اسم وشعار النشاط المحفوظين على الرأس وعنوان النافذة */
 })();
 renderAll();
 tickClock();
