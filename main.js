@@ -3,6 +3,8 @@ const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require("electron")
 const path = require("path");
 const fs = require("fs");
 const db = require("./database");
+const PERMLIB = require("./permissions");
+const users = require("./users")(db);
 
 // electron-updater اختياري (لو مش متثبت البرنامج يشتغل عادي بدون تحديثات)
 let autoUpdater = null;
@@ -73,6 +75,12 @@ function createMainWindow() {
 }
 
 /* ============ IPC: تخزين البيانات (ملف JSON على الجهاز) ============ */
+/* حماية المفاتيح الحساسة (المرحلة 3C-2): العملية الرئيسية هي السلطة النهائية.
+   لا يكفي أن تطلب الواجهة كتابة/حذف مفتاح حساس — يجب أن تكون هناك جلسة
+   مُصادَق عليها (في العملية الرئيسية نفسها) بالصلاحية المناسبة. هذا هو
+   الحدّ الفاصل الأخير؛ فحوص الواجهة مجرد طبقة UX. المفاتيح غير الحساسة
+   تعمل تمامًا كما في v2.5.1 (لا تتأثر). */
+const _MISS = {}; /* قيمة حرس لا يمكن أن تكون قيمة مخزّنة فعلية */
 ipcMain.on("db-get", (e, { key, def }) => {
   try {
     e.returnValue = db.get(key, def === undefined ? null : def);
@@ -81,17 +89,140 @@ ipcMain.on("db-get", (e, { key, def }) => {
   }
 });
 ipcMain.on("db-set", (e, { key, value }) => {
-  try { db.set(key, value); e.returnValue = true; } catch (err) { e.returnValue = false; }
+  try {
+    let exists = true;
+    try { exists = db.get(key, _MISS) !== _MISS; } catch (_) {}
+    if (!PERMLIB.authorizeDbOp("write", key, users.getSession(), exists)) {
+      appendLog("db-set :: رفض كتابة مفتاح محمي بدون صلاحية: " + String(key));
+      e.returnValue = false; return;
+    }
+    db.set(key, value); e.returnValue = true;
+  } catch (err) { e.returnValue = false; }
 });
 ipcMain.on("db-delete", (e, { key }) => {
-  try { db.delete(key); e.returnValue = true; } catch (err) { e.returnValue = false; }
+  try {
+    if (!PERMLIB.authorizeDbOp("delete", key, users.getSession(), true)) {
+      appendLog("db-delete :: رفض حذف مفتاح محمي بدون صلاحية: " + String(key));
+      e.returnValue = false; return;
+    }
+    db.delete(key); e.returnValue = true;
+  } catch (err) { e.returnValue = false; }
 });
 ipcMain.on("db-clear", (e) => {
-  try { db.clear(); e.returnValue = true; } catch (err) { e.returnValue = false; }
+  /* المسح الشامل يدمّر كل المفاتيح الحساسة (بما فيها حسابات المستخدمين)
+     → يتطلّب جلسة أدمن مُصادَق عليها في العملية الرئيسية. */
+  try {
+    const sess = users.getSession();
+    if (!sess || sess.role !== "admin") {
+      appendLog("db-clear :: رفض: المسح الشامل يتطلّب جلسة أدمن");
+      e.returnValue = false; return;
+    }
+    db.clear(); e.returnValue = true;
+  } catch (err) { e.returnValue = false; }
 });
 ipcMain.on("app-version", (e) => { e.returnValue = app.getVersion(); });
 ipcMain.on("db-file", (e) => {
   try { e.returnValue = db.file(); } catch (err) { e.returnValue = ""; }
+});
+
+/* ============ IPC: المصادقة والصلاحيات (users.js) ============ */
+/* كل قرارات المصادقة تتم هنا في العملية الرئيسية. الواجهة تستلم نتائج
+   منطقية فقط (نعم/لا + كائن مستخدم منظّف) ولا ترى أي أسرار أبدًا. */
+ipcMain.handle("auth:login", async (_e, args) => {
+  try { return await users.login(args || {}); }
+  catch (err) { appendLog("auth:login :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+ipcMain.handle("auth:changePass", async (_e, args) => {
+  try {
+    const a = (args && typeof args === "object") ? args : {};
+    const sess = users.getSession();
+    /* كل مستخدم يغيّر كلمة سره الخاصة فقط (مع كلمة السر الحالية). الأدمن وحده
+       يستطيع تغيير كلمة سر حساب آخر. هذا يمنع الكاشير من لمس حساب المدير حتى
+       لو عرف كلمة سره. */
+    if (sess && sess.role !== "admin" && String(a.userId || "") !== String(sess.userId || "")) {
+      appendLog("auth:changePass :: رفض تغيير كلمة سر حساب آخر");
+      return { ok: false, error: "forbidden" };
+    }
+    return await users.changePass(a);
+  }
+  catch (err) { appendLog("auth:changePass :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+ipcMain.handle("auth:resetCashier", async (_e, args) => {
+  try { return await users.resetCashier(args || {}); }
+  catch (err) { appendLog("auth:resetCashier :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+ipcMain.handle("auth:hasPerm", (_e, args) => {
+  try { return users.hasPerm(args || {}); } catch (_) { return false; }
+});
+/* تعديل صلاحيات الكاشير (للأدمن فقط) — القرار في العملية الرئيسية.
+    تُستخدم لاحقًا في واجهة إدارة الصلاحيات؛ هذه المرحلة توفّر الآلية الآمنة. */
+ipcMain.handle("auth:setCashierPerms", async (_e, args) => {
+  try { return users.setCashierPermissions(args || {}); }
+  catch (err) { appendLog("auth:setCashierPerms :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* الاستعلام عن الصلاحيات الكاملة لكاشير (للأدمن فقط). */
+ipcMain.handle("auth:getCashierPerms", async (_e, args) => {
+  try { return users.getCashierPermissions(args || {}); }
+  catch (err) { appendLog("auth:getCashierPerms :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* إنشاء حساب كاشير (للأدمن فقط) — createCashier دالة مكتبية لا تتحقق من الجلسة
+   بنفسها، لذا الحدّ الفاصل بين الواجهة والعملية الرئيسية هو هنا. */
+ipcMain.handle("auth:createCashier", async (_e, args) => {
+  const sess = users.getSession();
+  if (!sess || sess.role !== "admin") {
+    appendLog("auth:createCashier :: رفض: إنشاء الكاشير يتطلّب جلسة أدمن");
+    return { ok: false, error: "forbidden" };
+  }
+  try { return await users.createCashier(args || {}); }
+  catch (err) { appendLog("auth:createCashier :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* قائمة حسابات الكاشير (للأدمن فقط) — بيانات منظّفة بدون أي أسرار. */
+ipcMain.handle("auth:listCashiers", async () => {
+  const sess = users.getSession();
+  if (!sess || sess.role !== "admin") return { ok: false, error: "forbidden" };
+  try { return { ok: true, cashiers: users.listCashiers() }; }
+  catch (err) { appendLog("auth:listCashiers :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* تفعيل/تعطيل حساب كاشير (للأدمن فقط) — القرار في العملية الرئيسية. */
+ipcMain.handle("auth:setCashierActive", async (_e, args) => {
+  try { return users.setCashierActive(args || {}); }
+  catch (err) { appendLog("auth:setCashierActive :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* تغيير اسم مستخدم الكاشير (للأدمن فقط) — القرار في العملية الرئيسية. */
+ipcMain.handle("auth:setCashierUsername", async (_e, args) => {
+  try { return users.setCashierUsername(args || {}); }
+  catch (err) { appendLog("auth:setCashierUsername :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* بيانات حساب المدير (للأدمن فقط) — بدون أي أسرار. */
+ipcMain.handle("auth:getAdminInfo", async () => {
+  try { return users.getAdminInfo(); }
+  catch (err) { appendLog("auth:getAdminInfo :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* ضبط رقم واتساب الاستعادة (للمدير فقط) — رقم الاستعادة يُستخدم لاستعادة
+    كلمة سر حساب المدير من شاشة الدخول (مسار «نسيت كلمة المرور»). */
+ipcMain.handle("auth:setRecoveryWhatsapp", async (_e, args) => {
+  try { return users.setRecoveryWhatsapp(args || {}); }
+  catch (err) { appendLog("auth:setRecoveryWhatsapp :: " + String(err)); return { ok: false, error: "auth-failed" }; }
+});
+/* بدء استعادة كلمة سر المدير (متاح قبل تسجيل الدخول بالتصميم — هذا غرضه).
+    يتحقق من رقم الاستعادة ويولّد رمزًا آمنًا. لا تُسجَّل أي أسرار أبدًا:
+    الرمز لا يوضع في السجل، ولا في رسالة الخطأ، ولا في أي مكان دائم. */
+ipcMain.handle("auth:beginRecovery", async (_e, args) => {
+  try { return await users.beginRecovery(args || {}); }
+  catch (err) { appendLog("auth:beginRecovery :: " + String(err)); return { ok: false, error: "recovery-failed" }; }
+});
+/* إكمال الاستعادة: التحقق من الرمز واستبدال كلمة سر المدير. متاح قبل
+    تسجيل الدخول بالتصميم — السلطة هنا هي معرفة الرمز الذي وصل حصرًا إلى
+    رقم واتساب الاستعادة المضبوط. كلمة السر القديمة غير مطلوبة. */
+ipcMain.handle("auth:completeRecovery", async (_e, args) => {
+  try { return await users.completeRecovery(args || {}); }
+  catch (err) { appendLog("auth:completeRecovery :: " + String(err)); return { ok: false, error: "recovery-failed" }; }
+});
+/* إنهاء الجلسة (تسجيل الخروج): يمسح جلسة العملية الرئيسية فقط — لا يمسح
+   أي بيانات ولا إعدادات. الواجهة هي من تعيد عرض شاشة الدخول. */
+ipcMain.handle("auth:logout", async () => {
+  try { users.logout(); return { ok: true }; }
+  catch (err) { appendLog("auth:logout :: " + String(err)); return { ok: false, error: "auth-failed" }; }
 });
 
 /* ============ IPC: سجل الأخطاء (ملف نصّي داخل مجلد بيانات المستخدم) ============ */
@@ -534,6 +665,10 @@ if (!gotSingleLock) {
      شاشة التحديث المقفولة بدل الواجهة الرئيسية. */
   app.whenReady().then(async () => {
     createSplash();
+    /* تهيئة مستودع المستخدمين وترحيل كلمة سر الأدمن (إضافي، idempotent، ولا يوقف
+       الإقلاع أبدًا إذا تعذّر). */
+    try { await users.initUsers(); }
+    catch (e) { appendLog("users.initUsers :: " + String(e)); }
     let decision;
     try {
       decision = await runUpdateGate();

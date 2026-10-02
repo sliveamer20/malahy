@@ -639,6 +639,44 @@
   .hintbox{font-size:13px;color:var(--muted-2);line-height:1.7;background:var(--bg);border:1px dashed var(--line);border-radius:11px;padding:10px 12px;margin:10px 0;}
   .testbtn{cursor:pointer;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);color:var(--ink);border-radius:12px;padding:11px 16px;font-family:var(--ui);font-weight:800;font-size:13.5px;transition:transform .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.03);}
   .testbtn:hover{transform:translateY(-1px);border-color:rgba(6,182,212,.4);color:var(--primary-bright);box-shadow:0 4px 12px -4px rgba(6,182,212,.25), inset 0 1px 0 rgba(255,255,255,.05);}
+  /* ===== إدارة الحسابات والصلاحيات (المرحلة 3C-3) ===== */
+  .acc-card .acc-note{font-size:12.5px;color:var(--muted-2);line-height:1.6;margin-top:8px;}
+  .acc-card .acc-username{font-family:var(--ui);letter-spacing:0;font-size:15px;font-weight:800;direction:ltr;}
+  .acc-wa-row{margin-top:8px;}
+  .acc-recovery-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;}
+  .acc-recovery-status .acc-sub{font-size:12.5px;color:var(--muted-2);}
+  .acc-count{margin-right:auto;font-size:12px;font-weight:800;color:var(--muted);background:var(--bg);border:1px solid var(--line-soft);border-radius:999px;padding:2px 10px;}
+  .acc-list{display:flex;flex-direction:column;gap:10px;}
+  .acc-row{display:flex;align-items:center;gap:12px;justify-content:space-between;background:var(--bg);border:1px solid var(--line-soft);border-radius:12px;padding:10px 12px;}
+  .acc-id{min-width:0;}
+  .acc-name{font-size:15px;font-weight:900;color:var(--ink);word-break:break-word;}
+  .acc-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:5px;}
+  .acc-role{font-size:11.5px;font-weight:800;border-radius:999px;padding:2px 9px;border:1px solid transparent;}
+  .acc-role.admin{color:#0e7490;background:rgba(6,182,212,.13);border-color:rgba(6,182,212,.35);}
+  .acc-role.cashier{color:var(--muted);background:rgba(255,255,255,.05);border-color:var(--line-soft);}
+  .acc-status{font-size:11.5px;font-weight:800;border-radius:999px;padding:2px 9px;border:1px solid transparent;}
+  .acc-status.on{color:#15803d;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);}
+  .acc-status.off{color:var(--red);background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);}
+  .acc-flag{font-size:11px;font-weight:700;color:#b45309;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:999px;padding:2px 9px;}
+  .acc-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex:none;}
+  .acc-acts .testbtn{padding:7px 11px;font-size:12px;}
+  .acc-empty{font-size:13.5px;color:var(--muted-2);text-align:center;padding:18px 8px;border:1px dashed var(--line);border-radius:12px;}
+  .acc-group{border:1px solid var(--line-soft);border-radius:13px;padding:12px 14px;margin-bottom:12px;background:rgba(255,255,255,.015);}
+  .acc-group-h{font-size:13.5px;font-weight:900;color:var(--ink);margin-bottom:8px;}
+  .acc-group-h.danger{color:var(--red);}
+  .acc-group.sensitive{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.045);}
+  .acc-warn{font-size:12px;color:#b91c1c;line-height:1.6;background:rgba(239,68,68,.08);border:1px dashed rgba(239,68,68,.3);border-radius:10px;padding:8px 10px;margin-bottom:10px;}
+  .acc-group .switch{margin-bottom:9px;font-size:13.5px;}
+  .acc-badge{font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;border:1px solid transparent;flex:none;}
+  .acc-badge.def{color:var(--muted);background:rgba(255,255,255,.05);border-color:var(--line-soft);}
+  .acc-badge.granted{color:#0e7490;background:rgba(6,182,212,.13);border-color:rgba(6,182,212,.4);}
+  .acc-badge.revoked{color:var(--red);background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35);}
+  .acc-badge.off{color:var(--muted-2);background:transparent;border-color:var(--line-soft);}
+  [data-theme="light"] .acc-role.cashier{background:#f1f5f9;border-color:var(--line-2);}
+  [data-theme="light"] .acc-group{background:#f8fafc;}
+  [data-theme="light"] .acc-group.sensitive{background:#fff7f7;}
+  [data-theme="light"] .acc-row{background:#fbfdff;}
+  [data-theme="light"] .acc-warn{background:#fff1f1;}
   /* ===== هوية النشاط (الاسم + الشعار) ===== */
   .brand-name-in{
     width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 12px;
@@ -679,6 +717,33 @@
   .upd-actions button:active{transform:scale(.97);}
   .upd-actions .confirm{background:linear-gradient(180deg,var(--primary),var(--primary-dim));color:var(--text-inverse);border-color:transparent;box-shadow:0 4px 14px -4px rgba(6,182,212,.4), inset 0 1px 0 rgba(255,255,255,.2);}
   .upd-actions .confirm:hover{filter:brightness(1.1);border-color:transparent;box-shadow:0 8px 20px -4px rgba(6,182,212,.5), inset 0 1px 0 rgba(255,255,255,.25);}
+  /* ===== إعدادات الورديات ===== */
+  .shift-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .shift-field{display:flex;flex-direction:column;gap:6px;margin-bottom:0;}
+  .shift-field label{font-size:12.5px;color:var(--muted-2);font-weight:800;}
+  .shift-field input[type="time"]{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;
+    padding:10px 12px;color:var(--ink);font-family:var(--ui);font-size:15px;font-weight:800;
+    outline:none;direction:ltr;text-align:center;transition:border-color .2s ease,box-shadow .2s ease;
+  }
+  .shift-field input[type="time"]:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14),0 0 18px -6px rgba(6,182,212,.35);}
+  .shift-now{
+    font-size:13.5px;font-weight:800;color:var(--ink);background:var(--bg);
+    border:1px dashed var(--line);border-radius:11px;padding:9px 12px;margin-bottom:12px;
+  }
+  .shift-msg{display:none;font-size:13px;font-weight:800;line-height:1.6;border-radius:11px;padding:9px 12px;margin-top:10px;}
+  .shift-msg.err{display:block;color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);}
+  .shift-msg.ok{display:block;color:var(--success-bright);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.35);}
+  .shift-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  .qr-url-in{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 12px;
+    color:var(--ink);font-family:var(--ui);font-size:14px;font-weight:700;direction:ltr;text-align:left;
+    outline:none;transition:border-color .2s ease,box-shadow .2s ease;
+  }
+  .qr-url-in:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14),0 0 18px -6px rgba(6,182,212,.35);}
+  .qr-msg{display:none;font-size:12.5px;font-weight:800;line-height:1.6;border-radius:11px;padding:8px 12px;margin-top:8px;}
+  .qr-msg.err{display:block;color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);}
+  .qr-url-in.invalid{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.12);}
   /* ===== نظام الموظفين والرواتب ===== */
   /* عرض النافذة: specificity أعلى من .modal عشان ما تتغلبش */
   .overlay .modal.emp-modal{
@@ -1139,6 +1204,68 @@
     color:var(--red);font-size:13px;font-weight:700;text-align:center;
   }
 
+  /* ===== Login overlay (تظهر بعد بوابة التفعيل وقبل الوصول للواجهة) =====
+     تعيد استخدام بطاقة التفعيل (act-card) لتطابق هوية البرنامج. */
+  #loginOverlay{
+    position:fixed;inset:0;z-index:9998; /* تحت غطاء التفعيل (9999)، فوق كل شيء آخر */
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    background:rgba(8,6,14,.85);backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+  }
+  #loginOverlay.show{display:flex;animation:overlay-fade .25s ease;}
+  #loginOverlay.hide{display:none;}
+  .login-sub{
+    margin:-4px 0 16px;font-size:14px;font-weight:800;color:var(--primary-bright);
+    letter-spacing:.3px;
+  }
+  .login-label{
+    display:block;text-align:right;margin:0 0 6px 2px;
+    font-family:var(--ui);font-size:12.5px;font-weight:700;color:var(--muted);
+  }
+  /* حقول الدخول بخط الواجهة العادي (بدل خط الأرقام المستخدم في كود التفعيل) */
+  .login-field input{
+    font-family:var(--ui);letter-spacing:0;font-size:15px;font-weight:600;
+  }
+  .login-hint{
+    margin:0 0 14px;font-size:12px;color:var(--muted-2);line-height:1.7;
+  }
+
+  /* ===== مسار استعادة كلمة المرور (يُبنى ديناميكيًا بواسطة recovery.js) ===== */
+  .rec-wrap{margin-top:4px;}
+  .rec-step .act-field{margin-bottom:12px;}
+  .rec-msg{
+    margin:0 0 14px;font-size:12.5px;color:var(--muted);line-height:1.75;
+    background:rgba(6,182,212,.07);border:1px solid rgba(6,182,212,.22);
+    border-radius:10px;padding:10px 12px;
+  }
+  .rec-note{
+    margin:0 0 14px;font-size:12px;line-height:1.75;border-radius:10px;padding:10px 12px;
+    background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.25);color:var(--muted);
+  }
+  .rec-note-ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3);}
+  .rec-note-warn{background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.3);}
+  .rec-link{
+    margin-top:10px;width:100%;cursor:pointer;border:none;background:transparent;
+    color:var(--primary-bright);font-family:var(--ui);font-weight:700;font-size:12.5px;
+    text-decoration:underline;text-underline-offset:3px;padding:4px 2px;
+    transition:color .15s ease;
+  }
+  .rec-link:hover{color:var(--cyan, #22d3ee);}
+
+  /* زر الرجوع أعلى مسار الاستعادة (← رجوع) */
+  .rec-back{
+    width:100%;margin:0 0 12px;cursor:pointer;
+    border:1px solid var(--line-soft, rgba(255,255,255,.12));
+    background:var(--bg-2, rgba(255,255,255,.03));color:var(--muted);
+    border-radius:10px;padding:9px 10px;
+    font-family:var(--ui);font-weight:700;font-size:13px;letter-spacing:.2px;
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    transition:color .15s ease, border-color .15s ease, background .15s ease, transform .12s ease;
+  }
+  .rec-back:hover{color:var(--primary-bright);border-color:var(--primary);background:rgba(6,182,212,.08);transform:translateY(-1px);}
+  .rec-back:active{transform:scale(.98);}
+  .rec-back:focus-visible{outline:2px solid var(--primary-bright);outline-offset:2px;}
+
   /* history */
   .hist-list{display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;margin-bottom:6px;}
   .hist-item{background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden;transition:border-color .15s ease, box-shadow .15s ease;}
@@ -1486,6 +1613,18 @@
   /* تلميحات لوحة المفاتيح على الأزرار الملوّنة يبقى نصها داكنًا */
   [data-theme="light"] .add-btn::after{color:var(--ink);background:rgba(255,255,255,.55);border-color:rgba(15,23,42,.2);}
 </style>
+<!-- مولّد رمز QR (يعمل بدون إنترنت — يُستخدم لتذكرة الطباعة فقط) -->
+<script src="assets/vendor/qrcode.js"></script>
+<!-- قالب تذاكر الطباعة: يوفّر محتوى assets/ticket/ticket-template.svg كسلسلة
+     نصية للواجهة عبر window.MalahyTicketTemplate.get() (مطابق بايتًا للأصل).
+     يُحمَّل كـ script عادي تمامًا مثل qrcode.js — أما وثيقة الطباعة فتُحمّل عبر
+     data:text/html مع javascript:false ولا يمكنها جلب القالب بنفسها، لذا
+     يُضمَّن نص الـ SVG داخل HTML التذكرة (انظر ticketHTML/giftTicketHTML). -->
+<script src="assets/ticket/ticket-template.js"></script>
+<!-- تقرير حساب اليوم: مصدر واحد لبيانات وحسابات وتنسيق التقرير اليومي المطبوع
+     (يتكيّف مع 58mm/80mm/A4). يُexpoّز window.MalahyDailyReport — مثله مثل
+     qrcode.js/ticket-template.js — ويمكن اختباره مباشرة من Node. -->
+<script src="assets/report/daily-report.js"></script>
 </head>
 <body>
 <div class="app">
@@ -1522,8 +1661,8 @@
       </div>
     </div>
     <div class="theme-btn-group">
-      <button class="theme-btn theme-btn-h" id="themeToggle" onclick="toggleTheme()" title="تبديل المظهر"></button>
-      <button class="theme-btn theme-btn-h" id="autoThemeToggle" onclick="toggleAutoTheme()" title="المظهر التلقائي"></button>
+      <button class="theme-btn theme-btn-h" id="themeToggle" data-perm="settings" onclick="toggleTheme()" title="تبديل المظهر"></button>
+      <button class="theme-btn theme-btn-h" id="autoThemeToggle" data-perm="settings" onclick="toggleAutoTheme()" title="المظهر التلقائي"></button>
     </div>
     <div class="clockbox">
       <div class="time num" id="clock">--:--</div>
@@ -1637,16 +1776,20 @@
   <!-- Actions -->
   <div class="actions">
   <button class="abtn save" onclick="manualSave()"><span class="ic">💾</span>حفظ</button>
-  <button class="abtn restart" onclick="requestRestart()"><span class="ic">🔄</span>إعادة تعيين اليوم</button>
-  <button class="abtn ghost" onclick="printTodayReport()"><span class="ic">🖨️</span>طباعة تقرير اليوم</button>
-  <button class="abtn ghost" onclick="openChangePass()"><span class="ic">🔑</span>تغيير كلمة السر</button>
+  <button class="abtn restart" data-perm="dayReset" onclick="requestRestart()"><span class="ic">🔄</span>إعادة تعيين اليوم</button>
+  <button class="abtn ghost" data-perm="reportPrint" onclick="printTodayReport()"><span class="ic">🖨️</span>طباعة تقرير اليوم</button>
+  <button class="abtn ghost" data-perm="settings" onclick="openChangePass()"><span class="ic">🔑</span>تغيير كلمة السر</button>
+  <button class="abtn ghost" onclick="malahyLogout()"><span class="ic">🚪</span>تسجيل الخروج</button>
+  <!-- تغيير كلمة السر الخاصة (للكل: أدمن وكاشير) عبر نظام المستخدمين —
+       يتطلب كلمة السر الحالية، ولا يسمح للكاشير بتغيير حساب آخر (المرحلة 3C-3) -->
+  <button class="abtn ghost" onclick="malahyChangeMyPass()"><span class="ic">🔐</span>كلمة المرور الخاصة بي</button>
   <button class="abtn ghost" onclick="openHistory()"><span class="ic">📋</span>السجل</button>
-  <button class="abtn ghost" onclick="openGameMgmt()"><span class="ic">🎮</span>إدارة الألعاب والتذاكر</button>
-  <button class="abtn ghost" onclick="openReports()"><span class="ic">📊</span>التقارير والإحصائيات</button>
+  <button class="abtn ghost" data-perm="gameManage" onclick="openGameMgmt()"><span class="ic">🎮</span>إدارة الألعاب والتذاكر</button>
+  <button class="abtn ghost" data-perm="reports" onclick="openReports()"><span class="ic">📊</span>التقارير والإحصائيات</button>
 
-  <button class="abtn ghost" onclick="openEmployees()"><span class="ic">👥</span>الموظفون</button>
-  <button class="abtn ghost" onclick="openDailyReg()"><span class="ic">🕐</span>التسجيل اليومي للموظفين</button>
-  <button class="abtn ghost" onclick="openSettings()"><span class="ic">⚙️</span>الإعدادات</button>
+  <button class="abtn ghost" data-perm="employeeManage" onclick="openEmployees()"><span class="ic">👥</span>الموظفون</button>
+  <button class="abtn ghost" data-perm="employeeManage" onclick="openDailyReg()"><span class="ic">🕐</span>التسجيل اليومي للموظفين</button>
+  <button class="abtn ghost" data-perm="settings" onclick="openSettings()"><span class="ic">⚙️</span>الإعدادات</button>
 </div>
 
   <div class="foot" id="foot">مصمم البرنامج: محمد فاروق عامر · البيانات تُحفظ تلقائيًا على هذا الجهاز.</div>
@@ -1677,6 +1820,55 @@
   </div>
 </div>
 
+<!-- Login overlay (تغطية تسجيل الدخول — تظهر بعد اكتمال التفعيل وقبل الواجهة)
+     «مقفولة افتراضيًا»: الواجهة الرئيسية تبقى inert حتى يتم تسجيل دخول ناجح.
+     المنطق معزول في login.js ولا يتعامل مع قاعدة البيانات مباشرةً أبدًا. -->
+<div id="loginOverlay" class="hide" aria-modal="true" role="dialog">
+  <div class="act-card login-card">
+    <div class="act-logo">
+      <img id="loginLogo" src="assets/images/logo.png" alt="" onerror="this.style.display='none'">
+    </div>
+    <h2 class="act-title" id="loginVenueName">كوكي بارك</h2>
+    <div class="login-sub">تسجيل الدخول</div>
+
+    <!-- حالة تسجيل الدخول -->
+    <div id="loginForm">
+      <div class="act-field login-field">
+        <label class="login-label" for="loginUser">اسم المستخدم</label>
+        <input id="loginUser" type="text" autocomplete="username" placeholder="admin" aria-label="اسم المستخدم">
+      </div>
+      <div class="act-field login-field">
+        <label class="login-label" for="loginPass">كلمة المرور</label>
+        <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••" aria-label="كلمة المرور">
+      </div>
+      <button class="act-btn" id="loginBtn" type="button">تسجيل الدخول</button>
+      <div class="act-err" id="loginErr"></div>
+    </div>
+
+    <!-- حالة تغيير كلمة السر الإجباري (mustChangePass) -->
+    <div id="loginChangeForm" style="display:none">
+      <p class="act-msg">يجب تغيير كلمة المرور قبل استخدام البرنامج.</p>
+      <div class="act-field login-field">
+        <label class="login-label" for="chgOld">كلمة المرور الحالية</label>
+        <input id="chgOld" type="password" autocomplete="current-password" placeholder="••••" aria-label="كلمة المرور الحالية">
+      </div>
+      <div class="act-field login-field">
+        <label class="login-label" for="chgNew">كلمة المرور الجديدة</label>
+        <input id="chgNew" type="password" autocomplete="new-password" placeholder="••••" aria-label="كلمة المرور الجديدة">
+      </div>
+      <div class="act-field login-field">
+        <label class="login-label" for="chgConfirm">تأكيد كلمة المرور الجديدة</label>
+        <input id="chgConfirm" type="password" autocomplete="new-password" placeholder="••••" aria-label="تأكيد كلمة المرور الجديدة">
+      </div>
+      <div class="login-hint">٤ أحرف على الأقل. لن تُحفظ كلمة المرور القديمة بعد التغيير.</div>
+      <button class="act-btn" id="chgBtn" type="button">تغيير كلمة المرور ودخول</button>
+      <div class="act-err" id="chgErr"></div>
+    </div>
+
+    <div class="act-foot" id="loginFoot">كوكي بارك — جميع الحقوق محفوظة</div>
+  </div>
+</div>
+
 <!-- Overlay / Modals -->
 <div class="overlay" id="overlay"></div>
 
@@ -1685,6 +1877,15 @@
 
 <!-- منطق التفعيل معزول في ملف خارجي -->
 <script src="activation.js" defer></script>
+<!-- منطق تسجيل الدخول والجلسة معزول في ملف خارجي (يظهر بعد التفعيل) -->
+<script src="login.js" defer></script>
+<!-- سجلّ الصلاحيات الموحّد + بوابة الصلاحيات (المرحلة 3C-2) -->
+<script src="permissions.js" defer></script>
+<script src="perm-gate.js" defer></script>
+<!-- إدارة الحسابات والصلاحيات: بطاقات المدير/الكاشير داخل الإعدادات (المرحلة 3C-3) -->
+<script src="accounts.js" defer></script>
+<!-- استعادة كلمة مرور المدير: مسار «نسيت كلمة المرور» داخل شاشة الدخول (المرحلة 3C-4) -->
+<script src="recovery.js" defer></script>
 <script>
   document.addEventListener('DOMContentLoaded', function(){
     if(window.MalahyActivation && typeof window.MalahyActivation.init === "function"){
@@ -1696,6 +1897,58 @@
       var ov=document.getElementById('actOverlay');
       if(ov){ ov.classList.remove('hide'); ov.classList.add('show'); }
     }
+  });
+  /* شبكة أمان لشاشة الدخول: لو login.js ما اتحمّلش، نظلّ نغطّي الواجهة
+     بعد اكتمال التفعيل (fail-closed) بدل ما تفتح بدون تسجيل دخول. */
+  document.addEventListener('DOMContentLoaded', function(){
+    if(window.MalahyLogin) return; /* login.js تحمّل وهو المسؤول */
+    var lo=document.getElementById('loginOverlay');
+    var ao=document.getElementById('actOverlay');
+    function lockNow(){
+      if(!lo) return;
+      lo.classList.remove('hide'); lo.classList.add('show');
+      var kids=lo.parentElement.children;
+      for(var i=0;i<kids.length;i++){
+        if(kids[i]===lo) continue;
+        kids[i].setAttribute('inert',''); kids[i].setAttribute('aria-hidden','true');
+      }
+    }
+    if(ao && ao.classList.contains('show')){
+      /* التفعيل جارٍ — ننتظر إخفاء غطائه ثم نقفل */
+      new MutationObserver(function(m,o){
+        if(!ao.classList.contains('show')){ o.disconnect(); lockNow(); }
+      }).observe(ao,{attributes:true,attributeFilter:['class']});
+    } else { lockNow(); }
+  });
+  /* شبكة أمان بوابة الصلاحيات: لو perm-gate.js ما اتحمّلش (خطأ تغليف)،
+      نُعرّف بوابة احتيياطة fail-closed تسمح للأدمن فقط وتطلب التأكيد
+      للعمليات. هكذا لا تبقى أي عملية محمية بدون بوابة أبدًا. */
+  document.addEventListener('DOMContentLoaded', function(){
+    if(window.MalahyPerm) return; /* perm-gate.js تحمّل وهو المسؤول */
+    var _s=null;
+    window.MalahyPerm={
+      setSession:function(u){ _s=(u&&typeof u==='object')?u:null; },
+      clearSession:function(){ _s=null; },
+      getSession:function(){ return _s; },
+      hasPerm:function(){ return !!(_s && _s.role==='admin'); },
+      deny:function(){ try{ if(typeof toast==='function') toast('ليس لديك صلاحية لتنفيذ هذه العملية','warn'); }catch(_){} return false; },
+      requirePerm:function(pid,o){
+        o=o||{};
+        if(_s && _s.role==='admin'){ try{ if(o.onOk) o.onOk(''); }catch(_){} return true; }
+        window.MalahyPerm.deny(); return false;
+      },
+      applyVisibility:function(){},
+      PERMS:[]
+    };
+  });
+  /* شبكة أمان إدارة الحسابات: لو accounts.js ما اتحمّلش، لا تظهر بطاقات
+      الإدارة ولا يتغيّر أي شيء في الإعدادات (fail-safe). */
+  document.addEventListener('DOMContentLoaded', function(){
+    if(window.MalahyAccounts) return; /* accounts.js تحمّل وهو المسؤول */
+    window.MalahyAccounts={ buildCards:function(){ return []; } };
+    window.malahyChangeMyPass=function(){
+      try{ if(typeof toast==='function') toast('تعذّر تحميل وحدة إدارة الحسابات','warn'); }catch(_){}
+    };
   });
 </script>
 
@@ -1924,6 +2177,10 @@ if(_migrated) persist();
 
 /* إعدادات الطباعة (محفوظة على الجهاز) + عدّاد أرقام التذاكر */
 let _settings=null;
+/* الجدول الافتراضي للورديات (نفس جدول 2.5.0 بالضبط) — يُعرَّف هنا قبل أي
+   استدعاء لـ settings() لأن const لا تُرفع كقيمة (TDZ). باقي دوال الورديات
+   أدناه function declarations فتُرفع بالكامل وتكون متاحة فورًا. */
+const DEFAULT_SHIFT_TIMES={s1:'10:00',e1:'19:00',s2:'19:00',e2:'02:00'};
 function settings(){
   if(_settings) return _settings;
   _settings=loadJSON(K_SETTINGS,null)||{};
@@ -1944,6 +2201,17 @@ function settings(){
      المختارة، أو '' لاستخدام الشعار الافتراضي. */
   if(typeof _settings.brandName!=='string') _settings.brandName='';
   if(typeof _settings.brandLogo!=='string') _settings.brandLogo='';
+  /* أوقات الورديات (جديد 2.5.1) — تُخزَّن كنصوص "HH:MM" داخل كائن الإعدادات.
+     أي قيمة ناقصة/تالفة تُستبدل بالجدول الافتراضي، فالمستخدمون الذين يرتقون
+     من 2.5.0 يبدؤون بالجدول الحالي تلقائيًا (وليس جدولًا فارغًا أو مكسورًا). */
+  if(!isValidShiftTime(_settings.shift1Start)) _settings.shift1Start=DEFAULT_SHIFT_TIMES.s1;
+  if(!isValidShiftTime(_settings.shift1End)) _settings.shift1End=DEFAULT_SHIFT_TIMES.e1;
+  if(!isValidShiftTime(_settings.shift2Start)) _settings.shift2Start=DEFAULT_SHIFT_TIMES.s2;
+  if(!isValidShiftTime(_settings.shift2End)) _settings.shift2End=DEFAULT_SHIFT_TIMES.e2;
+  /* رمز QR على التذكرة (ميزة اختيارية — افتراضيًا مُغلق) + رابط موقع النشاط.
+     كلاهما داخل كائن الإعدادات الموجود بالفعل (لا بنية قاعدة بيانات جديدة). */
+  if(typeof _settings.showTicketQrCode!=='boolean') _settings.showTicketQrCode=false;
+  if(typeof _settings.venueMapUrl!=='string') _settings.venueMapUrl='';
   return _settings;
 }
 function saveSettings(){ saveJSON(K_SETTINGS,_settings); }
@@ -1959,10 +2227,10 @@ function setTheme(t){
 function currentTheme(){
   return document.documentElement.getAttribute('data-theme')==='light' ? 'light' : 'dark';
 }
-/* الوقت الحقيقي للجهاز: النهار = فاتح (10:00 ص → 7:00 م) */
+/* الوقت الحقيقي للجهاز: نهار = فترة الوردية الأولى (مصدر واحد لإعدادات
+   الورديات). افتراضيًا 10:00 ص → 7:00 م، ويتغيّر تلقائيًا لو غُيّر الجدول. */
 function isDayTime(){
-  const h=new Date().getHours();
-  return h>=10 && h<19;
+  return shiftOfDate(new Date())===1;
 }
 function autoThemeNow(){ return isDayTime() ? 'light' : 'dark'; }
 /* المظهر الفعّال: لو الوضع التلقائي شغّال يتبع الوقت، وإلا يتبع اختيار المستخدم */
@@ -2111,7 +2379,7 @@ function logReview(entry){
 function reviewInRange(period){
   const list=loadReview();
   if(period==='all'||!period) return list.slice();
-  /* نفس منطق يوم العمل (يبدأ 10:00 ص): مقارنة بمفتاح يوم العمل مش نافذة 24 ساعة متدحرجة */
+  /* نفس منطق يوم العمل (يبدأ مع بداية الوردية الأولى): مقارنة بمفتاح يوم العمل مش نافذة 24 ساعة متدحرجة */
   const nowKey=businessDayKey(Date.now());
   if(period==='today') return list.filter(function(r){ return businessDayKey(r.ts||0)===nowKey; });
   const days=(period==='week')?7:30;
@@ -2319,6 +2587,8 @@ function refreshCounts(){
 
 /* ============ Actions: tickets ============ */
 function addTicket(id,method){
+  /* البيع يحتاج صلاحية sales — مصدر القرار هو بوابة الصلاحيات المركزية */
+  if(!MalahyPerm.hasPerm('sales')){ MalahyPerm.deny(); return; }
   try{
     method = method==='elec' ? 'elec' : 'cash';
     /* حماية: نتأكد إن الحاويات موجودة (مهم للأجهزة اللي عليها بيانات قديمة قبل إضافة الدفع الإلكتروني) */
@@ -2365,9 +2635,9 @@ function deductBatch(id){
   const g=GAMES.find(x=>x.id===id);
   const totNow=(state.counts[id]||0)+((state.ecounts&&state.ecounts[id])||0);
   if(totNow<=0){ toast('لا توجد تذاكر للخصم في '+g.name,'warn'); return; }
-  openPasswordModal({
+  MalahyPerm.requirePerm('returns',{
     title:'➖ خصم تذاكر',
-    message:'اكتب كلمة السر عشان تخصم '+q+' تذكرة من «'+g.name+'» (يبدأ الخصم من الكاش ثم الإلكتروني).',
+    message:'تأكيد خصم '+q+' تذكرة من «'+g.name+'» (يبدأ الخصم من الكاش ثم الإلكتروني).',
     confirmText:'خصم '+q+' تذكرة',
     danger:true,
     reasonLabel:'سبب الخصم / المرتجع (اختياري)',
@@ -2398,9 +2668,9 @@ function deductOne(id){
   const tot=(state.counts[id]||0)+((state.ecounts&&state.ecounts[id])||0);
   if(tot<=0) return;
   const g=GAMES.find(x=>x.id===id);
-  openPasswordModal({
+  MalahyPerm.requirePerm('returns',{
     title:'➖ خصم تذكرة',
-    message:'اكتب كلمة السر عشان تخصم تذكرة واحدة من «'+g.name+'».',
+    message:'تأكيد خصم تذكرة واحدة من «'+g.name+'».',
     confirmText:'خصم تذكرة',
     danger:true,
     reasonLabel:'سبب الخصم / المرتجع (اختياري)',
@@ -2420,6 +2690,7 @@ function deductOne(id){
   });
 }
 function addBatch(id){
+  if(!MalahyPerm.hasPerm('sales')){ MalahyPerm.deny(); return; }
   const inp=$('#qty-'+id);
   const q=parseInt(inp.value,10);
   if(isNaN(q)||q<=0){ toast('اكتب عددًا صحيحًا','warn'); inp.focus(); inp.select(); return; }
@@ -2493,20 +2764,24 @@ function _addItem(which){
       toast('تم تسجيل الهدية بنجاح، ولكن حدث خطأ أثناء الطباعة.','warn');
     });
   };
-  /* الهدايا تُضاف مباشرةً من الكاشير بدون كلمة سر (قيمتها تُضاف للحساب).
-     المصروفات تظل تتطلّب تأكيد كلمة السر كالسابق (سواء مصروف عادي أو سلفة موظف). */
-  if(which==='gift'){ doAdd(); return; }
-  openPasswordModal({
+  /* الهدايا تُضاف مباشرةً (قيمتها تُضاف للحساب) لكنها تتطلّب صلاحية giftAdd.
+     المصروفات تتطلّب صلاحية expenseAdd مع تأكيد العملية (سواء مصروف عادي
+     أو سلفة موظف). كل صلاحية مستقلّة عن غيرها. */
+  if(which==='gift'){
+    if(!MalahyPerm.hasPerm('giftAdd')){ MalahyPerm.deny(); return; }
+    doAdd(); return;
+  }
+  MalahyPerm.requirePerm('expenseAdd',{
     title: emp?'💵 إضافة سلفة موظف':'➕ إضافة مصروف',
-    message: emp?('المبلغ '+fmtNum(amount)+' ج هيُسجَّل سلفة لـ«'+emp.name+'» ويُخصم من راتبه الأسبوعي. اكتب كلمة السر للتأكيد.'):'اكتب كلمة السر لتأكيد الإضافة.',
+    message: emp?('المبلغ '+fmtNum(amount)+' ج هيُسجَّل سلفة لـ«'+emp.name+'» ويُخصم من راتبه الأسبوعي. اضغط «تأكيد» للمتابعة.'):'اضغط «تأكيد» لإضافة هذا المصروف.',
     confirmText: emp?'تسجيل السلفة':'إضافة',
     onOk:doAdd
   });
 }
 function deleteItem(which,itemId){
-  openPasswordModal({
+  MalahyPerm.requirePerm(which==='exp'?'expenseDelete':'giftDelete',{
     title:'🗑️ حذف بند',
-    message: which==='exp'?'اكتب كلمة السر لحذف هذا المصروف.':'اكتب كلمة السر لحذف هذه الهدية.',
+    message: which==='exp'?'تأكيد حذف هذا المصروف نهائيًا؟':'تأكيد حذف هذه الهدية نهائيًا؟',
     confirmText:'حذف',
     danger:true,
     onOk:()=>{
@@ -2528,9 +2803,9 @@ function manualSave(){ if(persist()) toast('تم حفظ بيانات اليوم'
 
 /* ============ Restart (password protected) ============ */
 function requestRestart(){
-  openPasswordModal({
+  MalahyPerm.requirePerm('dayReset',{
     title:'🔄 إعادة تعيين اليوم',
-    message:'هيتم أرشفة بيانات النهاردة في «السجل» أول، وبعدين يبدأ يوم جديد فاضي. اكتب كلمة السر عشان تأكيد.',
+    message:'هيتم أرشفة بيانات النهاردة في «السجل» أول، وبعدين يبدأ يوم جديد فاضي. اضغط «تأكيد» للمتابعة.',
     confirmText:'تأكيد وإعادة التعيين',
     danger:true,
     onOk:doRestart
@@ -2575,6 +2850,9 @@ function archiveDay(t){
 
 /* ============ Change password ============ */
 function openChangePass(){
+  /* تغيير كلمة سر النظام (K_PASS) عملية إدارية → تتطلّب صلاحية settings.
+     الكاشير يغيّر كلمة سره الخاصة لاحقًا من خلال نظام المستخدمين. */
+  if(!MalahyPerm.hasPerm('settings')){ MalahyPerm.deny(); return; }
   const box=el('div',{class:'modal'},[
     el('h3',{},['🔑 تغيير كلمة السر']),
     el('p',{text:'لازم تكتب كلمة السر القديمة الأول عشان تقدر تغيّرها.'}),
@@ -2695,9 +2973,9 @@ function calcFinalNet(day){
   return (Number(day.revenue)||0)-(Number(day.expenses)||0)+(Number(day.gifts)||0);
 }
 function deleteHistDay(id){
-  openPasswordModal({
+  MalahyPerm.requirePerm('historyDelete',{
     title:'🗑️ حذف يوم من السجل',
-    message:'اكتب كلمة السر عشان تحذف هذا اليوم نهائيًا من السجل.',
+    message:'تأكيد حذف هذا اليوم نهائيًا من السجل؟',
     confirmText:'حذف اليوم',
     danger:true,
     onOk:()=>{
@@ -2713,9 +2991,9 @@ function deleteHistDay(id){
 function clearAllHistory(){
   const hist=loadJSON(K_HIST,[]);
   if(!hist.length){ toast('السجل فارغ بالفعل','warn'); return; }
-  openPasswordModal({
+  MalahyPerm.requirePerm('historyDelete',{
     title:'🗑️ حذف كل السجل',
-    message:'اكتب كلمة السر عشان تحذف كل الأيام في السجل نهائيًا. الإجراء ده لا يمكن التراجع عنه.',
+    message:'سيتم حذف كل الأيام في السجل نهائيًا. الإجراء ده لا يمكن التراجع عنه.',
     confirmText:'حذف كل السجل',
     danger:true,
     onOk:()=>{
@@ -2755,21 +3033,61 @@ const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعا�
 const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function pad2(n){return String(n).padStart(2,'0');}
 
-/* ============ الورديات (قاعدة موحّدة لكل التسميات والتقارير والفلاتر) ============ */
-/* الوردية الأولى: 10:00 ص → 7:00 م
-   الوردية الثانية: 7:00 م → 2:00 فجرًا (اليوم التالي)
-   الساعة 7:00 م تبدأ الوردية الثانية، والساعة 2:00 فجرًا تنتهي الوردية الثانية
-   ولا توجد أي وردية نشطة بين 2:00 فجرًا و10:00 ص (تُنسب لليوم السابق). */
+/* ============ الورديات (قاعدة موحّدة واحدة لكل التسميات والتقارير والفلاتر) ============ */
+/* مصدر واحد للحقيقة: أوقات الورديات تُقرأ من الإعدادات (settings) فقط، ولا يوجد
+   أي مكان آخر في التطبيق يكرّر أوقاتًا ثابتة. الجدول الافتراضي = جدول 2.5.0:
+   الوردية الأولى 10:00 ص → 7:00 م ، الوردية الثانية 7:00 م → 2:00 فجرًا (تمتد
+   بعد منتصف الليل)، ولا توجد وردية نشطة بين 2:00 فجرًا و10:00 ص. */
 const SHIFT1_LABEL='الوردية الأولى';
 const SHIFT2_LABEL='الوردية الثانية';
 const NO_SHIFT_LABEL='لا توجد وردية';
-/* أرقام الورديات: 1 = أولى، 2 = ثانية، 0 = لا توجد وردية نشطة (2:00 ف → 10:00 ص) */
+
+/* تحويل صيغة "HH:MM" (24 ساعة) إلى دقائق من منتصف الليل.
+   تُرجع null لو الصيغة غير صالحة (تُستخدم للتحقق من صحة الإعدادات). */
+function parseShiftTime(t){
+  if(typeof t!=='string') return null;
+  const m=/^\s*(\d{1,2}):(\d{2})\s*$/.exec(t);
+  if(!m) return null;
+  const h=Number(m[1]), mi=Number(m[2]);
+  if(h>23||mi>59) return null;
+  return h*60+mi;
+}
+function isValidShiftTime(t){ return parseShiftTime(t)!==null; }
+
+/* قراءة أوقات الورديات من الإعدادات (مصدر واحد) مع ضمان القيم الافتراضية.
+   أي قيمة ناقصة/تالفة تُستبدل بالمقابل لها من الجدول الافتراضي حتى لا
+   ينكسر أي شيء لو تلف ملف الإعدادات. */
+function shiftTimes(){
+  const s=settings();
+  const pick=function(v,def){ return isValidShiftTime(v)?String(v).trim():def; };
+  return {
+    s1:pick(s.shift1Start,DEFAULT_SHIFT_TIMES.s1),
+    e1:pick(s.shift1End,DEFAULT_SHIFT_TIMES.e1),
+    s2:pick(s.shift2Start,DEFAULT_SHIFT_TIMES.s2),
+    e2:pick(s.shift2End,DEFAULT_SHIFT_TIMES.e2),
+  };
+}
+/* أرقام الورديات: 1 = أولى، 2 = ثانية، 0 = لا توجد وردية نشطة.
+   تدعم الوردية التي تعبر منتصف الليل (وقت النهاية أصغر من وقت البداية):
+   مثال افتراضي: 7:00 م تبدأ الثانية، 23:59 و00:30 و01:59 ثانية،
+   و02:00 تنتهي الثانية، وبين 02:00 و10:00 لا توجد وردية نشطة. */
 function shiftOfDate(d){
   d=d||new Date();
-  const h=d.getHours();
-  if(h>=19 || h<2) return 2;   /* 7:00 م → 2:00 فجرًا (الوردية الثانية) */
-  if(h>=10) return 1;          /* 10:00 ص → 7:00 م (الوردية الأولى) */
-  return 0;                    /* 2:00 فجرًا → 10:00 ص: لا توجد وردية نشطة */
+  const mins=d.getHours()*60+d.getMinutes();
+  const t=shiftTimes();
+  const s1=parseShiftTime(t.s1), e1=parseShiftTime(t.e1);
+  const s2=parseShiftTime(t.s2), e2=parseShiftTime(t.e2);
+  if(s1===null||e1===null||s2===null||e2===null) return 0;
+  if(mins>=s1 && mins<e1) return 1;          /* الوردية الأولى (نفس اليوم) */
+  if(e2<=s2){
+    /* الوردية الثانية تعبر منتصف الليل: [s2,1440) ليلاً + [0,e2) بعد منتصف الليل */
+    if(mins>=s2 && mins<1440) return 2;
+    if(mins<e2) return 2;
+  }else{
+    /* الوردية الثانية في نفس اليوم: [s2,e2) — النهاية مستثناة */
+    if(mins>=s2 && mins<e2) return 2;
+  }
+  return 0;                                  /* خارج الورديتين: لا توجد وردية نشطة */
 }
 function shiftLabel(d){
   const s=shiftOfDate(d);
@@ -2777,20 +3095,74 @@ function shiftLabel(d){
   if(s===1) return SHIFT1_LABEL;
   return NO_SHIFT_LABEL;
 }
+/* تنسيق وقت واحد "HH:MM" بصيغة عربية 12 ساعة (ص/م) */
+function fmtShiftTime12(t){
+  const m=parseShiftTime(t);
+  if(m===null) return '';
+  const h24=Math.floor(m/60), mi=m%60;
+  const ap=h24<12?'ص':'م';
+  let h12=h24%12; if(h12===0) h12=12;
+  return h12+':'+pad2(mi)+' '+ap;
+}
 /* نطاق وقت الوردية. التطبيق عربي RTL: في اتجاه القراءة (يمين→يسار)
    السهم يجب أن يشير لليسار ليعكس التقدّم من وقت البداية (يمين) لوقت النهاية (يسار).
    استخدام "→" يجعله يشير بصريًا نحو وقت البداية، أي معكوسًا.
-   القيم نفسها (البداية/النهاية) وترتيبها المنطقي لم يتغير — تغيّر شكل الحرف فقط. */
+   القيم تُبنى ديناميكيًا من الإعدادات (مصدر واحد) وليست ثابتة. */
 function shiftRangeLabel(n){
-  if(n===2) return '7:00 م ← 2:00 ف';
-  if(n===1) return '10:00 ص ← 7:00 م';
-  return '2:00 ف ← 10:00 ص';
+  const t=shiftTimes();
+  if(n===1) return fmtShiftTime12(t.s1)+' ← '+fmtShiftTime12(t.e1);
+  if(n===2) return fmtShiftTime12(t.s2)+' ← '+fmtShiftTime12(t.e2);
+  return fmtShiftTime12(t.e2)+' ← '+fmtShiftTime12(t.s1);
 }
 /* نص وردية العملية لعرضه في السجلات والتقارير (0 = لا توجد وردية) */
 function shiftBadgeText(n){
   if(n===2) return SHIFT2_LABEL;
   if(n===1) return SHIFT1_LABEL;
   return NO_SHIFT_LABEL;
+}
+/* التحقق من صحة جدول الورديات قبل حفظه (تُستخدم من واجهة الإعدادات).
+   القواعد:
+   - الأوقات الأربعة موجودة بصيغة HH:MM صالحة.
+   - كل وردية لها مدة حقيقية (البداية ≠ النهاية).
+   - الوردية الأولى في نفس اليوم (بدايتها قبل نهايتها) لأنها تبدأ يوم العمل.
+   - الوردية الثانية تبدأ بعد (أو عند) نهاية الوردية الأولى — لا تداخل.
+   - لو كانت الوردية الثانية تعبر منتصف الليل يجب ألا تتجاوز نهايتها بداية الأولى.
+   تُرجع {ok:true} أو {ok:false,msg:'سبب واضح'}. */
+function validateShiftTimes(cfg){
+  const bad=function(msg){ return {ok:false,msg:msg}; };
+  if(!isValidShiftTime(cfg.s1)) return bad('وقت بداية الوردية الأولى ناقص أو بصيغة غير صحيحة (الصيغة المطلوبة HH:MM).');
+  if(!isValidShiftTime(cfg.e1)) return bad('وقت نهاية الوردية الأولى ناقص أو بصيغة غير صحيحة (الصيغة المطلوبة HH:MM).');
+  if(!isValidShiftTime(cfg.s2)) return bad('وقت بداية الوردية الثانية ناقص أو بصيغة غير صحيحة (الصيغة المطلوبة HH:MM).');
+  if(!isValidShiftTime(cfg.e2)) return bad('وقت نهاية الوردية الثانية ناقص أو بصيغة غير صحيحة (الصيغة المطلوبة HH:MM).');
+  const s1=parseShiftTime(cfg.s1), e1=parseShiftTime(cfg.e1);
+  const s2=parseShiftTime(cfg.s2), e2=parseShiftTime(cfg.e2);
+  if(s1===e1) return bad('الوردية الأولى: وقت البداية يساوي وقت النهاية — يجب أن يختلفان.');
+  if(s2===e2) return bad('الوردية الثانية: وقت البداية يساوي وقت النهاية — يجب أن يختلفان.');
+  if(!(s1<e1)) return bad('الوردية الأولى يجب أن تبدأ قبل أن تنتهي وألا تعبر منتصف الليل (هي بداية يوم العمل).');
+  if(!(e1<=s2)) return bad('الوردية الثانية يجب أن تبدأ بعد (أو مع) نهاية الوردية الأولى — لا يجوز تداخل الورديتين.');
+  if(e2<=s2 && !(e2<=s1)) return bad('الوردية الثانية تعبر منتصف الليل وتتداخل مع الوردية الأولى — اجعل نهايتها قبل بداية الوردية الأولى.');
+  return {ok:true};
+}
+
+/* حدود يوم العمل: يوم العمل يبدأ مع بداية الوردية الأولى (مصدر واحد).
+   الوردية الثانية قد تمتد بعد منتصف الليل، وأي وقت قبل بداية الوردية الأولى
+   (بما فيه امتداد وردية الليل) يُنسب لليوم السابق — نفس اليوم الذي بدأت
+   فيه وردية الليل. */
+function businessDayStartMin(){
+  const t=shiftTimes();
+  const m=parseShiftTime(t.s1);
+  return m===null?600:m;   /* احتياطيًا 10:00 ص لو كان الإعداد تالفًا */
+}
+function businessDateLabel(ts){
+  const d=new Date(ts);
+  const start=businessDayStartMin();
+  if(d.getHours()*60+d.getMinutes()<start){ d.setDate(d.getDate()-1); }
+  return AR_DAYS[d.getDay()]+' '+d.getDate()+' '+AR_MONTHS[d.getMonth()]+' '+d.getFullYear();
+}
+function businessDayKeyFrom(d){
+  const start=businessDayStartMin();
+  if(d.getHours()*60+d.getMinutes()<start) d.setDate(d.getDate()-1);
+  return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
 }
 /* نص طريقة الدفع لعرضها في سجل المرتجعات */
 function methodText(m){
@@ -2800,20 +3172,6 @@ function methodText(m){
   return '';
 }
 
-/* حدود يوم العمل: يوم العمل يبدأ الساعة 10:00 ص. الوردية الثانية تمتد بعد
-   نص الليل حتى 2:00 فجرًا، وأي وقت قبل 10:00 ص (بما فيه 2:00 ف → 10:00 ص)
-   يُنسب لليوم السابق (نفس اليوم الذي بدأت فيه وردية الليل). */
-const BUSINESS_DAY_START_HOUR=10;
-function businessDateLabel(ts){
-  const d=new Date(ts);
-  // الساعات قبل 10:00 ص (0:00 → 9:59) تُنسب لليوم السابق
-  if(d.getHours()<BUSINESS_DAY_START_HOUR){ d.setDate(d.getDate()-1); }
-  return AR_DAYS[d.getDay()]+' '+d.getDate()+' '+AR_MONTHS[d.getMonth()]+' '+d.getFullYear();
-}
-function businessDayKeyFrom(d){
-  if(d.getHours()<BUSINESS_DAY_START_HOUR) d.setDate(d.getDate()-1);
-  return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
-}
 function fmtTime12(d){
   let h=d.getHours(); const m=d.getMinutes();
   const ampm = h<12 ? 'ص' : 'م';
@@ -2833,7 +3191,7 @@ function tickClock(){
   if(st) st.textContent=sh===0
     ? 'الوردية: لا توجد وردية نشطة ('+shiftRangeLabel(0)+')'
     : 'الوردية: '+(sh===2?SHIFT2_LABEL:SHIFT1_LABEL)+' ('+shiftRangeLabel(sh)+')';
-  /* المظهر التلقائي: يتغيّر لحظيًا على حدود 10:00 ص و7:00 م بدون إعادة تشغيل */
+  /* المظهر التلقائي: يتغيّر على حدود الورديتين (مصدر واحد) بدون إعادة تشغيل */
   try{
     const s=settings();
     if(s.autoTheme){
@@ -2947,6 +3305,7 @@ function gameChartHTML(agg){
 }
 let _repPeriod='today';
 function openReports(period){
+  if(!MalahyPerm.hasPerm('reports')){ MalahyPerm.deny(); return; }
   _repPeriod = period || _repPeriod || 'today';
   const {recs,agg}=buildReportData(_repPeriod);
   const tabs=el('div',{class:'rep-tabs'});
@@ -3061,7 +3420,7 @@ function reviewSection(period){
 /* ---- طباعة سجل المرتجعات على الطابعة الحرارية ---- */
 function reviewLogHTML(period){
   const list=reviewInRange(period);
-  const L='------------------------------';
+  const hr=function(){ return MalahyDailyReport.hrHTML(paperKind()); };
   let rowsH='';
   let totQty=0,totVal=0;
   list.forEach(function(r){
@@ -3086,17 +3445,18 @@ function reviewLogHTML(period){
     +'<div class="c s">الفترة: '+esc(periodLabel(period))+'</div>'
     +'<div class="c s">تاريخ التقرير: '+esc(fmtDMY(new Date()))+'</div>'
     +'<div class="c s">وقت الطباعة: '+esc(fmtTime12(new Date()))+'</div>'
-    +'<div class="hr">'+L+'</div>'
+    +hr()
     +(rowsH||'<div class="c">لا توجد عمليات</div>')
-    +'<div class="hr">'+L+'</div>'
+    +hr()
     +'<div class="tot"><span>إجمالي عدد المرتجعات</span><span class="num">'+fmtNum(list.length)+'</span></div>'
     +'<div class="tot"><span>إجمالي التذاكر المرتجعة</span><span class="num">'+fmtNum(totQty)+'</span></div>'
     +'<div class="tot"><span>إجمالي قيمة المرتجعات</span><span class="num">-'+fmtNum(totVal)+' ج</span></div>'
-    +'<div class="hr">'+L+'</div>'
+    +hr()
     +'<div class="c s">'+esc(brandName())+'</div>'
     +'</body></html>';
 }
 async function printReviewLog(period){
+  if(!MalahyPerm.hasPerm('reportPrint')){ MalahyPerm.deny(); return; }
   try{
     if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return; }
     const st=settings();
@@ -3281,6 +3641,7 @@ function reviewReportBlock(period){
     +'</table>';
 }
 async function exportReportPDF(period){
+  if(!MalahyPerm.hasPerm('reportExport')){ MalahyPerm.deny(); return; }
   if(!(window.malahyExport && window.malahyExport.savePDF)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
   const {agg,recs}=buildReportData(period);
   try{
@@ -3291,6 +3652,7 @@ async function exportReportPDF(period){
   }catch(e){ toast('تعذّر حفظ PDF','warn'); }
 }
 async function exportReportExcel(period){
+  if(!MalahyPerm.hasPerm('reportExport')){ MalahyPerm.deny(); return; }
   if(!(window.malahyExport && window.malahyExport.saveCSV)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
   const {agg,recs}=buildReportData(period);
   try{
@@ -3304,6 +3666,69 @@ async function exportReportExcel(period){
 /* ============ الطباعة (تذاكر) + الإعدادات (طباعة/تحديثات) ============ */
 let _lastUpdate={state:'idle'};
 function pad(n,w){ n=String(n); while(n.length<w) n='0'+n; return n; }
+
+/* ============ رمز QR على التذكرة (ميزة اختيارية — افتراضيًا مُغلق) ============ */
+/* الرمز يُولَّد هنا (في الواجهة) وليس في نافذة الطباعة، لأن نافذة الطباعة
+   تُحمّل بدون JavaScript. لذلك نُولّد SVG مضمَّن وندفعه داخل HTML التذكرة.
+   مصدر الرابط = إعداد venueMapUrl (مصدر واحد). لا يُولَّد أي رمز لو كانت
+   الميزة مُغلقة أو الرابط غير صالح — والتخطيط يطوي نفسه طبيعيًا بدونه. */
+function isValidMapUrl(u){ return /^https?:\/\/\S+$/i.test(String(u||'').trim()); }
+/* تُرجع نص SVG مضمَّن للرمز، أو '' لو لا يُمكن توليده.
+   الحجم يُطبَّق بـ CSS من التذكرة (السمات width/height يطغى عليها CSS). */
+function ticketQrSvg(url){
+  try{
+    if(!isValidMapUrl(url)) return '';
+    if(!(window.qrcode && typeof window.qrcode==='function')) return '';
+    const qr=window.qrcode(0,'M');   /* 0 = حجم تلقائي · M = تصحيح أخطاء متوسط */
+    qr.addData(String(url).trim());
+    qr.make();
+    /* cellSize صغير (2) + هامش 4 وحدات = منطقة بيضاء هادئة حول الرمز
+       (Quiet Zone ضرورية ليكون الرمز مقروءًا على الطابعات الحرارية). */
+    return qr.createSvgTag({cellSize:2,margin:4,scalable:true});
+  }catch(e){
+    logErr('ticketQrSvg',e);
+    return '';
+  }
+}
+/* هل يجب إظهار QR على التذكرة الآن؟ (الإعداد + صحة الرابط) */
+function ticketQrEnabled(){
+  const s=settings();
+  return !!(s.showTicketQrCode && isValidMapUrl(s.venueMapUrl));
+}
+/* شعار النشاط جاهزًا للطباعة: نحوّله إلى data URL صغير (نرسمه على canvas
+   بارتفاع صغير) ليكون حادًا على الطابعة ويبقى حجم HTML التذكرة صغيرًا. لو
+   تعذّر تحميل الشعار نُرجع '' فتُطبع التذكرة بدونه (لا تنكسر). */
+const _logoPrintCache={};
+function brandLogoPrint(maxH){
+  maxH=maxH||28;
+  const src=brandLogo();
+  const key=maxH+'::'+src.slice(0,96);
+  if(_logoPrintCache[key]) return Promise.resolve(_logoPrintCache[key]);
+  return new Promise(function(resolve){
+    try{
+      const img=new Image();
+      img.onload=function(){
+        try{
+          const nat=img.naturalWidth||img.width||0;
+          const nh=img.naturalHeight||img.height||0;
+          if(!nat||!nh){ resolve(''); return; }
+          const h=Math.min(maxH,nh);
+          const w=Math.max(1,Math.round(nat*(h/nh)));
+          const cv=document.createElement('canvas');
+          cv.width=w; cv.height=h;
+          const ctx=cv.getContext('2d');
+          ctx.clearRect(0,0,w,h);
+          ctx.drawImage(img,0,0,w,h);
+          const url=cv.toDataURL('image/png');
+          _logoPrintCache[key]=url;
+          resolve(url);
+        }catch(e){ logErr('brandLogoPrint:draw',e); resolve(''); }
+      };
+      img.onerror=function(){ resolve(''); };
+      img.src=src;
+    }catch(e){ logErr('brandLogoPrint',e); resolve(''); }
+  });
+}
 /* نوع/عرض الورق المختار — يكيّف التذكرة والتقارير مع الطابعة لمنع قص النص.
     'auto' يستنتج العرض من اسم الطابعة (58/80 حراري، وإلا A4 للطابعات العادية). */
 function paperKind(){
@@ -3318,75 +3743,73 @@ function paperKind(){
     الطابعة العادية كطابعة حرارية وإرسال خيارات طباعة غير صالحة. */
   return 'a4';
 }
-/* CSS مشترك للتذاكر (نسبية الخط حسب عرض الورق) — 58/80مم حراري أو A4 */
+/* CSS مشترك للتذاكر (نسبية الخط حسب عرض الورق) — 58/80مم حراري أو A4.
+   التصميم أبيض وأسود فقط، بخطوط قوية وحدود واضحة وفواصل متقطّعة، مُحسَّن
+   للطباعة الحرارية: لا تدرّجات ولا ظلال ولا خلفيات ملونة كبيرة. */
 function ticketCSS(){
   const pk=paperKind();
   const small=(pk==='58');
   const a4=(pk==='a4');
   const bodyW=small?48:72;
+  /* أحجام مضغوطة: انخفاض الهوامش والحشو الرأسي مع الحفاظ على التباين والقراءة.
+     لا تدرّجات ولا ظلال — أبيض/أسود فقط للطباعة الحرارية. */
   const f=small
-    ? {shop:14,sub:10,title:13,row:11,big:15,pay:13,foot:11,tiny:9,cost:17,pad:'3mm 2mm'}
-    : {shop:16,sub:11,title:15,row:13,big:17,pay:15,foot:12,tiny:10,cost:21,pad:'4mm 3mm'};
-  return '*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    ? {venue:14,title:9,glabel:8.5,game:11.5,label:9,pv:11,total:16,payv:13,row:10,foot:10.5,notice:8.5,pad:'1.75mm 1.5mm',rad:'7px',logo:22,qr:64}
+    : {venue:17,title:10,glabel:9.5,game:14,label:10,pv:13,total:19,payv:15,row:11.5,foot:11.5,notice:9.5,pad:'2.25mm 2mm',rad:'9px',logo:30,qr:80};
+  /* حجم QR فيزيائي ثابت لكل أنواع الورق (بعد أساسي 17mm — يبقى ضمن منطقة
+     الطباعة لكل من 58/80مم و A4 مع هامش 4mm أبيض حوله). */
+  const qrMm='17';
+  return '*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo","Tajawal","Segoe UI",Tahoma,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
     +(a4?'@page{size:A4;margin:10mm;}body{width:'+bodyW+'mm;margin:0 auto;}':'')
-    +'body{width:'+bodyW+'mm;padding:'+f.pad+';color:#000;}'
+    +'body{width:'+bodyW+'mm;padding:'+f.pad+';color:#000;background:#fff;}'
     +'.c{text-align:center;} .num{direction:ltr;unicode-bidi:embed;}'
-    +'.shop{font-size:'+f.shop+'px;font-weight:800;line-height:1.3;}'
-    +'.sub{font-size:'+f.sub+'px;color:#333;margin-top:2px;}'
-    +'.title{font-size:'+f.title+'px;font-weight:800;margin:7px 0;padding:5px 0;border-top:2px dashed #000;border-bottom:2px dashed #000;}'
-    +'.row{display:flex;justify-content:space-between;gap:8px;font-size:'+f.row+'px;margin:4px 0;}'
-    +'.row .v{font-weight:800;}'
-    +'.big{font-size:'+f.big+'px;font-weight:800;}'
-    +'.pay{margin:9px 0;padding:7px;text-align:center;font-size:'+f.pay+'px;font-weight:800;border:2px solid #000;border-radius:8px;}'
-    +'.pay.e{background:#000;color:#fff;}'
-    +'.desc{margin:8px 0;padding:8px 6px;text-align:center;font-size:'+f.big+'px;font-weight:800;border:2px solid #000;border-radius:8px;word-break:break-word;line-height:1.4;}'
-    +'.cost{margin:9px 0;padding:9px;text-align:center;font-size:'+f.cost+'px;font-weight:800;border:2px solid #000;border-radius:8px;background:#000;color:#fff;}'
-    +'.hr{border-top:1px dashed #000;margin:7px 0;}'
-    +'.foot{text-align:center;font-size:'+f.foot+'px;margin-top:9px;font-weight:700;}'
-    +'.tiny{font-size:'+f.tiny+'px;color:#444;text-align:center;margin-top:4px;}';
+    /* الهيدر الزخرفي (الشعار فقط — حُذفت الفواصل المعيّنة التي تستهلك ارتفاعًا) */
+    +'.logo-wrap{margin:0 0 2px;}'
+    +'.logo{height:'+f.logo+'px;width:auto;max-width:100%;object-fit:contain;}'
+    /* اسم النشاط — صندوق أسود ممتلئ بنص أبيض (كما في التصميم المرجعي) */
+    +'.venue{background:#000;color:#fff;border-radius:'+f.rad+';padding:5px 8px;text-align:center;font-size:'+f.venue+'px;font-weight:900;line-height:1.15;margin:2px 0 3px;word-break:break-word;}'
+    /* عنوان التذكرة */
+    +'.ttl{text-align:center;font-size:'+f.title+'px;font-weight:800;margin:0 0 4px;}'
+    /* اسم اللعبة — عنصر مضغوط (وسم صغير + قيمة) بدل الصندوق الكبير */
+    +'.game{text-align:center;margin:2px 0 4px;}'
+    +'.game .gl{font-size:'+f.glabel+'px;font-weight:800;color:#333;line-height:1.15;}'
+    +'.game .gv{font-size:'+f.game+'px;font-weight:900;line-height:1.2;word-break:break-word;}'
+    /* صف مضغوط بعمودين: عدد التذاكر + سعر التذكرة (التسمية يمينًا والقيمة يسارًا) */
+    +'.pairrow{display:flex;gap:6px;margin:3px 0;}'
+    +'.pcell{flex:1;display:flex;justify-content:space-between;align-items:baseline;gap:4px;}'
+    +'.pcell .pl{font-size:'+f.label+'px;font-weight:700;color:#333;}'
+    +'.pcell .pv{font-size:'+f.pv+'px;font-weight:900;}'
+    /* الإجمالي — صندوق رفيع بحدود مستديرة (بدل الشريط الأسود السميك) */
+    +'.total{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0;padding:4px 8px;border:2px solid #000;border-radius:'+f.rad+';font-weight:900;}'
+    +'.total .tl{font-size:'+f.label+'px;}'
+    +'.total .tv{font-size:'+f.total+'px;}'
+    /* طريقة الدفع — نفس نمط الإجمالي المضغوط */
+    +'.pay{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0;padding:4px 8px;border:2px solid #000;border-radius:'+f.rad+';font-weight:900;}'
+    +'.pay .pl{font-size:'+f.label+'px;color:#333;}'
+    +'.pay .pv{font-size:'+f.payv+'px;}'
+    /* صفوف البيانات (رقم التذكرة/التاريخ) — أسطر مضغوطة */
+    +'.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:'+f.row+'px;line-height:1.2;margin:1px 0;}'
+    +'.row .l{font-weight:700;color:#333;}'
+    +'.row .v{font-weight:900;}'
+    +'.dashed{border-top:2px dashed #000;margin:5px 0;}'
+    /* رمز QR — أسفل القطعة الفنية مباشرة بحجم فيزيائي ثابت (~17mm) مع هامش
+       أبيض ~4mm حوله. لا يحجز أي مساحة عند الإغلاق (العنصر غير موجود أصلاً). */
+    +'.qr-box{margin:2mm 0 4mm;text-align:center;background:#fff;}'
+    +'.qr-box svg{width:'+qrMm+'mm;height:'+qrMm+'mm;}'
+    /* التذييل */
+    +'.foot{margin-top:4px;text-align:center;font-size:'+f.foot+'px;font-weight:900;}'
+    /* إشعار عدم الرد/الاستبدال — نص مركزي بسيط بلا إطار (كما في المرجع) */
+    +'.notice{margin-top:2px;text-align:center;font-size:'+f.notice+'px;font-weight:800;line-height:1.3;}'
+    +'.tiny{font-size:'+(f.label-1)+'px;color:#333;text-align:center;margin-top:2px;}';
 }
-/* CSS للتقارير الحرارية النصّية — يتكيّف مع 58/80مم */
+/* CSS للتقارير الحرارية النصّية — مصدر واحد الآن في daily-report.js
+   (يتكيّف مع 58/80مم و A4). نُبقي هذا الغلاف لنفس اسم الدالة المستخدمة في
+   باقي التقارير، ويأخذ نوع الورق من إعداد الطابعة. */
 function reportPaperCSS(){
-  const pk=paperKind();
-  if(pk==='a4') return a4ReportCSS(13);
-  return thermalReportCSS(pk==='58'?48:72, pk==='58'?11:12);
+  return MalahyDailyReport.paperCSS(paperKind());
 }
-function thermalReportCSS(bodyW,fs){
-  return '*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-    +'@page{margin:0;}'
-    +'body{width:'+bodyW+'mm;padding:3mm 2mm;color:#000;background:#fff;'
-    +'font-family:"Consolas","Courier New",monospace;font-size:'+fs+'px;line-height:1.45;font-weight:700;}'
-    +'.c{text-align:center;} .b{font-weight:800;} .big{font-size:'+(fs+2)+'px;}'
-    +'.s{font-size:'+(fs-2)+'px;font-weight:700;margin-top:1px;}'
-    +'.num{direction:ltr;unicode-bidi:embed;}'
-    +'.hr{white-space:nowrap;overflow:hidden;font-size:'+fs+'px;letter-spacing:0;margin:3px 0;}'
-    +'.r{display:flex;justify-content:space-between;gap:6px;margin:2px 0;}'
-    +'.r .l{text-align:right;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
-    +'.sub2{font-size:'+(fs-2)+'px;font-weight:700;color:#000;margin:0 0 2px 4px;}'
-    +'.rr{border-bottom:1px dashed #000;padding:3px 0;}'
-    +'.rl{display:flex;justify-content:space-between;gap:6px;}'
-    +'.tp{font-weight:800;}'
-    +'.r2{display:flex;justify-content:space-between;gap:6px;font-size:'+(fs-2)+'px;margin-top:1px;}'
-    +'.tot{display:flex;justify-content:space-between;margin-top:5px;font-weight:800;}';
-}
-function a4ReportCSS(fs){
-  return '*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
-    +'@page{size:A4;margin:12mm;}'
-    +'body{color:#000;background:#fff;font-family:"Consolas","Courier New",monospace;'
-    +'font-size:'+fs+'px;line-height:1.6;font-weight:700;}'
-    +'.c{text-align:center;} .b{font-weight:800;} .big{font-size:'+(fs+3)+'px;}'
-    +'.s{font-size:'+(fs-1)+'px;font-weight:700;margin-top:2px;}'
-    +'.num{direction:ltr;unicode-bidi:embed;}'
-    +'.hr{border-top:1px dashed #000;margin:7px 0;}'
-    +'.r{display:flex;justify-content:space-between;gap:12px;margin:3px 0;}'
-    +'.r .l{text-align:right;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
-    +'.sub2{font-size:'+(fs-1)+'px;font-weight:700;color:#000;margin:0 0 3px 6px;}'
-    +'.rr{border-bottom:1px dashed #000;padding:5px 0;}'
-    +'.rl{display:flex;justify-content:space-between;gap:12px;}'
-    +'.tp{font-weight:800;}'
-    +'.r2{display:flex;justify-content:space-between;gap:12px;font-size:'+(fs-1)+'px;margin-top:2px;}'
-    +'.tot{display:flex;justify-content:space-between;margin-top:8px;font-weight:800;}';
-}
+function thermalReportCSS(bodyW,fs){ return MalahyDailyReport.thermalReportCSS(bodyW,fs); }
+function a4ReportCSS(fs){ return MalahyDailyReport.a4ReportCSS(fs); }
 function ticketStamp(d){
   d=d||new Date();
   const y=d.getFullYear(), mo=pad(d.getMonth()+1,2), da=pad(d.getDate(),2);
@@ -3394,25 +3817,218 @@ function ticketStamp(d){
   h=h%12; if(h===0) h=12;
   return y+'/'+mo+'/'+da+' - '+pad(h,2)+':'+m+' '+ap;
 }
+/* ============ قالب تذاكر الطباعة SVG (المرحلة 2B — دمج القالب الموجود) ============
+   المصدر: assets/ticket/ticket-template.js المُحمَّل في <head> كـ script عادي
+   (نفس أسلوب qrcode.js و activation.js). يُصدِّر window.MalahyTicketTemplate.get()
+   الذي يُرجع محتوى assets/ticket/ticket-template.svg كاملًا كنص (مطابق بايتًا).
+
+   لماذا التضمين كنص داخل HTML؟ وثيقة الطباعة تُحمّل عبر data:text/html مع
+   javascript:false (انظر معالج print-ticket في main.js)، فلا يمكنها الوصول
+   إلى ملف نسبي ولا تشغيل سكربت داخلي — الطريقة الوحيدة هي تضمين نص الـ SVG
+   نفسه داخل HTML التذكرة قبل إرسالها للطباعة. هذا القسم يقرأ القالب بأمان
+   ويُضمّنه دون أي تعديل لنصه (لا تراكبات ديناميكية بعد — هذه المرحلة دمج فقط). */
+
+/* قراءة آمنة لقالب الـ SVG من النافذة. تُرجع النص الكامل كما هو، أو '' لو لم
+   يكن القالب متوفرًا أو تالفًا (السلاسل ثابتة في JS فلا يمكن تعديل الأصل). */
+function ticketTemplateSvg(){
+  try{
+    const t=(typeof window!=='undefined')?window.MalahyTicketTemplate:null;
+    if(!t || typeof t.get!=='function') return '';
+    const svg=t.get();
+    return (typeof svg==='string' && svg.length>0)?svg:'';
+  }catch(e){ try{ logErr('ticketTemplateSvg',e); }catch(_){} return ''; }
+}
+/* هل قالب الـ SVG متوفر وجاهز؟ (للتحقق فقط — بلا أثر جانبي) */
+function ticketTemplateAvailable(){ return ticketTemplateSvg().length>0; }
+
+/* CSS خاص بقطعة الرسم المضمّنة. لا يُعدّل نص الـ SVG إطلاقًا: نُبقي على
+   viewBox الأصلي ونسبة أبعاده فيُعرض بكامل عرض التذكرة مع height:auto فلا
+   يحدث أي تشويه ولا قص للرسم. محدد ضمن .art فقط فلا يمسّ رمز QR (.qr-box).
+   .art صار حاوية نسبية (position:relative) لتراكبات البيانات الديناميكية
+   التي تستخدم إحداثيات viewBox نفسها (position:absolute) فتتكيّف تلقائيًا
+   مع أي عرض ورق (58/80مم أو A4) دون تخطيطات منفصلة. */
+/* CSS خاص بقطعة الرسم المضمّنة. لا يُعدّل نص الـ SVG إطلاقًا: نُبقي على
+   viewBox الأصلي ونسبة أبعاده فيُعرض بكامل عرض التذكرة مع height:auto فلا
+   يحدث أي تشويه ولا قص للرسم.
+   .art حاوية نسبية (position:relative) لتراكبات البيانات الديناميكية التي
+   تستخدم إحداثيات viewBox نفسها (position:absolute + نسب مئوية) فتتكيّف
+   تلقائيًا مع أي عرض ورق (58/80مم أو A4) دون تخطيطات منفصلة.
+   --sx = معامل التحويل من وحدة viewBox إلى px على الورق (يُحدَّد لكل نوع ورق
+   من ticketArtScaleStyle()) فيبقى الحجم البصري للنص ثابتًا على كل الطابعات. */
+function ticketArtCSS(){
+  return '.art{position:relative;width:100%;margin:0 0 2px;line-height:0;}'
+    +'.art svg{display:inline-block;width:100%;height:auto;max-width:100%;}'
+    +'.art .ov{position:absolute;direction:rtl;unicode-bidi:isolate;'
+      +'line-height:1.05;margin:0;padding:0;white-space:nowrap;overflow:hidden;'
+      +'left:var(--x);top:var(--y);width:var(--w);height:var(--h);'
+      +'font-size:calc(var(--f) * var(--sx));}'
+    +'.art .ov .fit{display:inline-block;max-width:100%;}'
+    /* القيمة الرقمية/اللاتينية بإتجاه LTR داخل الخانة (نفس سلوك .num) */
+    +'.art .ov.ltr{direction:ltr;unicode-bidi:embed;}'
+    /* الاسم الطويل قادر على الالتفاف داخل الخانة (حل أخير قبل الانكماش الأقصى) */
+    +'.art .ov.wrap{white-space:normal;line-height:1.12;}';
+}
+/* ============ المرحلة 2D — التراكبات الديناميكية المُعايرة على القالب ============
+   كل القيم أدناه بوحدات viewBox الخاص بالقالب (0 0 3250.6667 4096) ومطابقة
+   لتقرير المعاينة في المرحلة 2C. لا يُلمَس نص الـ SVG إطلاقًا؛ البيانات
+   تُرسم كعناصر HTML مطلقة فوق القطعة الفنية داخل الحاويات البيضاء المُعايرة. */
+var TICKET_ART = { w:3250.6667, h:4096 };
+/* معامل التحويل من وحدة viewBox إلى px على التذكرة المطبوعة:
+      pxPerVB = (عرض محتوى .art mm / 25.4 * 96) / عرض القالب بوحدات viewBox
+    عرض المحتوى = عرض الجسم (48mm لورق 58، 72mm لورق 80/A4) ناقص الحشو
+    الأفقي (3mm لورق 58، 4mm لورق 80/A4) فيبقى ارتفاع القالب على الورق
+    كما هو (4096 وحدة) وتظهر التراكبات بنفس الحجم البصري على كل ورق.
+    تم تقليل الحشو الأفقي والرأسي معًا: القطعة الفنية أعرض بـ ~2.3%
+    (أكبر بصريًا) بينما صار الارتفاع الكلي للتذكرة أصغر قليلًا (الهوامش
+    الرأسية المستردة تعوّض الزيادة في ارتفاع القطعة). */
+function ticketArtScaleStyle(){
+  const pk=paperKind();
+  const contentMm = (pk==='58')? 45 : 68; /* mm */
+  const pxPerVB = (contentMm/25.4*96) / TICKET_ART.w;
+  return ':root{--sx:'+pxPerVB.toFixed(6)+';}';
+}
+/* علبة اسم النشاط داخل السحابة البيضاء — مُسايرة على أكبر مستطيل أبيض
+   كامل داخل السحابة (مركزه x=1625): x[925..2325] y[960..1205]. الارتفاع
+   245 يسمح بخط أساسي 200 (ارتفاع السطر 210) فيبقى النص داخل السحابة ولا
+   يلامس شريط «إيصال تذكرة دخول» الأسود (يبدأ عند y≈1210) ولا رسوم الأطفال
+   ولا عجلة فيريس. */
+var VENUE_BOX = { x:925, w:1400, y:960, h:245, f:200, min:85 };
+/* علبة اسم اللعبة داخل المستطيل الأسود المرسوم في القالب (440..2820)،
+   مسحوب للداخل بحوالي 40 وحدة من الحواف الدائرية. */
+var GAME_BOX  = { x:480, w:2300, y:1540, h:200, f:180, min:78 };
+/* خطوات انكماش حجم الخط للأسماء الطويلة (نسبة من الحجم الأساسي). */
+var FIT_STEPS = [1, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.44, 0.36, 0.3, 0.25, 0.2];
+
+/* تقدير عرض النص بوحدات viewBox لخط عربي وزن 900 — تقريب متحفظ يُستخدم
+   فقط لاختيار أكبر حجم يبقى داخل الصندوق (لا يؤثر على البيانات نفسها). */
+function textWidthVB(str, fontSize){
+  const s = String(str==null?'':str);
+  const narrow = (s.match(/[A-Za-z0-9]/g)||[]).length;
+  return ( (s.length - narrow) * 0.56 + narrow * 0.5 ) * fontSize;
+}
+/* اختيار أكبر حجم خط (ضمن FIT_STEPS) يبقى النص عنده داخل الصندوق.
+   تُرجع حجم الخط بوحدات viewBox ولا تقل أبدًا عن min. */
+function fitFontSize(text, baseF, minF, availW){
+  if(availW<=0) return minF;
+  for(let i=0;i<FIT_STEPS.length;i++){
+    const f = baseF * FIT_STEPS[i];
+    if(textWidthVB(text, f) <= availW) return Math.max(minF, Math.round(f));
+  }
+  return minF;
+}
+
+/* بناء عنصر تراكب واحد. x,y,w,h,f بوحدات viewBox.
+   opts: {ltr:true, align:'center'|'left', color, weight, wrap:true} */
+function ticketOverlay(x,y,w,h,text,f,opts){
+  opts = opts||{};
+  const cls = 'ov'+(opts.ltr?' ltr':'')+(opts.wrap?' wrap':'');
+  const style = '--x:'+(x/TICKET_ART.w*100)+'%;--y:'+(y/TICKET_ART.h*100)+'%;'
+    +'--w:'+(w/TICKET_ART.w*100)+'%;--h:'+(h/TICKET_ART.h*100)+'%;'
+    +'--f:'+f+'px;'
+    +(opts.align==='left' ? 'text-align:left;justify-content:flex-start;'
+       : 'text-align:center;justify-content:center;')
+    +'display:flex;align-items:center;'
+    +(opts.color ? 'color:'+opts.color+';' : '')
+    +(opts.weight ? 'font-weight:'+opts.weight+';' : 'font-weight:900;');
+  return '<div class="'+cls+'" style="'+style+'"><span class="fit">'+String(text)+'</span></div>';
+}
+
+/* كل التراكبات الديناميكية على القالب — البيانات الفعلية فقط، بإحداثيات
+   viewBox مُعايرة. تُضمّن داخل .art ولا تستهلك أي ارتفاع إضافي. */
+function ticketArtOverlays(o){
+  const v = String(brandName()||'');
+  const g = String(o.game||'');
+  const vF = fitFontSize(v, VENUE_BOX.f, VENUE_BOX.min, VENUE_BOX.w);
+  const gF = fitFontSize(g, GAME_BOX.f,  GAME_BOX.min,  GAME_BOX.w - 100);
+  const overlays = [];
+  /* 1) اسم النشاط — داخل السحابة البيضاء، وسطي، RTL، أسود، وزن 900 */
+  overlays.push(ticketOverlay(VENUE_BOX.x, VENUE_BOX.y, VENUE_BOX.w, VENUE_BOX.h,
+    esc(v), vF, {align:'center', color:'#000', weight:900, wrap:true}));
+  /* 2) اسم اللعبة — داخل المستطيل الأسود، وسطي، أبيض، وزن 900 */
+  overlays.push(ticketOverlay(GAME_BOX.x, GAME_BOX.y, GAME_BOX.w, GAME_BOX.h,
+    esc(g), gF, {align:'center', color:'#fff', weight:900, wrap:true}));
+  /* 3) العدد — القيمة يسارًا، التسمية مخبوزة يمينًا (Label بخ 2185) */
+  overlays.push(ticketOverlay(400, 1825, 1760, 175, fmtNum(o.qty), 165,
+    {ltr:true, align:'left', color:'#000', weight:900}));
+  /* 4) السعر — القيمة يسارًا مع العملة (Label بخ 2165) */
+  overlays.push(ticketOverlay(400, 2050, 1740, 175, fmtNum(o.price)+' ج', 165,
+    {ltr:true, align:'left', color:'#000', weight:900}));
+  /* 5) الإجمالي — النصف الأيسر من صندوق الإجمالي، وسطي رأسيًا، الأبرز */
+  overlays.push(ticketOverlay(377, 2349, 1610, 364, fmtNum(o.total)+' ج', 290,
+    {ltr:true, align:'center', color:'#000', weight:900}));
+  /* 6) طريقة الدفع — داخل صندوق الدفع، وسطي، RTL، أسود */
+  overlays.push(ticketOverlay(430, 2800, 2400, 275,
+    esc(o.methodLabel || (methodText(o.method)||'كاش')), 220,
+    {align:'center', color:'#000', weight:900}));
+  /* 7) رقم التذكرة — يسارًا، LTR، بمحاذاة التسمية المخبوزة يمينًا (Label بخ 2390) */
+  overlays.push(ticketOverlay(400, 3216, 1960, 148, pad(o.seq,6), 128,
+    {ltr:true, align:'left', color:'#000', weight:900}));
+  /* 8) التاريخ والوقت — سطر واحد، LTR (Label بخ 2610) */
+  overlays.push(ticketOverlay(400, 3412, 2180, 140, esc(ticketStamp(o.when)), 126,
+    {ltr:true, align:'left', color:'#000', weight:900}));
+  /* 9) الإشعار الإلزامي — أسفل الرسم الزخرفي مباشرة (ينتهي عند y≈3845)،
+   وسطي، RTL، داخل الهامش الأبيض السفلي للقالب */
+  overlays.push(ticketOverlay(377, 3850, 2503, 246, 'التذكرة لا ترد ولا تستبدل', 150,
+    {align:'center', color:'#000', weight:800}));
+  return overlays.join('');
+}
+
+/* بناء HTML التذكرة. كل القيم ديناميكية من عملية البيع الفعلية: اسم النشاط
+   من نظام الهوية، واسم اللعبة والعدد والسعر والإجمالي ورقم التذكرة والتاريخ
+   وطريقة الدفع من العملية. لا يوجد أي نص مثالّي مكتوب يدويًا.
+   لو كان قالب الـ SVG متوفرًا تُرسم البيانات كتراكبات مُعايرة فوق القطعة
+   الفنية؛ وإلا تُستخدم نسخة HTML البحتة الاحتياطية كي لا تتوقف الطباعة. */
 function ticketHTML(o){
-  const isE=o.method==='elec';
-  const payTxt=isE?'تحويل إلكتروني 💳':'كاش 💵';
+  const svg=ticketTemplateSvg();
+  return svg ? ticketHTMLSvg(o,svg) : ticketHTMLFallback(o);
+}
+/* نسخة القالب المُدمج (المرحلة 2D): القطعة الفنية + التراكبات الديناميكية
+   المُعايرة + QR الاختياري فقط. لا تدفق مستند للبيانات إطلاقًا. */
+function ticketHTMLSvg(o,svg){
+  const qrSvg=ticketQrEnabled()?ticketQrSvg(settings().venueMapUrl):'';
+  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
+    +ticketCSS()+ticketArtCSS()+ticketArtScaleStyle()
+    +'</style></head><body>'
+    /* ===== القالب الفني (نص SVG مضمّن كما هو) + التراكبات الديناميكية ===== */
+    +'<div class="art">'+svg+ticketArtOverlays(o)+'</div>'
+    /* ===== رمز QR (اختياري — تدفق طبيعي أسفل القطعة فقط) ===== */
+    +(qrSvg?'<div class="qr-box">'+qrSvg+'</div>':'')
+    +'</body></html>';
+}
+/* النسخة الاحتياطية (HTML بحت بلا قالب SVG) — تُستخدم تلقائيًا لو لم يكن
+   القالب متوفرًا أو تالفًا. محفوظة كما هي بالكامل ولا تُحذف. */
+function ticketHTMLFallback(o){
+  const mTxt=methodText(o.method)||'كاش';
+  const logoUrl=(typeof o.logo==='string')?o.logo:'';
+  const qrSvg=ticketQrEnabled()?ticketQrSvg(settings().venueMapUrl):'';
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
     +ticketCSS()
     +'</style></head><body>'
-    +'<div class="c shop">'+esc(brandName())+'</div>'
-    +'<div class="c sub">إيصال تذكرة دخول</div>'
-    +'<div class="title c">🎟️ '+esc(o.game)+'</div>'
-    +'<div class="row"><span>عدد التذاكر</span><span class="v num">'+fmtNum(o.qty)+'</span></div>'
-    +'<div class="row"><span>سعر التذكرة</span><span class="v num">'+fmtNum(o.price)+' ج</span></div>'
-    +'<div class="hr"></div>'
-    +'<div class="row big"><span>الإجمالي</span><span class="v num">'+fmtNum(o.total)+' ج</span></div>'
-    +'<div class="pay'+(isE?' e':'')+'">'+payTxt+'</div>'
-    +'<div class="row"><span>رقم التذكرة</span><span class="v num">'+pad(o.seq,6)+'</span></div>'
-    +'<div class="row"><span>التاريخ</span><span class="v num">'+esc(ticketStamp(o.when))+'</span></div>'
-    +'<div class="hr"></div>'
+    /* ===== الهيدر الزخرفي: شعار ===== */
+    +(logoUrl?'<div class="c logo-wrap"><img class="logo" src="'+logoUrl+'" alt=""></div>':'')
+    /* ===== اسم النشاط — صندوق أسود ممتلئ (ديناميكي من نظام الهوية) ===== */
+    +'<div class="venue">'+esc(brandName())+'</div>'
+    +'<div class="ttl">🎟️ تذكرة دخول</div>'
+    /* ===== اسم اللعبة — عنصر مضغوط ===== */
+    +'<div class="game"><div class="gl">اللعبة</div><div class="gv">'+esc(o.game)+'</div></div>'
+    /* ===== العدد + السعر في صف واحد مضغوط ===== */
+    +'<div class="pairrow">'
+      +'<div class="pcell"><span class="pl">عدد التذاكر</span><span class="pv num">'+fmtNum(o.qty)+'</span></div>'
+      +'<div class="pcell"><span class="pl">سعر التذكرة</span><span class="pv num">'+fmtNum(o.price)+' ج</span></div>'
+    +'</div>'
+    /* ===== الإجمالي (ناتج عملية البيع نفسها) — صندوق رفيع ===== */
+    +'<div class="total"><span class="tl">الإجمالي</span><span class="tv num">'+fmtNum(o.total)+' ج</span></div>'
+    /* ===== طريقة الدفع — صندوق رفيع ===== */
+    +'<div class="pay"><span class="pl">طريقة الدفع</span><span class="pv">'+esc(mTxt)+'</span></div>'
+    +'<div class="dashed"></div>'
+    /* ===== رقم التذكرة + التاريخ والوقت (أسطر مضغوطة) ===== */
+    +'<div class="row"><span class="l">رقم التذكرة</span><span class="v num">'+pad(o.seq,6)+'</span></div>'
+    +'<div class="row"><span class="l">التاريخ</span><span class="v num">'+esc(ticketStamp(o.when))+'</span></div>'
+    /* ===== رمز QR (اختياري — بلا قسم مستقل؛ لا يحجز أي مساحة عند الإغلاق) ===== */
+    +(qrSvg?'<div class="qr-box">'+qrSvg+'</div>':'')
+    /* ===== التذييل + الإشعار الثابت (مضغوطان بلا إطار) ===== */
     +'<div class="foot">شكراً لزيارتكم 🎈</div>'
-    +'<div class="tiny">'+esc(o.game)+' · '+(isE?'مدفوعة إلكترونياً':'مدفوعة كاش')+'</div>'
+    +'<div class="notice">التذكرة لا ترد ولا تستبدل</div>'
     +'</body></html>';
 }
 /* تفسير نتيجة الطباعة القادمة من العملية الرئيسية: تسجّل السبب الفعلي للفشل
@@ -3430,37 +4046,71 @@ function printResultToast(res,okMsg){
 }
 
 async function printTicket(id,qty,method){
+  /* الطباعة تحتاج صلاحية ticketPrint — لو أُلغيت من الكاشير يُسجَّل البيع
+     ويُطبَّع لاحقًا من الإدارة؛ العملية نفسها لا تتأثر. */
+  if(!MalahyPerm.hasPerm('ticketPrint')) return;
   const st=settings();
   if(!st.autoPrint) return;
   if(!(window.malahyPrint && window.malahyPrint.printTicket)) return;
   const g=GAMES.find(x=>x.id===id); if(!g) return;
   ticketSeq++; saveJSON(K_SEQ,ticketSeq);
-  const html=ticketHTML({game:g.name,qty:qty,method:(method==='elec'?'elec':'cash'),price:g.price,total:qty*g.price,seq:ticketSeq,when:new Date()});
+  const logo=await brandLogoPrint(paperKind()==='58'?22:30);
+  const html=ticketHTML({game:g.name,qty:qty,method:(method==='elec'?'elec':'cash'),price:g.price,total:qty*g.price,seq:ticketSeq,when:new Date(),logo:logo});
   try{
     const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
     printResultToast(res);
   }catch(e){ logErr('printTicket',e); toast('تعذّرت الطباعة','warn'); }
 }
-/* ============ تذكرة الهدية (نفس تصميم تذاكر الألعاب — تتكيّف مع عرض الورق) ============ */
+/* ============ تذكرة الهدية (نفس تصميم تذاكر الألعاب — تتكيّف مع عرض الورق) ============
+   مثل تذاكر الألعاب: لو كان قالب الـ SVG متوفرًا يُضمَّن في رأس الإيصال كقطعة
+   فنية أصلية (viewBox وأبعادها محفوظة)، وإلا تُستخدم نسخة HTML البحتة
+   الاحتياطية. تذكرة الهدية تستخدم نفس معمارية التراكبات ونفس مواقعها. */
 function giftTicketHTML(o){
+  const svg=ticketTemplateSvg();
+  return svg ? giftTicketHTMLSvg(o,svg) : giftTicketHTMLFallback(o);
+}
+/* نسخة قالب إيصال الهدية: نفس القالب الفني + تراكبات ديناميكية في الحاويات
+   البيضاء نفسها. بيانات الهدية تُ mapping إلى نفس حقوب التذكرة (البيان في
+   خانة اللعبة، التكلفة في خانة الإجمالي) دون أي تغيير لحسابات الهدية. */
+function giftTicketHTMLSvg(o,svg){
+  const qrSvg=ticketQrEnabled()?ticketQrSvg(settings().venueMapUrl):'';
+  const data = {
+    game: o.desc||'هدية',
+    qty: 1,
+    price: o.amount||0,
+    total: o.amount||0,
+    method: 'cash',
+    methodLabel: 'هدية',
+    seq: o.seq||0,
+    when: o.when
+  };
+  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
+    +ticketCSS()+ticketArtCSS()+ticketArtScaleStyle()
+    +'</style></head><body>'
+    /* ===== القالب الفني + التراكبات (نص ديناميكي فوق القطعة فقط) ===== */
+    +'<div class="art">'+svg+ticketArtOverlays(data)+'</div>'
+    +(qrSvg?'<div class="qr-box">'+qrSvg+'</div>':'')
+    +'</body></html>';
+}
+/* النسخة الاحتياطية لإيصال الهدية (HTML بحت بلا قالب SVG) — محفوظة كما هي. */
+function giftTicketHTMLFallback(o){
+  const logoUrl=(typeof o.logo==='string')?o.logo:'';
+  const qrSvg=ticketQrEnabled()?ticketQrSvg(settings().venueMapUrl):'';
   return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
     +ticketCSS()
     +'</style></head><body>'
-    +'<div class="c shop">'+esc(brandName())+'</div>'
-    +'<div class="c sub">إيصال هدية</div>'
-    +'<div class="title c">🎁 هدية</div>'
-    +'<div class="row"><span>نوع العملية</span><span class="v">هدية</span></div>'
-    +'<div class="hr"></div>'
-    +'<div class="c" style="font-size:11px;color:#333;">بيان الهدية</div>'
-    +'<div class="desc">'+esc(o.desc||'هدية')+'</div>'
-    +'<div class="c" style="font-size:11px;color:#333;">تكلفة الهدية</div>'
-    +'<div class="cost num">'+fmtNum(o.amount)+' جنيه</div>'
-    +'<div class="row"><span>رقم العملية</span><span class="v num">'+pad(o.seq,6)+'</span></div>'
-    +'<div class="row"><span>التاريخ</span><span class="v num">'+esc(fmtDMY(o.when))+'</span></div>'
-    +'<div class="row"><span>الوقت</span><span class="v num">'+esc(fmtTime12(o.when))+'</span></div>'
-    +'<div class="hr"></div>'
-    +'<div class="foot">'+esc(brandName())+'</div>'
-    +'<div class="foot">شكراً لزيارتكم ❤️</div>'
+    +(logoUrl?'<div class="c logo-wrap"><img class="logo" src="'+logoUrl+'" alt=""></div>':'')
+    +'<div class="venue">'+esc(brandName())+'</div>'
+    +'<div class="ttl">🎁 إيصال هدية</div>'
+    +'<div class="game"><div class="gl">بيان الهدية</div><div class="gv">'+esc(o.desc||'هدية')+'</div></div>'
+    +'<div class="total"><span class="tl">تكلفة الهدية</span><span class="tv num">'+fmtNum(o.amount)+' ج</span></div>'
+    +'<div class="pay"><span class="pl">نوع العملية</span><span class="pv">هدية</span></div>'
+    +'<div class="dashed"></div>'
+    +'<div class="row"><span class="l">رقم العملية</span><span class="v num">'+pad(o.seq,6)+'</span></div>'
+    +'<div class="row"><span class="l">التاريخ</span><span class="v num">'+esc(ticketStamp(o.when))+'</span></div>'
+    +(qrSvg?'<div class="qr-box">'+qrSvg+'</div>':'')
+    +'<div class="foot">شكراً لزيارتكم 🎈</div>'
+    +'<div class="notice">التذكرة لا ترد ولا تستبدل</div>'
     +'</body></html>';
 }
 /* طباعة تذكرة هدية — بترجع true لو نجحت، false لو فشلت (التسجيل بيتم قبلها دايمًا) */
@@ -3468,11 +4118,13 @@ async function printGiftTicket(item){
   try{
     if(!(window.malahyPrint && window.malahyPrint.printTicket)) return false;
     const st=settings();
+    const logo=await brandLogoPrint(paperKind()==='58'?22:30);
     const html=giftTicketHTML({
       desc:item.desc||'هدية',
       amount:item.amount||0,
       seq:item.seq||0,
-      when:new Date(item.at||Date.now())
+      when:new Date(item.at||Date.now()),
+      logo:logo
     });
     const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
     if(!(res && res.ok) && res && (res.reason||res.error)){
@@ -3486,6 +4138,7 @@ async function printGiftTicket(item){
 }
 /* إعادة طباعة هدية من السجل */
 async function reprintGift(itemId){
+  if(!MalahyPerm.hasPerm('ticketPrint')){ MalahyPerm.deny(); return; }
   try{
     const item=(state.gifts||[]).find(function(x){ return x.id===itemId; });
     if(!item){ toast('لم يتم العثور على الهدية','warn'); return; }
@@ -3501,80 +4154,30 @@ async function reprintGift(itemId){
 async function printTestTicket(){
   if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return; }
   const st=settings();
-  const html=ticketHTML({game:'تذكرة تجريبية',qty:1,method:'cash',price:0,total:0,seq:0,when:new Date()});
+  const logo=await brandLogoPrint(paperKind()==='58'?22:30);
+  const html=ticketHTML({game:'تذكرة تجريبية',qty:1,method:'cash',price:0,total:0,seq:0,when:new Date(),logo:logo});
   try{
     const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
     printResultToast(res,'تم إرسال تذكرة تجريبية للطابعة');
   }catch(e){ logErr('printTestTicket',e); toast('تعذّرت الطباعة','warn'); }
 }
 
-/* ============ تقرير اليوم على الطابعة الحرارية (نصّي — 58mm / 80mm) ============ */
-function dayReportHTML(day){
-  const L='------------------------------';           /* فاصل ثابت */
-  const money=function(v){ return fmtNum(v)+' ج'; };
-  /* صف بعمودين: نص يمين + قيمة يسار على نفس السطر (مناسب للطباعة الحرارية) */
-  const row=function(lab,val){
-    return '<div class="r"><span class="l">'+esc(lab)+'</span><span class="v num">'+esc(val)+'</span></div>';
-  };
-  const hr='<div class="hr">'+L+'</div>';
-  let h='';
-  h+='<div class="c b big">'+esc(brandName())+'</div>';
-  h+='<div class="c">تقرير حساب اليوم</div>';
-  h+=hr;
-  h+='<div class="c b">'+esc(day.dateLabel||'يوم')+'</div>';
-  if(day.endedAt){ h+='<div class="c s">طُبع: '+esc(ticketStamp(new Date()))+'</div>'; }
-  h+=hr;
-  /* الملخص */
-  h+=row('عدد التذاكر', fmtNum(day.tickets));
-  h+=row('منها كاش', fmtNum(day.cashTickets!=null?day.cashTickets:0));
-  h+=row('منها إلكتروني', fmtNum(day.elecTickets!=null?day.elecTickets:0));
-  h+=hr;
-  h+=row('إجمالي المبيعات', money(day.revenue));
-  h+=row('مبيعات كاش', money(day.cashRevenue!=null?day.cashRevenue:0));
-  h+=row('مبيعات إلكتروني', money(day.elecRevenue!=null?day.elecRevenue:0));
-  h+=hr;
-  /* تفصيل الألعاب */
-  if(day.breakdown && day.breakdown.length){
-    h+='<div class="b">تفصيل الألعاب:</div>';
-    day.breakdown.forEach(function(b){
-      if((b.count||0)>0){
-        h+=row(b.name+' ('+fmtNum(b.count)+'×'+fmtNum(b.price)+')', money(b.total));
-        const cc=b.cashCount!=null?b.cashCount:0, ec=b.elecCount!=null?b.elecCount:0;
-        h+='<div class="sub2">كاش '+fmtNum(cc)+' · إلكتروني '+fmtNum(ec)+'</div>';
-      }
-    });
-    h+=hr;
-  }
-  /* المصروفات */
-  if(day.expenseList && day.expenseList.length){
-    h+='<div class="b">المصروفات:</div>';
-    day.expenseList.forEach(function(x){ h+=row(x.desc||'مصروف', money(x.amount)); });
-    h+=row('إجمالي المصروفات', money(day.expenses));
-    h+=hr;
-  }
-  /* الهدايا */
-  if(day.giftList && day.giftList.length){
-    h+='<div class="b">الهدايا:</div>';
-    day.giftList.forEach(function(x){
-      h+=row((x.desc||'هدية')+(x.seq?(' #'+pad(x.seq,6)):''), money(x.amount));
-      if(x.at) h+='<div class="sub2">'+esc(fmtDMY(new Date(x.at)))+' · '+esc(fmtTime12(new Date(x.at)))+'</div>';
-    });
-    h+=row('إجمالي الهدايا', money(day.gifts));
-    h+=hr;
-  }
-  /* الإجماليات */
-  h+=row('المبيعات', money(day.revenue));
-  h+=row('− المصروفات', money(day.expenses));
-  h+=row('= الصافي', money(day.net));
-  h+=row('+ الهدايا', money(day.gifts));
-  h+='<div class="r big b"><span class="l">الإجمالي النهائي</span><span class="v num">'+esc(money(calcFinalNet(day)))+'</span></div>';
-  h+=hr;
-  h+='<div class="c s">'+esc(brandName())+'</div>';
-  h+='<div class="c s">© نظام الحسابات</div>';
-
-  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>'
-    +reportPaperCSS()
-    +'</style></head><body>'+h+'</body></html>';
+/* ============ تقرير اليوم المطبوع (58mm / 80mm / A4) ============ */
+/* مصدر الحسابات والترتيب والتنسيق هو daily-report.js (مصدر واحد). نُمرّر له
+   مساعدي التطبيق الحقيقيين (حرقمة/تاريخ/قوائم الأيام/أوقات الورديات) واسم
+   النشاط المُعدّ من الإعدادات — فلا توجد أي نسخة أخرى من الحسابات. */
+MalahyDailyReport.setUtil({
+  fmtNum:fmtNum, esc:esc, fmtDMY:fmtDMY, fmtTime12:fmtTime12,
+  dayNames:AR_DAYS, monthNames:AR_MONTHS, dayStartMin:businessDayStartMin
+});
+/* بناء HTML تقرير يوم. opts.reviewHTML يُلحق سجل المرتجعات في نهاية التقرير. */
+function dayReportHTML(day, opts){
+  return MalahyDailyReport.dayReportHTML(day, Object.assign({
+    venue:brandName(),
+    paperCSS:reportPaperCSS(),
+    paper:paperKind(),
+    reviewHTML:''
+  }, opts||{}));
 }
 async function printDayReport(id){
   try{
@@ -3589,6 +4192,7 @@ async function printDayReport(id){
 }
 /* تقرير اليوم الحالي (الحي) — يُبنى من بيانات اليوم اللي لسه شغّال */
 function printTodayReport(){
+  if(!MalahyPerm.hasPerm('reportPrint')){ MalahyPerm.deny(); return; }
   try{
     const t=totals();
     const day={
@@ -3613,13 +4217,14 @@ function printTodayReport(){
 }
 /* النافذة المشتركة لطباعة تقرير يوم (مؤرشف أو حي) — مع إمكانية إرفاق سجل المرتجعات */
 function printDayReportObj(day, onCancel){
+  if(!MalahyPerm.hasPerm('reportPrint')){ MalahyPerm.deny(); return; }
   try{
     if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return; }
     /* خياران: التقرير اليومي فقط — أو اليومي + سجل المرتجعات */
     const doPrint=async function(withReview){
       const st=settings();
-      let html=dayReportHTML(day);
-      if(withReview){ html=html.replace('</body></html>', dayReviewAppendHTML(day)+'</body></html>'); }
+      /* سجل المرتجعات يُمرّر كقسم أخير للتقرير (مصدر واحد للترتيب) */
+      const html=dayReportHTML(day, { reviewHTML: withReview ? dayReviewAppendHTML(day) : '' });
       const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
       if(res && res.ok) toast('تم إرسال تقرير اليوم للطابعة 🖨️','ok');
       else if(res && res.canceled){ }
@@ -3642,8 +4247,8 @@ function printDayReportObj(day, onCancel){
 }
 /* جزء سجل المرتجعات المُلحق بتقرير اليوم (نفس يوم العمل) */
 function dayReviewAppendHTML(day){
-  const L='------------------------------';
-  /* نعتمد على مفتاح يوم العمل (حد 10:00 ص) بدل نافذة البداية/النهاية
+  const hr=function(){ return MalahyDailyReport.hrHTML(paperKind()); };
+  /* نعتمد على مفتاح يوم العمل (حد بداية الوردية الأولى) بدل نافذة البداية/النهاية
       عشان نطابق يوم العمل كاملًا حتى لو فيه مرتجعات بعد نص الليل. */
   const dayKey=businessDayKey(day.startedAt||day.endedAt||Date.now());
   const list=loadReview().filter(function(r){ return businessDayKey(r.ts||0)===dayKey; });
@@ -3661,11 +4266,11 @@ function dayReviewAppendHTML(day){
       +(r.reason?'<div class="r2"><span>السبب: '+esc(r.reason)+'</span></div>':'')
       +'</div>';
   });
-  return '<div class="hr">'+L+'</div>'
-    +'<div class="c b">🧾 سجل المرتجعات</div>'
-    +'<div class="hr">'+L+'</div>'
+  return hr()
+    +'<div class="c b" data-sec="review">🧾 سجل المرتجعات</div>'
+    +hr()
     +(rowsH||'<div class="c s">لا توجد عمليات مرتجعات</div>')
-    +'<div class="hr">'+L+'</div>'
+    +hr()
     +'<div class="r"><span class="l">عدد العمليات</span><span class="v num">'+fmtNum(list.length)+'</span></div>'
     +'<div class="r"><span class="l">إجمالي القيمة</span><span class="v num">-'+fmtNum(totVal)+' ج</span></div>';
 }
@@ -3702,6 +4307,7 @@ function paintSettingsUpdate(){
   wrap.appendChild(row);
 }
 async function openSettings(){
+  if(!MalahyPerm.hasPerm('settings')){ MalahyPerm.deny(); return; }
   const st=settings();
   const ver=(window.malahyApp && window.malahyApp.version)?(window.malahyApp.version()||''):'';
   let printers=[];
@@ -3729,6 +4335,34 @@ async function openSettings(){
     if(/58/.test(nm)) paperSel.value='58';
     else if(/80/.test(nm)) paperSel.value='80';
   });
+  /* ---- رمز QR على التذكرة (ميزة اختيارية تمامًا — افتراضيًا مُغلق) ---- */
+  const qrChk=el('input',{type:'checkbox',id:'pset-qr'});
+  qrChk.checked=!!st.showTicketQrCode;
+  const qrUrlIn=el('input',{type:'url',class:'qr-url-in',id:'pset-qrurl',
+    value:st.venueMapUrl||'',placeholder:'https://www.google.com/maps/place/...',dir:'ltr'});
+  const qrMsg=el('div',{class:'qr-msg',id:'pset-qr-msg'});
+  /* تحقق حيّ: لا نسمح بتفعيل QR بدون رابط صحيح، ونعرض السبب بوضوح */
+  function checkQr(){
+    const on=qrChk.checked;
+    const url=qrUrlIn.value.trim();
+    if(!on){
+      qrMsg.className='qr-msg'; qrMsg.textContent='';
+      qrUrlIn.classList.remove('invalid');
+      return true;
+    }
+    if(!isValidMapUrl(url)){
+      qrMsg.className='qr-msg err';
+      qrMsg.textContent='⛔ لتفعيل QR Code يجب إدخال رابط موقع صحيح يبدأ بـ http أو https — وإلا لن يُطبع رمز مقروء.';
+      qrUrlIn.classList.add('invalid');
+      return false;
+    }
+    qrMsg.className='qr-msg'; qrMsg.textContent='';
+    qrUrlIn.classList.remove('invalid');
+    return true;
+  }
+  qrChk.addEventListener('change',checkQr);
+  qrUrlIn.addEventListener('input',checkQr);
+  checkQr();
   const printCard=el('div',{class:'set-card'},[
     el('div',{class:'set-h'},[el('span',{class:'ic',text:'🖨️'}),'الطباعة']),
     el('label',{class:'switch'},[chk,'طباعة تذكرة تلقائيًا عند قطع أي تذكرة']),
@@ -3736,6 +4370,10 @@ async function openSettings(){
     el('div',{class:'field'},[el('label',{text:'نوع/عرض الورق'}),paperSel]),
     el('div',{class:'hintbox',text:'اختَر طابعتك وعرض الورق الصحيح لمنع قص النص أو الجداول. الطابعات الحرارية الشائعة 58مم و80مم؛ للطابعات العادية اختر A4. لو مش لاقي طابعتك في القائمة، تأكد إنها متوصلة ومتعرّفة في الويندوز.'}),
     el('button',{class:'testbtn',onClick:printTestTicket},[el('span',{class:'ic',text:'🧾'}),' طباعة تذكرة تجريبية']),
+    el('label',{class:'switch',style:{marginTop:'6px'}},[qrChk,'إظهار QR Code على التذكرة']),
+    el('div',{class:'field'},[el('label',{text:'رابط موقع النشاط (Google Maps) للـ QR'}),qrUrlIn]),
+    qrMsg,
+    el('div',{class:'hintbox',text:'رمز QR اختياري (افتراضيًا مُغلق). عند تفعيله يُولَّد من هذا الرابط ويظهر أسفل التذكرة بمساحة بيضاء كافية ليكون مقروءًا على الطابعات الحرارية 58/80مم والعادية A4. لا يؤثر على أي حسابات أو بيانات عملية بيع. لا يمكن تفعيله بدون رابط صحيح.'}),
   ]);
   const updCard=el('div',{class:'set-card'},[
     el('div',{class:'set-h'},[el('span',{class:'ic',text:'🔄'}),'تحديثات البرنامج']),
@@ -3748,15 +4386,71 @@ async function openSettings(){
   autoChk.addEventListener('change',function(){
     _settings.autoTheme=this.checked;
     saveSettings(); applyTheme(); paintThemeBtn();
-    toast(this.checked?'تم تفعيل المظهر التلقائي — فاتح نهارًا (10:00 ص → 7:00 م) وداكن ليلًا':'تم إلغاء المظهر التلقائي — التحكم يدوي','ok');
+    toast(this.checked?'تم تفعيل المظهر التلقائي — فاتح نهارًا ('+shiftRangeLabel(1)+') وداكن ليلًا':'تم إلغاء المظهر التلقائي — التحكم يدوي','ok');
   });
   const themeCard=el('div',{class:'set-card'},[
     el('div',{class:'set-h'},[el('span',{class:'ic',text:'🎨'}),'مظهر التطبيق']),
     el('label',{class:'switch'},[autoChk,'مظهر تلقائي حسب وقت اليوم (نهارًا فاتح · ليلًا داكن)']),
     el('div',{class:'theme-row'},[
       el('button',{class:'theme-btn',id:'themeToggle',onClick:function(){ toggleTheme(); }},[]),
-      el('div',{class:'hintbox',text:'التبديل اليدوي يلغي المظهر التلقائي ويحفظ اختيارك (يبقى بعد إعادة التشغيل). المظهر التلقائي يستخدم توقيت جهازك: فاتح من 10:00 ص إلى 7:00 م، داكن باقي اليوم.'})
+      el('div',{class:'hintbox',text:'التبديل اليدوي يلغي المظهر التلقائي ويحفظ اختيارك (يبقى بعد إعادة التشغيل). المظهر التلقائي يتبع جدول الورديات: فاتح طوال الوردية الأولى ('+shiftRangeLabel(1)+')، وداكن باقي اليوم.'})
     ]),
+  ]);
+  /* ---- بطاقة إعدادات الورديات: مصدر واحد لكل منطق الورديات في البرنامج ---- */
+  const st2=shiftTimes();
+  const s1In=el('input',{type:'time',id:'pset-shift-s1',value:st2.s1,step:300});
+  const e1In=el('input',{type:'time',id:'pset-shift-e1',value:st2.e1,step:300});
+  const s2In=el('input',{type:'time',id:'pset-shift-s2',value:st2.s2,step:300});
+  const e2In=el('input',{type:'time',id:'pset-shift-e2',value:st2.e2,step:300});
+  const shiftMsg=el('div',{class:'shift-msg',id:'pset-shift-msg'});
+  const shiftNow=el('div',{class:'shift-now',id:'pset-shift-now'});
+  function paintShiftNow(){
+    const sh=shiftOfDate(new Date());
+    shiftNow.textContent='الوردية النشطة الآن: '+shiftBadgeText(sh)+' ('+shiftRangeLabel(sh)+')';
+  }
+  function readShiftInputs(){
+    return {s1:s1In.value,e1:e1In.value,s2:s2In.value,e2:e2In.value};
+  }
+  /* تحقق حيّ أثناء الكتابة: يعرض سبب الخطأ بوضوح أو يؤكد صحة الجدول
+     (نعرض النطاقات من القيم المُدخلة نفسها لتكون المعاينة مطابقة لما سيُحفظ) */
+  function checkShift(){
+    const cfg=readShiftInputs();
+    const v=validateShiftTimes(cfg);
+    if(v.ok){
+      shiftMsg.className='shift-msg ok';
+      shiftMsg.textContent='الجدول صحيح ✓ — الأولى: '+fmtShiftTime12(cfg.s1)+' ← '+fmtShiftTime12(cfg.e1)
+        +' · الثانية: '+fmtShiftTime12(cfg.s2)+' ← '+fmtShiftTime12(cfg.e2);
+      paintShiftNow();
+    }else{
+      shiftMsg.className='shift-msg err';
+      shiftMsg.textContent='⛔ '+v.msg;
+    }
+    return v.ok;
+  }
+  [s1In,e1In,s2In,e2In].forEach(function(inp){
+    inp.addEventListener('input',checkShift);
+    inp.addEventListener('change',checkShift);
+  });
+  paintShiftNow();
+  const shiftResetBtn=el('button',{class:'testbtn',type:'button'},[el('span',{class:'ic',text:'↩️'}),' استعادة الجدول الافتراضي']);
+  shiftResetBtn.addEventListener('click',function(){
+    s1In.value=DEFAULT_SHIFT_TIMES.s1; e1In.value=DEFAULT_SHIFT_TIMES.e1;
+    s2In.value=DEFAULT_SHIFT_TIMES.s2; e2In.value=DEFAULT_SHIFT_TIMES.e2;
+    checkShift();
+    toast('تمت استعادة جدول الورديات الافتراضي (اضغط «حفظ الإعدادات» لتطبيقه)','ok');
+  });
+  const shiftCard=el('div',{class:'set-card'},[
+    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🕐'}),'إعدادات الورديات']),
+    shiftNow,
+    el('div',{class:'shift-grid'},[
+      el('div',{class:'shift-field'},[el('label',{text:'الوردية الأولى — بداية'}),s1In]),
+      el('div',{class:'shift-field'},[el('label',{text:'الوردية الأولى — نهاية'}),e1In]),
+      el('div',{class:'shift-field'},[el('label',{text:'الوردية الثانية — بداية'}),s2In]),
+      el('div',{class:'shift-field'},[el('label',{text:'الوردية الثانية — نهاية'}),e2In]),
+    ]),
+    shiftMsg,
+    el('div',{class:'shift-actions'},[shiftResetBtn]),
+    el('div',{class:'hintbox',text:'هذه الأوقات هي المصدر الوحيد لكل ما يخص الورديات: كشف الوردية النشطة، اسمها وعرضها في البرنامج، التقارير والفلاتر، حسابات اليوم والوردية، وحدود يوم العمل. يمكن للوردية الثانية عبور منتصف الليل (مثل 7:00 م ← 2:00 ف). لا يُسمح بحفظ جدول متعارض أو ناقص. التغيير يُحفظ على هذا الجهاز ويبقى بعد إعادة التشغيل والتحديث.'}),
   ]);
   /* ---- بطاقة هوية النشاط: اسم الملاهي + شعارها (مصدر واحد لكل أماكن العرض) ---- */
   const brandNameIn=el('input',{type:'text',class:'brand-name-in',id:'pset-brandname',
@@ -3807,11 +4501,15 @@ async function openSettings(){
         el('div',{class:'hintbox',text:'يُفضّل صورة PNG بخلفية شفافة لأفضل جودة (الحد الأقصى 5 ميجا). الشعار يُحفظ على هذا الجهاز ويظهر فورًا في رأس البرنامج، ويبقى بعد إعادة التشغيل. لا نخزّن مسار الملف حتى لا ينكسر الشعار لو نُقل.'}),
       ]),
     ]),
-    logoFile,   /* مدخل اختيار الملف مخفيًا داخل البطاقة */
-  ]);
-  const box=el('div',{class:'modal set-modal'},[
-    el('h3',{class:'set-title'},[el('span',{class:'ic',text:'⚙️'}),'الإعدادات']),
-    el('div',{class:'set-cards'},[brandCard, printCard, themeCard, updCard]),
+     logoFile,   /* مدخل اختيار الملف مخفيًا داخل البطاقة */
+   ]);
+   /* بطاقات إدارة الحسابات والصلاحيات (المرحلة 3C-3) — للمدير فقط؛
+      buildCards يُرجع [] لو الجلسة ليست أدمن. تُضاف أولًا لتكون أبرز شيء. */
+   const accCards=(window.MalahyAccounts && typeof window.MalahyAccounts.buildCards==='function')
+     ? (await window.MalahyAccounts.buildCards()) : [];
+   const box=el('div',{class:'modal set-modal'},[
+     el('h3',{class:'set-title'},[el('span',{class:'ic',text:'⚙️'}),'الإعدادات']),
+     el('div',{class:'set-cards'},accCards.concat([brandCard, printCard, shiftCard, themeCard, updCard])),
     el('div',{class:'modal-actions'},[
       el('button',{class:'cancel',text:'إغلاق',onClick:closeOverlay}),
       el('button',{class:'confirm',text:'💾 حفظ الإعدادات',onClick:()=>{
@@ -3825,7 +4523,34 @@ async function openSettings(){
         }else{
           saveBrandName(nm);
         }
+        /* جدول الورديات: نتحقق قبل الحفظ — لا نسمح بجدول متعارض أو ناقص،
+           ونُبقي الجدول الحالي كما هو مع رسالة واضحة لو كان الجديد غير صالح */
+        const shiftOk=validateShiftTimes({
+          s1:$('#pset-shift-s1').value, e1:$('#pset-shift-e1').value,
+          s2:$('#pset-shift-s2').value, e2:$('#pset-shift-e2').value
+        });
+        if(shiftOk.ok){
+          _settings.shift1Start=$('#pset-shift-s1').value;
+          _settings.shift1End=$('#pset-shift-e1').value;
+          _settings.shift2Start=$('#pset-shift-s2').value;
+          _settings.shift2End=$('#pset-shift-e2').value;
+        }else{
+          toast('لم يتم حفظ جدول الورديات — '+shiftOk.msg,'warn');
+        }
+        /* رمز QR: نتحقق من الرابط قبل تفعيله — لا نسمح بتفعيله بدون رابط صحيح */
+        const qrWanted=$('#pset-qr').checked;
+        const qrUrl=($('#pset-qrurl').value||'').trim();
+        if(qrWanted && !isValidMapUrl(qrUrl)){
+          _settings.showTicketQrCode=false;
+          const qrBox=$('#pset-qr'); if(qrBox) qrBox.checked=false;
+          toast('لم يتم تفعيل QR Code — أدخل رابط موقع صحيح أولاً','warn');
+        }else{
+          _settings.showTicketQrCode=qrWanted;
+          _settings.venueMapUrl=qrUrl;
+        }
         saveSettings(); applyTheme(); paintThemeBtn(); applyBranding();
+        /* تحديث سطر الوردية في الرأس فورًا ليعكس الجدول الجديد */
+        try{ tickClock(); }catch(_){}
         toast('تم حفظ الإعدادات','ok');
       }}),
     ]),
@@ -3846,7 +4571,7 @@ function paintThemeBtn(){
     const isIcon=b.classList.contains('theme-btn-h');
     if(s.autoTheme){
       b.innerHTML=auto+(isIcon?'':'<span>مظهر تلقائي</span>');
-      b.title='المظهر التلقائي مفعّل: فاتح نهارًا (10:00 ص → 7:00 م) وداكن ليلًا. اضغط لاختيار يدوي.';
+      b.title='المظهر التلقائي مفعّل: فاتح طوال الوردية الأولى ('+shiftRangeLabel(1)+') وداكن باقي اليوم. اضغط لاختيار يدوي.';
     } else if(cur==='light'){
       b.innerHTML=sun+(isIcon?'':'<span>وضع داكن</span>');
       b.title='التبديل إلى الوضع الداكن';
@@ -3862,7 +4587,7 @@ function paintThemeBtn(){
     ab.innerHTML=s.autoTheme?auto:autoOff;
     ab.setAttribute('aria-pressed',s.autoTheme?'true':'false');
     ab.title=s.autoTheme
-      ? 'المظهر التلقائي: مفعّل ✅ (فاتح 10:00 ص → 7:00 م، داكن باقي اليوم). اضغط لإيقافه.'
+      ? 'المظهر التلقائي: مفعّل ✅ (فاتح خلال الوردية الأولى '+shiftRangeLabel(1)+'، داكن باقي اليوم). اضغط لإيقافه.'
       : 'المظهر التلقائي: متوقف ⏸️ — التحكم يدوي. اضغط لتفعيله.';
   });
 }
@@ -3874,7 +4599,7 @@ function toggleAutoTheme(){
   const chk=$('#pset-autotheme'); if(chk) chk.checked=s.autoTheme;
   saveSettings(); applyTheme(); paintThemeBtn();
   toast(s.autoTheme
-    ? 'تم تفعيل المظهر التلقائي — فاتح نهارًا (10:00 ص → 7:00 م) وداكن ليلًا'
+    ? 'تم تفعيل المظهر التلقائي — فاتح طوال الوردية الأولى ('+shiftRangeLabel(1)+') وداكن ليلًا'
     : 'تم إيقاف المظهر التلقائي — التحكم يدوي','ok');
 }
 
@@ -4090,6 +4815,7 @@ function empEntryModal(o){
 
 /* ---- النافذة الرئيسية ---- */
 function openEmployees(){
+  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
   _emp.list=null; empLoad(); ensureWeeks();
   _emp.screen='dash'; _emp.empId=null; _emp.weekKey=null;
   const wrap=el('div',{class:'modal emp-modal'},[ el('div',{id:'empRoot'}) ]);
@@ -4157,7 +4883,7 @@ function empDash(){
       el('button',{title:'كشف الحساب الأسبوعي',onClick:function(){ empGo('stmt',e.id,cur); }},['📄']),
       (w&&!w.paid)?el('button',{class:'pay',title:'صرف الراتب',onClick:function(){empPayOne(e.id,cur);}},['💰']):null,
       el('button',{title:'تسجيل يومي (حضور/انصراف/خصم/مكافأة)',onClick:function(){ openDailyReg(e.id); }},['🕐']),
-      el('button',{title:'تعديل بيانات الموظف',onClick:function(){empAskPass({title:'✏️ تعديل موظف',message:'اكتب كلمة السر لتعديل بيانات «'+e.name+'».',confirmText:'متابعة',onOk:function(){ empGo('form',e.id,null); }});}},['✏️']),
+      el('button',{title:'تعديل بيانات الموظف',onClick:function(){MalahyPerm.requirePerm('employeeManage',{title:'✏️ تعديل موظف',message:'تأكيد تعديل بيانات «'+e.name+'»؟',confirmText:'متابعة',secondary:true,onOk:function(){ empGo('form',e.id,null); }});}},['✏️']),
       el('button',{class:'del',title:'حذف الموظف',onClick:function(){empDelete(e.id);}},['🗑️']),
     ]);
     tbl.appendChild(el('tr',{},[
@@ -4292,10 +5018,10 @@ function empMoneySection(w,kind,locked){
     if(kind==='advances') cells.push(el('td',{text:x.note||'—'}));
     cells.push(el('td',{},[ locked?null:el('button',{class:'emp-mini del',title:'حذف',onClick:function(){
       /* كل عملية حذف في البرنامج تتطلّب تأكيد كلمة السر */
-      empAskPass({
+      MalahyPerm.requirePerm('employeeManage',{
         title:'🗑️ حذف عملية',
-        message:'حذف «'+M.title+'» بقيمة '+fmtNum(x.amount)+' ج نهائيًا؟ اكتب كلمة السر للتأكيد.',
-        confirmText:'حذف', danger:true,
+        message:'حذف «'+M.title+'» بقيمة '+fmtNum(x.amount)+' ج نهائيًا؟',
+        confirmText:'حذف', danger:true, secondary:true,
         onOk:function(){
           w[kind]=(w[kind]||[]).filter(function(y){return y.id!==x.id;});
           empSave(); paintEmp(); toast('تم الحذف','ok');
@@ -4572,11 +5298,12 @@ function empPayOne(empId,key){
   if(w.paid){ toast('راتب هذا الأسبوع تم صرفه بالفعل — لا يمكن الصرف مرتين','warn'); return; }
   const s=calcWeek(w);
   let msg='صرف راتب «'+e.name+'» عن أسبوع '+weekRangeLabel(key)+'.\n';
-  msg+='الأجر الأساسي '+fmtNum(s.gross)+' + مكافآت '+fmtNum(s.bonus)+' − جزاءات '+fmtNum(s.pen)+' − سلف '+fmtNum(s.adv)+' − خصومات '+fmtNum(s.ded)+' = الصافي '+fmtNum(s.net)+' جنيه.\nاكتب كلمة السر للتأكيد.';
-  empAskPass({
+  msg+='الأجر الأساسي '+fmtNum(s.gross)+' + مكافآت '+fmtNum(s.bonus)+' − جزاءات '+fmtNum(s.pen)+' − سلف '+fmtNum(s.adv)+' − خصومات '+fmtNum(s.ded)+' = الصافي '+fmtNum(s.net)+' جنيه.';
+  MalahyPerm.requirePerm('payroll',{
     title:'💰 صرف الراتب',
     message:msg,
     confirmText:'صرف الراتب',
+    secondary:true,
     onOk:function(){
       w.paid=true; w.paidAt=Date.now(); w.snapshot=s;
       empSave(); paintEmp();
@@ -4589,10 +5316,11 @@ function empPayAll(){
   const pend=L.filter(function(e){ const w=empWeek(e,cur); return w&&!w.paid; });
   if(!pend.length){ toast('كل رواتب هذا الأسبوع تم صرفها بالفعل','warn'); return; }
   let tot=0,adv=0; pend.forEach(function(e){ const c=calcWeek(empWeek(e,cur)); tot+=c.net; adv+=c.adv; });
-  empAskPass({
+  MalahyPerm.requirePerm('payroll',{
     title:'💰 صرف جميع الرواتب',
-    message:'هيتم صرف رواتب '+pend.length+' موظف عن الأسبوع الحالي بإجمالي '+fmtNum(tot)+' جنيه'+(adv?(' (بعد خصم سلف بقيمة '+fmtNum(adv)+' جنيه)'):'')+'. اكتب كلمة السر للتأكيد.',
+    message:'هيتم صرف رواتب '+pend.length+' موظف عن الأسبوع الحالي بإجمالي '+fmtNum(tot)+' جنيه'+(adv?(' (بعد خصم سلف بقيمة '+fmtNum(adv)+' جنيه)'):'')+'.',
     confirmText:'صرف الكل',
+    secondary:true,
     onOk:function(){
       pend.forEach(function(e){ const w=empWeek(e,cur); const s=calcWeek(w); w.paid=true; w.paidAt=Date.now(); w.snapshot=s; });
       empSave(); paintEmp();
@@ -4602,10 +5330,11 @@ function empPayAll(){
 }
 function empDelete(empId){
   const e=empFind(empId); if(!e) return;
-  empAskPass({
+  MalahyPerm.requirePerm('employeeManage',{
     title:'🗑️ حذف موظف', danger:true,
-    message:'حذف «'+e.name+'» نهائيًا مع كل سجل رواتبه؟ لا يمكن التراجع عن هذه الخطوة. اكتب كلمة السر للتأكيد.',
+    message:'حذف «'+e.name+'» نهائيًا مع كل سجل رواتبه؟ لا يمكن التراجع عن هذه الخطوة.',
     confirmText:'حذف نهائي',
+    secondary:true,
     onOk:function(){
       _emp.list=empLoad().filter(function(x){return x.id!==empId;});
       empSave(); empGo('dash'); toast('تم حذف الموظف','ok');
@@ -4613,10 +5342,11 @@ function empDelete(empId){
   });
 }
 function empStartNewWeek(){
-  empAskPass({
+  MalahyPerm.requirePerm('employeeManage',{
     title:'🔄 بدء أسبوع جديد',
-    message:'البرنامج بيبدأ أسبوع جديد تلقائيًا كل يوم سبت مع الاحتفاظ بكل الأسابيع السابقة. الزر ده بيتأكد إن أسبوع هذا الأسبوع متسجّل لكل الموظفين. اكتب كلمة السر للمتابعة.',
+    message:'البرنامج بيبدأ أسبوع جديد تلقائيًا كل يوم سبت مع الاحتفاظ بكل الأسابيع السابقة. الزر ده بيتأكد إن أسبوع هذا الأسبوع متسجّل لكل الموظفين.',
     confirmText:'متابعة',
+    secondary:true,
     onOk:function(){
       const before=empLoad().map(function(e){return (e.weeks||[]).length;}).join(',');
       const key=ensureWeeks();
@@ -4860,6 +5590,9 @@ function drRecordOut(empId,dayKey){
 /* تحديث قيمة الخصم أو المكافأة في السجل اليومي + مرآتها داخل أسبوع الموظف.
    المرآة بتستبدل القديم (عن طريق dregId) فمفيش تكرار، وبتحافظ على التاريخ الدقيق. */
 function drSetAmount(empId,dayKey,field,amount){
+  /* تكتب داخل سجل الموظفين (K_EMP) → تتطلّب صلاحية إدارة الموظفين.
+     الفرض الفعلي على مستوى العملية الرئيسية يحمي المفتاح نفسه. */
+  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return false; }
   const e=empFind(empId); if(!e) return false;
   const kind=field==='deduction'?'deductions':'bonuses';
   const label=field==='deduction'?'خصم يومي':'مكافأة يومية';
@@ -4910,6 +5643,7 @@ function drDayStats(dayKey){
 
 /* ============ النافذة الرئيسية للقسم ============ */
 function openDailyReg(empId){
+  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
   _emp.list=null; empLoad(); ensureWeeks();
   _dreg.list=null; drLoad();
   _dreg.dayKey=drTodayKey();
@@ -5075,6 +5809,7 @@ function paintDregSummary(){
    العمليات الحساسة محميّة بكلمة سر النظام (نفس آلية الخصم/المصروفات).
    التعطيل يُخفي اللعبة من شاشة البيع ويُبقي بياناتها التاريخية كما هي. */
 function openGameMgmt(){
+  if(!MalahyPerm.hasPerm('gameManage')){ MalahyPerm.deny(); return; }
   const wrap=el('div',{class:'modal gm-modal'},[ el('div',{id:'gmRoot'}) ]);
   showModal(wrap);
   paintGm();
@@ -5177,6 +5912,7 @@ function gmShowArchivedBuild(){
       el('td',{},[el('span',{class:'num',text:fmtNum(g.price)}),el('span',{text:' ج'})]),
       el('td',{text:st.count>0?(fmtNum(st.count)+' تذكرة — '+fmtNum(st.total)+' ج'):'لا توجد مبيعات مسجّلة'}),
       el('td',{},[el('button',{class:'pri',onClick:function(){
+        if(!MalahyPerm.hasPerm('gameManage')){ MalahyPerm.deny(); return; }
         g.archived=false; g.active=true;
         saveGames(); logGameAudit(g.id,'restore','استعادة لعبة محذوفة');
         paintGm(); toast('تمت استعادة «'+g.name+'» وأصبحت متاحة في شاشة البيع','ok');
@@ -5189,6 +5925,7 @@ function gmShowArchivedBuild(){
 
 /* ---- نموذج إضافة/تعديل لعبة ---- */
 function gmForm(gameId){
+  if(!MalahyPerm.hasPerm('gameManage')){ MalahyPerm.deny(); return; }
   paintGmNode(gmFormBuild(gameId));
 }
 function gmFormBuild(gameId){
@@ -5277,15 +6014,16 @@ function gmToggle(gameId,on){
     paintGm(); renderAll();
     toast(on?('تم تفعيل «'+g.name+'» — عادت لشاشة البيع'):('تم تعطيل «'+g.name+'» — اختفت من شاشة البيع (السجل التاريخي محفوظ)'),'ok');
   };
-  if(on){ apply(); return; }
-  /* التعطيل والحذف عمليتان حساستن → كلمة سر النظام. الطبقة المنبثقة الثانوية
-     (empAskPass) تُستخدم هنا عشان ما تقفلش شاشة الإدارة الأساسية أثناء طلب
-     كلمة السر — نفس النمط المستخدم في نظام الموظفين. */
-  empAskPass({
+  if(on){ if(!MalahyPerm.hasPerm('gameManage')){ MalahyPerm.deny(); return; } apply(); return; }
+  /* التعطيل والحذف عمليتان حساستن → تتطلّبان صلاحية gameManage. الطبقة المنبثقة
+      الثانوية تُستخدم هنا عشان ما تقفلش شاشة الإدارة الأساسية أثناء التأكيد —
+      نفس النمط المستخدم في نظام الموظفين. */
+  MalahyPerm.requirePerm('gameManage',{
     title:'⏸️ تعطيل لعبة',
-    message:'اكتب كلمة السر عشان تعطّل «'+g.name+'». اللعبة هتختفي من شاشة البيع بس تفضل موجودة في الإدارة وسجل المبيعات.',
+    message:'تأكيد تعطيل «'+g.name+'»؟ اللعبة هتختفي من شاشة البيع بس تفضل موجودة في الإدارة وسجل المبيعات.',
     confirmText:'تعطيل اللعبة',
     danger:true,
+    secondary:true,
     onOk:apply
   });
 }
@@ -5294,13 +6032,14 @@ function gmToggle(gameId,on){
 function gmDelete(gameId){
   const g=gameFind(gameId); if(!g) return;
   const st=gameSalesTotals(gameId);
-  empAskPass({
+  MalahyPerm.requirePerm('gameManage',{
     title:'🗑️ حذف لعبة',
-    message:'اكتب كلمة السر عشان تحذف «'+g.name+'» من شاشة البيع والإدارة النشطة.'
+    message:'تأكيد حذف «'+g.name+'» من شاشة البيع والإدارة النشطة؟'
       +(st.count>0?(' هذه اللعبة عليها '+fmtNum(st.count)+' تذكرة بيعت في التيار الحالي وسجلاتها التاريخية تظل محفوظة.'):'')
       +' يمكنك استعادتها لاحقًا من «الألعاب المحذوفة».',
     confirmText:'حذف اللعبة',
     danger:true,
+    secondary:true,
     onOk:function(){
       g.archived=true; g.active=false;
       saveGames(); logGameAudit(gameId,'archive','حذف اللعبة من البيع');

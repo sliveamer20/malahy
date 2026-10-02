@@ -45,6 +45,53 @@ contextBridge.exposeInMainWorld("malahyShell", {
   openExternal: (url) => { try { ipcRenderer.send("open-external", String(url || "")); } catch (_) {} },
 });
 
+// المصادقة والصلاحيات (المرحلة 3B — الأساس فقط)
+// كل العمليات الحساسة تتم في العملية الرئيسية عبر هذه الدوال فقط.
+contextBridge.exposeInMainWorld("malahyAuth", {
+  // تسجيل الدخول → { ok, user:{id,username,role,active,mustChangePass,perms} }
+  login: (username, password) =>
+    ipcRenderer.invoke("auth:login", { username, password }),
+  // تغيير كلمة السر (يتطلب كلمة السر القديمة)
+  changePass: (userId, oldPass, newPass) =>
+    ipcRenderer.invoke("auth:changePass", { userId, oldPass, newPass }),
+  // إعادة تعيين كلمة سر كاشير (للأدمن فقط)
+  resetCashier: (cashierId, newPass) =>
+    ipcRenderer.invoke("auth:resetCashier", { cashierId, newPass }),
+  // الاستعلام عن صلاحية (القرار في العملية الرئيسية)
+  hasPerm: (permId, userId) =>
+    ipcRenderer.invoke("auth:hasPerm", { permId, userId }),
+  // تعديل صلاحيات الكاشير (للأدمن فقط) — قيمة منطقية لكل صلاحية
+  setCashierPerms: (cashierId, perms) =>
+    ipcRenderer.invoke("auth:setCashierPerms", { cashierId, permissions: perms }),
+  // الاستعلام عن صلاحيات كاشير كاملة (للأدمن فقط)
+  getCashierPerms: (cashierId) =>
+    ipcRenderer.invoke("auth:getCashierPerms", { cashierId }),
+  // إنشاء حساب كاشير (للأدمن فقط)
+  createCashier: (username, password, perms) =>
+    ipcRenderer.invoke("auth:createCashier", { username, password, permissions: perms || null }),
+  // قائمة حسابات الكاشير (للأدمن فقط) — بيانات منظّفة
+  listCashiers: () => ipcRenderer.invoke("auth:listCashiers"),
+  // تفعيل/تعطيل حساب كاشير (للأدمن فقط)
+  setCashierActive: (cashierId, active) =>
+    ipcRenderer.invoke("auth:setCashierActive", { cashierId, active }),
+  // تغيير اسم مستخدم الكاشير (للأدمن فقط)
+  setCashierUsername: (cashierId, username) =>
+    ipcRenderer.invoke("auth:setCashierUsername", { cashierId, username }),
+  // بيانات حساب المدير (للأدمن فقط) — بدون أسرار
+  getAdminInfo: () => ipcRenderer.invoke("auth:getAdminInfo"),
+  // ضبط رقم واتساب الاستعادة (للمدير فقط)
+  setRecoveryWhatsapp: (number) =>
+    ipcRenderer.invoke("auth:setRecoveryWhatsapp", { number }),
+  // بدء استعادة كلمة سر المدير (متاح قبل تسجيل الدخول) — يُرجع الرمز مرة واحدة
+  beginRecovery: (whatsapp) =>
+    ipcRenderer.invoke("auth:beginRecovery", { whatsapp }),
+  // إكمال الاستعادة: التحقق من الرمز + تعيين كلمة سر جديدة للمدير
+  completeRecovery: (code, newPass, confirm) =>
+    ipcRenderer.invoke("auth:completeRecovery", { code, newPass, confirm }),
+  // تسجيل الخروج (إنهاء جلسة العملية الرئيسية فقط — لا يمسح أي بيانات)
+  logout: () => ipcRenderer.invoke("auth:logout"),
+});
+
 // بوابة التحديث الإجباري (النافذة المقفولة قبل الواجهة الرئيسية)
 // ملاحظة: لا يوجد أي دالة "skip"/"later"/"close" — البرنامج لا يُقفل إلا
 // بعد التحديث، ولا يمكن تجاوز البوابة بأي زر أو اختصار.

@@ -11,6 +11,12 @@ files:
   - database.js
   - activation.js
   - update-gate.js
+  - users.js
+  - permissions.js
+  - perm-gate.js
+  - login.js
+  - accounts.js
+  - recovery.js
   - index.html
   - windows/**/*
   - assets/**/*

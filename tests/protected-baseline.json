@@ -1,0 +1,18 @@
+{
+  "index.html": "854cff97e10932c036df534396d975e1ded674e4f8b5b85e538dea77be8ac5a2",
+  "database.js": "04a687c4925db79d98b6ee0778b93541489d0348c74eb4f148f8ef104c23fe97",
+  "activation.js": "47cee9f65ce909305f5ca6ad27451c1ce309821c26d9232dbc072a1d81444a7d",
+  "update-gate.js": "b9af3f2f1e41063536a89115f884571398da9b7f92eda04d077c7a960a422e36",
+  "package.json": "d1f2551fa0e7b24a55d78725f8aff2f458bee1fc8dfd47ea632512d270b2f37b",
+  "README.md": "4c9aa5eee0272ec4054c608563fab460bd89aaa6d933face12dd7a2d857d1772",
+  "launch.js": "7db341a1c70ded693e4fb0479702ee3ef4e3141773e27bd371580198de0d02c8",
+  "electron-builder.yml": "2396654f7428a1268e2a7b01ae78b0032255a5b7066ed15844d689b3619d41db",
+  "assets\\icons\\icon.ico": "67afcf7f6b41216c4bcdd75daf36ff9a43337447b658c9d69bfa7755e341ce2a",
+  "assets\\icons\\logo.png": "d6ec3f1853d3c1ba8ee4926f00c0da23c6ea8ac8cf8ab66b3f8d5c4910d5a260",
+  "assets\\images\\logo.png": "d6ec3f1853d3c1ba8ee4926f00c0da23c6ea8ac8cf8ab66b3f8d5c4910d5a260",
+  "assets\\ticket\\ticket-template.js": "927d2d4a938e5ebcb0a086a0250f8aabebbae8a14f7a8c8d86b296196d6caaea",
+  "assets\\ticket\\ticket-template.svg": "ea0f372fc469d43c53dd2772e49c57abc6309419bcc0a1a9e4b8065c3f9a9078",
+  "assets\\vendor\\qrcode.js": "79ec86f82856005b1c887905cfccfcfbec3821ca61c7fd5a952faa5f778f791c",
+  "windows\\splash.html": "7e9e9d0337c87e8326e9b201cbad19960665fca3490e9d1fba6ac652d0e56110",
+  "windows\\update.html": "afd73e57761432a0426cb7b307eaa75476b4cf91780f3e0fc8ea1fb2018406e3"
+}
