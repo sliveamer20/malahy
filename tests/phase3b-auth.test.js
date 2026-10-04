@@ -271,7 +271,7 @@ function makeStore(seed) {
     ok("all protected files byte-identical to pre-phase baseline", unchanged, "changed: " + changedList.join(", "));
 
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
-    ok("package.json version still 2.5.1", pkg.version === "2.5.1", pkg.version);
+    ok("package.json version still 2.5.2 (release bump, re-anchored for v2.5.2)", pkg.version === "2.5.2", pkg.version);
 
     const gate = fs.readFileSync(path.join(__dirname, "..", "update-gate.js"), "utf8");
     const m = gate.match(/FLOOR_VERSION\s*=\s*"([^"]+)"/);

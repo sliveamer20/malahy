@@ -1,0 +1,125 @@
+/* ============================================================================
+ * Radix Colors — static vendored color scales (screen UI only)
+ * ============================================================================
+ * Source : @radix-ui/colors v3.0.0  (https://www.radix-ui.com/colors)
+ * License: MIT  (Copyright (c) 2022 WorkOS)
+ *
+ * Vendored as plain CSS custom properties on purpose: Malahy has no bundler and
+ * no runtime dependency chain (plain HTML/CSS architecture), so the scales are
+ * copied here the same way `assets/vendor/qrcode.js` is vendored.
+ *
+ *   - NO npm install, NO package.json change, NO JS runtime, NO React.
+ *   - Only the sRGB (hex) values are kept; the upstream display-p3/P3-gamut
+ *     blocks are intentionally dropped so screen colors stay deterministic
+ *     across Windows machines and printers.
+ *
+ * Scale semantics (Radix convention, 12 steps per hue):
+ *   Dark appearance (default, `:root` below):
+ *     1-2  app background          3-5  raised surfaces / hover
+ *     5-6  borders / subtle fills   9    solid accent (buttons, focus)
+ *     10   accent hover            11   low-contrast text / badge
+ *     12   high-contrast text
+ *   Light appearance (`[data-theme="light"]`, the ramp runs the other way):
+ *     1-2  app background          3-5  raised surfaces / hover
+ *     5-6  borders                  9    solid accent
+ *     10   accent hover            11   solid-on-light text / badge
+ *     12   high-contrast text
+ *
+ * Hues vendored (only what Malahy's existing tokens map onto):
+ *   blue   — surface/background family (preserves Malahy's navy identity)
+ *   slate  — neutral text + border family (blue-tinted gray, harmonizes w/ blue)
+ *   cyan   — --primary (Malahy interactive cyan/turquoise)
+ *   amber  — --secondary (Malahy gold accents)
+ *   green  — --success
+ *   red    — --danger
+ *   violet — --brand (logo purple)
+ *
+ * These raw scales are NOT consumed by components directly. Malahy's existing
+ * semantic tokens in index.html (e.g. --bg, --panel, --ink, --primary) remain
+ * the single source of truth for the UI and are remapped onto these steps.
+ * ============================================================================
+ */
+
+/* ---- Dark appearance (application default) ---- */
+:root {
+  /* Slate — neutral ramp (text, borders) */
+  --slate-1: #111113; --slate-2: #18191b; --slate-3: #212225;
+  --slate-4: #272a2d; --slate-5: #2e3135; --slate-6: #363a3f;
+  --slate-7: #43484e; --slate-8: #5a6169; --slate-9: #696e77;
+  --slate-10: #777b84; --slate-11: #b0b4ba; --slate-12: #edeef0;
+  /* Slate — alpha ramp (subtle borders/overlays on dark surfaces) */
+  --slate-a3: #ddeaf814; --slate-a4: #d3edf81d; --slate-a5: #d9edfe25;
+  --slate-a6: #d6ebfd30;
+  /* Blue — surface ramp (Malahy navy) */
+  --blue-1: #0d1520; --blue-2: #111927; --blue-3: #0d2847;
+  --blue-4: #003362; --blue-5: #004074; --blue-6: #104d87;
+  --blue-7: #205d9e; --blue-8: #2870bd; --blue-9: #0090ff;
+  --blue-10: #3b9eff; --blue-11: #70b8ff; --blue-12: #c2e6ff;
+  /* Cyan — primary */
+  --cyan-1: #0b161a; --cyan-2: #101b20; --cyan-3: #082c36;
+  --cyan-4: #003848; --cyan-5: #004558; --cyan-6: #045468;
+  --cyan-7: #12677e; --cyan-8: #11809c; --cyan-9: #00a2c7;
+  --cyan-10: #23afd0; --cyan-11: #4ccce6; --cyan-12: #b6ecf7;
+  /* Amber — secondary / gold */
+  --amber-1: #16120c; --amber-2: #1d180f; --amber-3: #302008;
+  --amber-4: #3f2700; --amber-5: #4d3000; --amber-6: #5c3d05;
+  --amber-7: #714f19; --amber-8: #8f6424; --amber-9: #ffc53d;
+  --amber-10: #ffd60a; --amber-11: #ffca16; --amber-12: #ffe7b3;
+  /* Green — success */
+  --green-1: #0e1512; --green-2: #121b17; --green-3: #132d21;
+  --green-4: #113b29; --green-5: #174933; --green-6: #20573e;
+  --green-7: #28684a; --green-8: #2f7c57; --green-9: #30a46c;
+  --green-10: #33b074; --green-11: #3dd68c; --green-12: #b1f1cb;
+  /* Red — danger */
+  --red-1: #191111; --red-2: #201314; --red-3: #3b1219;
+  --red-4: #500f1c; --red-5: #611623; --red-6: #72232d;
+  --red-7: #8c333a; --red-8: #b54548; --red-9: #e5484d;
+  --red-10: #ec5d5e; --red-11: #ff9592; --red-12: #ffd1d9;
+  /* Violet — brand */
+  --violet-1: #14121f; --violet-2: #1b1525; --violet-3: #291f43;
+  --violet-4: #33255b; --violet-5: #3c2e69; --violet-6: #473876;
+  --violet-7: #56468b; --violet-8: #6958ad; --violet-9: #6e56cf;
+  --violet-10: #7d66d9; --violet-11: #baa7ff; --violet-12: #e2ddfe;
+}
+
+/* ---- Light appearance (opt-in via [data-theme="light"]) ---- */
+[data-theme="light"] {
+  /* Slate */
+  --slate-1: #fcfcfd; --slate-2: #f9f9fb; --slate-3: #f0f0f3;
+  --slate-4: #e8e8ec; --slate-5: #e0e1e6; --slate-6: #d9d9e0;
+  --slate-7: #cdced6; --slate-8: #b9bbc6; --slate-9: #8b8d98;
+  --slate-10: #80838d; --slate-11: #60646c; --slate-12: #1c2024;
+  /* Slate — alpha ramp (subtle borders/overlays on light surfaces) */
+  --slate-a3: #0000330f; --slate-a4: #00002d17; --slate-a5: #0009321f;
+  --slate-a6: #00002f26;
+  /* Blue */
+  --blue-1: #fbfdff; --blue-2: #f4faff; --blue-3: #e6f4fe;
+  --blue-4: #d5efff; --blue-5: #c2e5ff; --blue-6: #acd8fc;
+  --blue-7: #8ec8f6; --blue-8: #5eb1ef; --blue-9: #0090ff;
+  --blue-10: #0588f0; --blue-11: #0d74ce; --blue-12: #113264;
+  /* Cyan */
+  --cyan-1: #fafdfe; --cyan-2: #f2fafb; --cyan-3: #def7f9;
+  --cyan-4: #caf1f6; --cyan-5: #b5e9f0; --cyan-6: #9ddde7;
+  --cyan-7: #7dcedc; --cyan-8: #3db9cf; --cyan-9: #00a2c7;
+  --cyan-10: #0797b9; --cyan-11: #107d98; --cyan-12: #0d3c48;
+  /* Amber */
+  --amber-1: #fefdfb; --amber-2: #fefbe9; --amber-3: #fff7c2;
+  --amber-4: #ffee9c; --amber-5: #fbe577; --amber-6: #f3d673;
+  --amber-7: #e9c162; --amber-8: #e2a336; --amber-9: #ffc53d;
+  --amber-10: #ffba18; --amber-11: #ab6400; --amber-12: #4f3422;
+  /* Green */
+  --green-1: #fbfefc; --green-2: #f4fbf6; --green-3: #e6f6eb;
+  --green-4: #d6f1df; --green-5: #c4e8d1; --green-6: #adddc0;
+  --green-7: #8eceaa; --green-8: #5bb98b; --green-9: #30a46c;
+  --green-10: #2b9a66; --green-11: #218358; --green-12: #193b2d;
+  /* Red */
+  --red-1: #fffcfc; --red-2: #fff7f7; --red-3: #feebec;
+  --red-4: #ffdbdc; --red-5: #ffcdce; --red-6: #fdbdbe;
+  --red-7: #f4a9aa; --red-8: #eb8e90; --red-9: #e5484d;
+  --red-10: #dc3e42; --red-11: #ce2c31; --red-12: #641723;
+  /* Violet */
+  --violet-1: #fdfcfe; --violet-2: #faf8ff; --violet-3: #f4f0fe;
+  --violet-4: #ebe4ff; --violet-5: #e1d9ff; --violet-6: #d4cafe;
+  --violet-7: #c2b5f5; --violet-8: #aa99ec; --violet-9: #6e56cf;
+  --violet-10: #654dc4; --violet-11: #6550b9; --violet-12: #2f265f;
+}
