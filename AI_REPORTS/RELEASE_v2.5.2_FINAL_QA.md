@@ -380,9 +380,18 @@ verification of that exact file.
 ## 11. Git commit and tag
 
 ```
-5c9dc15  release: v2.5.2 UI redesign (Radix colors + icons)
+5c9dc15  release: v2.5.2 UI redesign (Radix colors + icons)   <-- tag v2.5.2 points HERE
 1d32a21  docs: final release report for v2.5.1
 a3e790d  release: Malahy v2.5.1
+```
+
+`5c9dc15` is the release commit and carries the annotated tag. This report was then committed as a
+separate docs commit — the same two-step pattern the project used for v2.5.1 (`1d32a21`, one commit
+after the `v2.5.1` tag):
+
+```
+0598d4d  docs: final release report for v2.5.2                 <-- current main HEAD
+5c9dc15  release: v2.5.2 UI redesign (Radix colors + icons)   <-- tagged
 ```
 
 35 files changed, 5 964 insertions, 109 deletions. Staged by explicit path — **no** `git add .`.
