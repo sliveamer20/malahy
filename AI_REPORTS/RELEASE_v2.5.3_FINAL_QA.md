@@ -663,6 +663,213 @@ statement that no business logic changed.
 
 ## 20. Post-publication record
 
-*(Completed after Steps 15–19 executed.)*
+### Final commit SHA
 
-<!-- POST_PUBLICATION -->
+```
+7228787ccc20ec955f0740a76aad58106087f90c
+```
+
+| Field | Value |
+|---|---|
+| Commit SHA | `7228787ccc20ec955f0740a76aad58106087f90c` (short `7228787`) |
+| Author | `sliveamer20 <sliveamer20@gmail.com>` |
+| Date | Tue Oct 6 02:14:29 2026 +0300 |
+| Subject | `release: v2.5.3 final UI release` |
+| Files changed | 25 files, 3515 insertions(+), 17 deletions(-) |
+| Parent | `18acba6` (the v2.5.2 QA docs commit) |
+
+Committed content, verified file-by-file:
+
+```
+7 AI_REPORTS documents  (Phase 5 repair, Phase 6.5, Phase 6.6, Phase 6 final,
+                         v2.5.3 QA, 2 audit reports)
+11 assets/icons/lucide/* (9 SVGs + LICENSE + README)
+ 1 index.html
+ 1 package.json
+ 1 windows/splash.html
+ 3 tests/phase*.test.js
+ 1 tests/protected-baseline.json
+```
+
+Excluded, as intended: `qa-ticket-renders/`, `releases/`, `dist/`, and every
+gitignored artefact.
+
+### Final tag
+
+```
+v2.5.3  (annotated)
+```
+
+| Field | Value |
+|---|---|
+| Tag object | `5bbebdeb46ab6b4c6e476af998e7f3dcf60a029d` |
+| Tagger | `sliveamer20 <sliveamer20@gmail.com>` |
+| Date | Tue Oct 6 02:14:43 2026 +0300 |
+| Points at | `7228787ccc20ec955f0740a76aad58106087f90c` ✅ identical to `HEAD` |
+
+Tag style matches the project convention — all four `v2.5.*` tags are annotated
+tag objects, not lightweight tags.
+
+### Push
+
+```
+$ git push origin main
+   18acba6..7228787  main -> main
+
+$ git push origin v2.5.3
+ * [new tag]         v2.5.3 -> v2.5.3
+```
+
+Remote state verified with `git ls-remote`:
+
+```
+7228787ccc20ec955f0740a76aad58106087f90c  refs/heads/main
+5bbebdeb46ab6b4c6e476af998e7f3dcf60a029d  refs/tags/v2.5.3
+```
+
+`git status -sb` → `## main...origin/main` — **in sync, no divergence, no
+force-push**. Main history is intact from `80adb1b` (first version) forward.
+
+### GitHub release URL
+
+**https://github.com/sliveamer20/malahy/releases/tag/v2.5.3**
+
+| Field | Value |
+|---|---|
+| Release ID | `404163017` |
+| Tag | `v2.5.3` |
+| Name | `Malahy v2.5.3` |
+| Target commit | `7228787ccc20ec955f0740a76aad58106087f90c` ✅ matches local `HEAD` |
+| Draft | `false` |
+| Prerelease | `false` |
+| Published | `2026-10-05T23:15:43Z` |
+| Notes length | 3,701 characters |
+| Repository | `sliveamer20/malahy` (public, `default_branch = main`) |
+
+**Publishing mechanism.** The GitHub CLI (`gh`) is not installed on this machine and
+no `gh` binary exists in any standard location, so the release was created and its
+assets uploaded through the official **GitHub REST API v3** using the `GH_TOKEN`
+credential already present in the environment. Authentication was confirmed with
+`GET /user` → `sliveamer20` **before** any write. This is the same API the CLI
+wraps; the credential was never written to disk, echoed, or committed.
+
+**Naming convention matched.** All eight existing releases use the name pattern
+`Malahy v2.5.x` and attach exactly three assets (`latest.yml`,
+`malahy-setup-X.exe`, `malahy-setup-X.exe.blockmap`). v2.5.3 follows the same
+convention, so the `electron-updater` auto-update channel continues to work
+uninterrupted.
+
+### Exact published artifacts
+
+| Asset | Bytes | Asset ID | State |
+|---|---|---|---|
+| `malahy-setup-2.5.3.exe` | 105,922,131 | `613857141` | `uploaded` |
+| `malahy-setup-2.5.3.exe.blockmap` | 111,188 | `613862364` | `uploaded` |
+| `latest.yml` | 341 | `613862386` | `uploaded` |
+
+All sizes non-zero ✅. No debug files, unpacked directories, screenshots or
+temporary material attached.
+
+### Published-artifact checksum verification
+
+Each asset was **downloaded back from GitHub** and re-hashed — the strongest
+available proof that what users download is exactly what was built and QA'd:
+
+```
+malahy-setup-2.5.3.exe            105922131 B  sha256=650511b4997301fad884b2e4b00ac3925765d1db412a5c359f7752ed0dffc66f  MATCH=True
+malahy-setup-2.5.3.exe.blockmap      111188 B  sha256=35e5247f6770d3388667935f74d0b9955a0f75fe926a19db702177428a5265c0  MATCH=True
+latest.yml                             341 B  sha256=495c85db8634cfc897744c40f24562d957d2243861a7a83368b6e2f4324d6669  MATCH=True
+==== ALL PUBLISHED ASSET CHECKSUMS VERIFIED: True ====
+```
+
+Downloaded `latest.yml` content confirms the auto-update metadata is intact and
+still declares `version: 2.5.3` with the matching `sha512` and `size: 105922131`.
+
+### Final test count
+
+```
+TOTAL PASS=722 FAIL=1
+```
+
+Re-run a fourth time after the commit, tag, push, publication and cleanup —
+unchanged. Sole failure remains the documented `index.html` baseline difference.
+
+### Clean-install result
+
+✅ **PASS** — full detail in §12. Isolated directory + isolated `--user-data-dir`
+profile; installer exit `0`; installed app launched (4 processes, `1500x950`,
+title `كوكي بارك`); activation gate correctly preceded the login screen on the
+fresh profile; Phase 6 Lucide icons rendered inside the packaged asar; zero console
+windows; graceful `WM_CLOSE` exit with no force required. Production database
+proven untouched — all 72 files in `%APPDATA%\malahy` byte-identical by SHA-256
+before and after.
+
+### Cleanup actions
+
+Executed **only after** all four preconditions were satisfied: commit exists ✅,
+tag exists ✅, GitHub Release verified ✅, artifacts checksum-verified ✅.
+
+Every candidate was classified before any deletion:
+
+| Candidate | Class | Action | Reason |
+|---|---|---|---|
+| `D:\Malahy-redesign` worktree | **NO ACTION** | none | **Already absent** — `Test-Path` false, `git worktree list` shows only `D:/Malahy`, and `.git/worktrees` contains no stale records. Removed before this phase. |
+| `experiment/ui-redesign-radix` branch | **NO ACTION** | none | Branch no longer exists locally or on the remote (`git branch -a` → `main` + `remotes/origin/main` only). Its content was merged into `main` by the v2.5.2 release. |
+| `qa-ticket-renders/` (11 PNG) | **DELETE** | ✅ removed | Temporary Phase 4/6 QA screenshots. `git grep` proved no application code references the directory. |
+| My own scratch in `%TEMP%\opencode` (downloaded-asset copies ~106 MB, asar QA script, 2 screenshots, commit-message file, release-notes file, userData hash manifest, 4 npm logs) | **DELETE** | ✅ removed | Created by this phase only; outside the repository. |
+| Isolated clean-install dir + profile | **DELETE** | ✅ already removed | Removed immediately after the clean-install test (uninstaller removed the install dir; profile deleted separately). |
+| `opencode.json` | **KEEP** | kept | The owner's local opencode tool configuration (5 providers, model catalogue). Never committed, explicitly listed in `.gitignore`. **Not** temporary build material — deleting it would break the owner's tooling. |
+| `dist/` | **KEEP** | kept | The verified v2.5.3 build output. Gitignored; still useful for local inspection. Note it still contains stale `malahy-setup-2.5.2.*` files — clearly version-named, canonical copies live in `releases/v2.5.2/`. |
+| `releases/` (all 10 versions) | **KEEP** | kept | Release history, including `v2.5.2` and the new `v2.5.3`. Explicitly protected. |
+| `AI_REPORTS/` | **KEEP** | kept | Project documentation and audit trail. |
+| `assets/icons/lucide/` | **KEEP** | kept | Now a **committed product asset** required by `index.html`, not scratch material. |
+| `node_modules/` | **KEEP** | kept | Required by `npm start` and `npm run dist`. |
+| Production user data `%APPDATA%\malahy` | **KEEP** | kept | Never touched — proven byte-identical. |
+| Installed application | **KEEP** | kept | v2.5.3 installed at `%LOCALAPPDATA%\Programs\malahy`. |
+| Pre-existing `%TEMP%\opencode` material from earlier phases (≈400 QA scripts, probe outputs, screenshots) | **KEEP** | untouched | Belongs to earlier phases and to the owner. **Deliberately not deleted** — removing another phase's diagnostic material was judged out of scope and a needless risk. |
+
+**Nothing from the protected lists was deleted.** No AI report, source asset,
+release artifact, user data or production configuration was touched. Total
+deletions: 11 QA screenshots plus this phase's own scratch files.
+
+### Final git status
+
+```
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+
+$ git branch -vv
+* main 7228787 [origin/main] release: v2.5.3 final UI release
+
+$ git worktree list
+D:/Malahy 7228787 [main]
+
+$ git tag --list "v2.5.*"
+v2.5.0   v2.5.1   v2.5.2   v2.5.3
+```
+
+**Working tree fully clean** — no modified, no staged, no untracked files.
+
+---
+
+## 21. Final state confirmation
+
+| Requirement | Status |
+|---|---|
+| `main` is on the v2.5.3 release commit | ✅ `7228787` |
+| Tag `v2.5.3` exists (annotated) | ✅ `5bbebde` → `7228787` |
+| Remote `main` and tag pushed | ✅ in sync, no divergence |
+| GitHub Release verified | ✅ https://github.com/sliveamer20/malahy/releases/tag/v2.5.3 |
+| Published artifacts verified | ✅ 3 assets, checksums re-verified by download |
+| `D:\Malahy` is the single active production project | ✅ only one worktree, one branch |
+| Experimental worktree removed only if safe | ✅ already absent — nothing to remove |
+| No production source deleted | ✅ 25 files committed, 0 production files deleted |
+| No business logic changed | ✅ empty diff for all 12 business-logic files vs `18acba6` |
+| Working tree clean | ✅ |
+| Version | ✅ 2.5.3 |
+| Regression | ✅ 722 PASS / 1 FAIL |
+
+**v2.5.3 is complete and published.**
