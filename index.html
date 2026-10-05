@@ -144,6 +144,13 @@
 
   /* ===== Standard Icon Size ===== */
   .ic{font-size:15px;line-height:1;flex:none;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;}
+  /* Phase 6 inline Lucide icons (assets/icons/lucide/). 15px reproduces exactly the box
+     the emoji occupied (.ic is font-size:15px), so no host changes size and there is no
+     layout shift. display:block removes the baseline gap an inline SVG would open, and
+     flex:none stops the glyph shrinking inside .ic's inline-flex box. fill/stroke are
+     inherited from CSS, so the glyph follows the surrounding text colour in both themes,
+     on hover and when disabled - no per-theme or per-state rules needed. */
+  .ic>.luc{width:15px;height:15px;flex:none;display:block;}
   .ic-lg{font-size:17px;}
   .ic-sm{font-size:13px;}
 
@@ -730,6 +737,23 @@
     outline:none;direction:ltr;text-align:center;transition:border-color .2s ease,box-shadow .2s ease;
   }
   .shift-field input[type="time"]:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14),0 0 18px -6px rgba(6,182,212,.35);}
+    /* ===== أيقونة الساعة الأصلية داخل حقول الوقت — إعدادات الورديات (المرحلة 4) =====
+       يرسم Chromium أيقونة الاختيار الأصلية في input[type=time] كرسمة داكنة، فكانت
+       تظهر سوداء تقريبًا على خلفية الحقل الداكنة (غير مرئية في الوضع الداكن، وسليمة
+       في الوضع الفاتح). المعالجة بصرية فقط: filter/opacity/cursor لا تمسّ التخطيط ولا
+       موضع العنصر ولا قيمة الحقل، ومحدّد الوقت ما زال يفتح بالنقر، ولم نُطبّق أي تجاوز
+       لـ appearance أو display — لأن إخفاء الأيقونة سيُزيل الوسيلة الوحيدة لفتح المحدّد.
+       الوضع الداكن = :root بلا [data-theme]  → نعكس الرسمة الداكنة إلى فاتحة.
+       الوضع الفاتح = [data-theme="light"]     → الرسمة الأصلية الداكنة سليمة.
+       RTL: الحقول تحتفظ بـ direction:ltr (القاعدة أعلاه)، فتبقى الأيقونة على الحافة
+       الفيزيائية نفسها في اتجاهي المستند — لا انعكاس ولا إزاحة. */
+    .shift-field input[type="time"]::-webkit-calendar-picker-indicator{
+      opacity:.7;cursor:pointer;filter:invert(1);
+      transition:opacity .2s ease,filter .2s ease;
+    }
+    .shift-field input[type="time"]:hover::-webkit-calendar-picker-indicator,
+    .shift-field input[type="time"]:focus::-webkit-calendar-picker-indicator{opacity:1;}
+    [data-theme="light"] .shift-field input[type="time"]::-webkit-calendar-picker-indicator{opacity:.65;filter:none;}
   .shift-now{
     font-size:13.5px;font-weight:800;color:var(--ink);background:var(--bg);
     border:1px dashed var(--line);border-radius:11px;padding:9px 12px;margin-bottom:12px;
@@ -2166,6 +2190,39 @@ function el(tag,attrs={},kids=[]){
   return n;
 }
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ===== Phase 6 - inline Lucide icon helper =====
+   Builds one inline SVG element and returns it as a DOM node, so a glyph can be
+   handed to el() exactly like any other child. Purely presentational: no state, no
+   globals, no side effects, no behaviour, no network access. Every geometry below
+   is the verbatim upstream Lucide path data (ISC, (c) 2026 Lucide Icons and
+   Contributors), vendored unmodified under assets/icons/lucide/ - see that folder's
+   README.md for full provenance and the licence text.
+
+   Why inline SVG: index.html is loaded over file:// with web security on, so <use>,
+   <img src="*.svg"> and external CSS mask subresources are blocked by the file-origin
+   policy and cannot honour currentColor. Inline markup is the only form that inherits
+   the surrounding text colour, so hover, disabled and per-theme colours keep working
+   with no extra CSS.
+
+   All nine glyphs share one 24x24 viewBox, fill="none", stroke="currentColor",
+   stroke-width="2" and round caps/joins, so the migrated group is internally
+   consistent in stroke weight and optical size. .ic>.luc sizes them to 15px, which is
+   exactly the box the emoji occupied - no layout shift. None of them carries a
+   horizontal direction, so no RTL mirroring is required. */
+const LUCIDE_GLYPHS={
+  'clock':'<circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />',
+  'printer':'<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" />',
+  'refresh-cw':'<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" />',
+  'palette':'<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />',
+  'tag':'<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />',
+  'settings':'<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /><circle cx="12" cy="12" r="3" />',
+  'receipt':'<path d="M12 17V7" /><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" />',
+  'rotate-ccw':'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />',
+  'image':'<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />'
+};
+/* ينشئ عنصر <svg> واحدًا فقط: بلا حالة وبلا آثار جانبية وبلا سلوك. */
+function ricon(name){if(!Object.prototype.hasOwnProperty.call(LUCIDE_GLYPHS,name))return null;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','24');svg.setAttribute('height','24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','2');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.setAttribute('class','luc');svg.setAttribute('data-luc',name);svg.innerHTML=LUCIDE_GLYPHS[name];return svg;}
 function fmtNum(n){const r=Math.round((Number(n)||0)*100)/100;return r.toLocaleString('en-US',{maximumFractionDigits:2});}
 
 /* ============ Storage (ملف JSON على الجهاز عبر جسر preload — بدون localStorage) ============ */
@@ -4419,19 +4476,19 @@ async function openSettings(){
   qrUrlIn.addEventListener('input',checkQr);
   checkQr();
   const printCard=el('div',{class:'set-card'},[
-    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🖨️'}),'الطباعة']),
+    el('div',{class:'set-h'},[el('span',{class:'ic'},[ricon('printer')]),'الطباعة']),
     el('label',{class:'switch'},[chk,'طباعة تذكرة تلقائيًا عند قطع أي تذكرة']),
     el('div',{class:'field'},[el('label',{text:'الطابعة'}),sel]),
     el('div',{class:'field'},[el('label',{text:'نوع/عرض الورق'}),paperSel]),
     el('div',{class:'hintbox',text:'اختَر طابعتك وعرض الورق الصحيح لمنع قص النص أو الجداول. الطابعات الحرارية الشائعة 58مم و80مم؛ للطابعات العادية اختر A4. لو مش لاقي طابعتك في القائمة، تأكد إنها متوصلة ومتعرّفة في الويندوز.'}),
-    el('button',{class:'testbtn',onClick:printTestTicket},[el('span',{class:'ic',text:'🧾'}),' طباعة تذكرة تجريبية']),
+    el('button',{class:'testbtn',onClick:printTestTicket},[el('span',{class:'ic'},[ricon('receipt')]),' طباعة تذكرة تجريبية']),
     el('label',{class:'switch',style:{marginTop:'6px'}},[qrChk,'إظهار QR Code على التذكرة']),
     el('div',{class:'field'},[el('label',{text:'رابط موقع النشاط (Google Maps) للـ QR'}),qrUrlIn]),
     qrMsg,
     el('div',{class:'hintbox',text:'رمز QR اختياري (افتراضيًا مُغلق). عند تفعيله يُولَّد من هذا الرابط ويظهر أسفل التذكرة بمساحة بيضاء كافية ليكون مقروءًا على الطابعات الحرارية 58/80مم والعادية A4. لا يؤثر على أي حسابات أو بيانات عملية بيع. لا يمكن تفعيله بدون رابط صحيح.'}),
   ]);
   const updCard=el('div',{class:'set-card'},[
-    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🔄'}),'تحديثات البرنامج']),
+    el('div',{class:'set-h'},[el('span',{class:'ic'},[ricon('refresh-cw')]),'تحديثات البرنامج']),
     el('div',{class:'ver-line'},['الإصدار الحالي: ',el('b',{text:ver||'—'})]),
     el('div',{id:'updSection',class:'upd-section'}),
   ]);
@@ -4444,7 +4501,7 @@ async function openSettings(){
     toast(this.checked?'تم تفعيل المظهر التلقائي — فاتح نهارًا ('+shiftRangeLabel(1)+') وداكن ليلًا':'تم إلغاء المظهر التلقائي — التحكم يدوي','ok');
   });
   const themeCard=el('div',{class:'set-card'},[
-    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🎨'}),'مظهر التطبيق']),
+    el('div',{class:'set-h'},[el('span',{class:'ic'},[ricon('palette')]),'مظهر التطبيق']),
     el('label',{class:'switch'},[autoChk,'مظهر تلقائي حسب وقت اليوم (نهارًا فاتح · ليلًا داكن)']),
     el('div',{class:'theme-row'},[
       el('button',{class:'theme-btn',id:'themeToggle',onClick:function(){ toggleTheme(); }},[]),
@@ -4487,7 +4544,7 @@ async function openSettings(){
     inp.addEventListener('change',checkShift);
   });
   paintShiftNow();
-  const shiftResetBtn=el('button',{class:'testbtn',type:'button'},[el('span',{class:'ic',text:'↩️'}),' استعادة الجدول الافتراضي']);
+  const shiftResetBtn=el('button',{class:'testbtn',type:'button'},[el('span',{class:'ic'},[ricon('rotate-ccw')]),' استعادة الجدول الافتراضي']);
   shiftResetBtn.addEventListener('click',function(){
     s1In.value=DEFAULT_SHIFT_TIMES.s1; e1In.value=DEFAULT_SHIFT_TIMES.e1;
     s2In.value=DEFAULT_SHIFT_TIMES.s2; e2In.value=DEFAULT_SHIFT_TIMES.e2;
@@ -4495,7 +4552,7 @@ async function openSettings(){
     toast('تمت استعادة جدول الورديات الافتراضي (اضغط «حفظ الإعدادات» لتطبيقه)','ok');
   });
   const shiftCard=el('div',{class:'set-card'},[
-    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🕐'}),'إعدادات الورديات']),
+    el('div',{class:'set-h'},[el('span',{class:'ic'},[ricon('clock')]),'إعدادات الورديات']),
     shiftNow,
     el('div',{class:'shift-grid'},[
       el('div',{class:'shift-field'},[el('label',{text:'الوردية الأولى — بداية'}),s1In]),
@@ -4524,7 +4581,7 @@ async function openSettings(){
   });
   /* زر الاستعادة يطلب تأكيدًا أولًا (داخل البطاقة نفسها حتى تبقى المعاينة ظاهرة) */
   const restoreBox=el('div',{class:'brand-restore'});
-  const restoreBtn=el('button',{class:'testbtn',type:'button'},[el('span',{class:'ic',text:'↩️'}),' استعادة الشعار الافتراضي']);
+  const restoreBtn=el('button',{class:'testbtn',type:'button'},[el('span',{class:'ic'},[ricon('rotate-ccw')]),' استعادة الشعار الافتراضي']);
   function resetRestore(){ restoreBox.innerHTML=''; restoreBox.appendChild(restoreBtn); }
   restoreBtn.addEventListener('click',function(){
     restoreBox.innerHTML='';
@@ -4541,7 +4598,7 @@ async function openSettings(){
   });
   resetRestore();
   const brandCard=el('div',{class:'set-card'},[
-    el('div',{class:'set-h'},[el('span',{class:'ic',text:'🏷️'}),'هوية النشاط']),
+    el('div',{class:'set-h'},[el('span',{class:'ic'},[ricon('tag')]),'هوية النشاط']),
     el('div',{class:'field'},[
       el('label',{text:'اسم النشاط / الملاهي'}),
       brandNameIn,
@@ -4551,7 +4608,7 @@ async function openSettings(){
       el('div',{class:'logo-prev-box'},[logoPreview]),
       el('div',{class:'logo-prev-acts'},[
         el('button',{class:'testbtn',type:'button',onClick:function(){ logoFile.click(); }},
-          [el('span',{class:'ic',text:'🖼️'}),' اختيار شعار جديد']),
+          [el('span',{class:'ic'},[ricon('image')]),' اختيار شعار جديد']),
         restoreBox,
         el('div',{class:'hintbox',text:'يُفضّل صورة PNG بخلفية شفافة لأفضل جودة (الحد الأقصى 5 ميجا). الشعار يُحفظ على هذا الجهاز ويظهر فورًا في رأس البرنامج، ويبقى بعد إعادة التشغيل. لا نخزّن مسار الملف حتى لا ينكسر الشعار لو نُقل.'}),
       ]),
@@ -4563,7 +4620,7 @@ async function openSettings(){
    const accCards=(window.MalahyAccounts && typeof window.MalahyAccounts.buildCards==='function')
      ? (await window.MalahyAccounts.buildCards()) : [];
    const box=el('div',{class:'modal set-modal'},[
-     el('h3',{class:'set-title'},[el('span',{class:'ic',text:'⚙️'}),'الإعدادات']),
+     el('h3',{class:'set-title'},[el('span',{class:'ic'},[ricon('settings')]),'الإعدادات']),
      el('div',{class:'set-cards'},accCards.concat([brandCard, printCard, shiftCard, themeCard, updCard])),
     el('div',{class:'modal-actions'},[
       el('button',{class:'cancel',text:'إغلاق',onClick:closeOverlay}),

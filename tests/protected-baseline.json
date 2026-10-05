@@ -3,7 +3,7 @@
   "database.js": "04a687c4925db79d98b6ee0778b93541489d0348c74eb4f148f8ef104c23fe97",
   "activation.js": "47cee9f65ce909305f5ca6ad27451c1ce309821c26d9232dbc072a1d81444a7d",
   "update-gate.js": "b9af3f2f1e41063536a89115f884571398da9b7f92eda04d077c7a960a422e36",
-  "package.json": "42fbdb44841ebc2b5daf2df5c44256bc7d2ba6435dcde7d1bc04aa980a51f66c",
+  "package.json": "a6befdc2ced58eca5a55b8e09dce3574656737f065e89ddec9b99c5c553b1cc1",
   "README.md": "4c9aa5eee0272ec4054c608563fab460bd89aaa6d933face12dd7a2d857d1772",
   "launch.js": "7db341a1c70ded693e4fb0479702ee3ef4e3141773e27bd371580198de0d02c8",
   "electron-builder.yml": "2396654f7428a1268e2a7b01ae78b0032255a5b7066ed15844d689b3619d41db",
@@ -13,6 +13,6 @@
   "assets\\ticket\\ticket-template.js": "927d2d4a938e5ebcb0a086a0250f8aabebbae8a14f7a8c8d86b296196d6caaea",
   "assets\\ticket\\ticket-template.svg": "ea0f372fc469d43c53dd2772e49c57abc6309419bcc0a1a9e4b8065c3f9a9078",
   "assets\\vendor\\qrcode.js": "79ec86f82856005b1c887905cfccfcfbec3821ca61c7fd5a952faa5f778f791c",
-  "windows\\splash.html": "7e9e9d0337c87e8326e9b201cbad19960665fca3490e9d1fba6ac652d0e56110",
+  "windows\\splash.html": "bce507dc2d6347723d31db52b68c7779dcdfad77a7f4a8b3413db2da9d1e952d",
   "windows\\update.html": "afd73e57761432a0426cb7b307eaa75476b4cf91780f3e0fc8ea1fb2018406e3"
 }
