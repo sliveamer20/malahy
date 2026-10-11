@@ -4148,7 +4148,9 @@ function ticketHTMLFallback(o){
 function printResultToast(res,okMsg){
   if(res && res.ok){ if(okMsg) toast(okMsg,'ok'); return true; }
   const reason=(res && (res.reason||res.error))||'';
-  if(reason==='printer-not-found'){
+  if(reason==='no-printer-selected'){
+    toast('تعذّرت الطباعة: لم يتم تحديد طابعة. يُرجى اختيار طابعة أولاً من «الإعدادات».','warn');
+  }else if(reason==='printer-not-found'){
     toast('الطابعة المختارة غير متوفرة الآن — افتح «الإعدادات» واختر طابعة متصلة','warn');
   }else{
     toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn');

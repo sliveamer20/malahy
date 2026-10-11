@@ -350,13 +350,21 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
     /* 1) التحقق من الطابعة المختارة: لو الاسم محفوظ لكنه غير موجود بين طابعات
           الويندوز (طابعة غير موصّلة أو أُزيلت) نُرجع سببًا واضحًا للواجهة بدل
           رسالة "تعذّرت الطباعة" المبهمة. لو تعذّر السرد نكمل بالاسم كما هو. */
+    /* Two DISTINCT cases below, each needing its own message; merging them yields
+       a misleading generic error: (a) a selected printer that is now absent from
+       the system, (b) nothing selected AND no printer installed at all. */
     const printerName = typeof opts.printerName === "string" ? opts.printerName : "";
+    const installed = await installedPrinterNames();
     if (printerName) {
-      const installed = await installedPrinterNames();
       if (installed && installed.indexOf(printerName) === -1) {
         appendLog("print-ticket: الطابعة المختارة غير مثبّتة: " + printerName);
         return { ok: false, reason: "printer-not-found", available: installed };
       }
+    } else if (installed && installed.length === 0) {
+      /* No printer selected AND no printer installed at all -> name the reason
+         precisely instead of letting it surface as a vague print failure. */
+      appendLog("print-ticket: no printer selected and no printers installed");
+      return { ok: false, reason: "no-printer-selected", available: [] };
     }
 
     win = new BrowserWindow({
