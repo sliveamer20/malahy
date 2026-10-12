@@ -869,6 +869,28 @@
   .emp-stmtbtn:active{transform:scale(.99);}
   .emp-empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px;font-size:13.5px;background:rgba(255,255,255,.015);}
 
+  /* ===== رواتب مرنة: الدورات المفضلة + سجل الحضور + مراجعة الصرف ===== */
+  .emp-c6{grid-template-columns:repeat(6,1fr);}
+  @media(max-width:1000px){ .emp-modal .emp-c6{grid-template-columns:1fr 1fr;} }
+  .emp-datein,.emp-amt{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);font-family:var(--ui);font-size:12.5px;outline:none;direction:ltr;text-align:left;}
+  .emp-datein:focus,.emp-amt:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.14);}
+  .emp-amt{width:110px;font-family:var(--led);font-weight:800;text-align:center;}
+  .emp-cycle{display:inline-flex;align-items:center;gap:6px;border-radius:50px;padding:4px 10px;font-size:11.5px;font-weight:800;border:1px solid var(--line);color:var(--muted);white-space:nowrap;}
+  .emp-cycle.due{color:var(--gold);border-color:rgba(250,204,21,.4);}
+  .emp-cycle.over{color:var(--red);border-color:rgba(251,113,133,.45);}
+  .emp-pick{width:17px;height:17px;accent-color:var(--primary);cursor:pointer;}
+  .emp-att td select,.emp-att td input{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:6px 8px;color:var(--ink);font-family:var(--ui);font-size:12px;outline:none;direction:rtl;text-align:right;}
+  .emp-att td input[type="date"]{direction:ltr;text-align:center;}
+  .emp-att tr.future td{opacity:.72;}
+  .emp-src{display:inline-block;font-size:10px;font-weight:800;border:1px solid var(--line);border-radius:50px;padding:1px 6px;color:var(--muted-2);}
+  .emp-review{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .emp-review th{font-size:11px;font-weight:800;color:var(--ink);padding:9px 7px;border-bottom:2px solid var(--line);text-align:right;white-space:nowrap;}
+  .emp-review td{padding:9px 7px;border-bottom:1px solid var(--line-soft);color:var(--ink);vertical-align:middle;}
+  .emp-review .num{font-family:var(--led);direction:ltr;text-align:center;white-space:nowrap;font-weight:700;}
+  .emp-review tr.tot td{background:rgba(255,255,255,.05);font-weight:900;border-top:1px solid var(--line);}
+  .emp-flag{border:1px solid rgba(250,204,21,.45);background:rgba(250,204,21,.08);border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:12.5px;color:var(--muted);}
+  .emp-hist{max-height:320px;overflow:auto;}
+
   /* ===== إدارة الألعاب والتذاكر ===== */
   .overlay .modal.gm-modal{
     width:min(1000px,94vw); max-width:1000px;
@@ -1704,6 +1726,13 @@
      (يتكيّف مع 58mm/80mm/A4). يُexpoّز window.MalahyDailyReport — مثله مثل
      qrcode.js/ticket-template.js — ويمكن اختباره مباشرة من Node. -->
 <script src="assets/report/daily-report.js"></script>
+<!-- نواة الرواتب المرن: مصدر واحد لحسابات الرواتب (سجل حضور + سجل عمليات
+     + سجل دفعات). بلا DOM ولا تخزين ⇒ تُختبر مباشرة من Node. تُحمَّل قبل
+     تقرير الرواتب لأنه يستهلك مخرجاتها. -->
+<script src="assets/payroll/payroll-core.js"></script>
+<!-- تقرير صرف رواتب الموظفين (مجمّع + إيصال فردي) بتخطيط حراري يتكيّف مع
+     58mm/80mm/A4 — نفس نمط daily-report.js. -->
+<script src="assets/report/payroll-report.js"></script>
 </head>
 <body>
 <div class="app">
@@ -2165,6 +2194,7 @@ const K_SETTINGS='malahy_pos_settings_v1';
 const K_SEQ='malahy_pos_seq_v1';
 const K_GSEQ='malahy_gift_seq_v1';
 const K_EMP='malahy_employees_v1';
+const K_PAYBATCH='malahy_payroll_batches_v1';
 const K_REVIEW='malahy_review_log_v1';
 const DEFAULT_PASS='1234';
 
@@ -2224,6 +2254,8 @@ const LUCIDE_GLYPHS={
 /* ينشئ عنصر <svg> واحدًا فقط: بلا حالة وبلا آثار جانبية وبلا سلوك. */
 function ricon(name){if(!Object.prototype.hasOwnProperty.call(LUCIDE_GLYPHS,name))return null;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','24');svg.setAttribute('height','24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','2');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');svg.setAttribute('class','luc');svg.setAttribute('data-luc',name);svg.innerHTML=LUCIDE_GLYPHS[name];return svg;}
 function fmtNum(n){const r=Math.round((Number(n)||0)*100)/100;return r.toLocaleString('en-US',{maximumFractionDigits:2});}
+/* تاريخ DD/MM/YYYY — مساعد عام يستخدمه التقارير وتذاكر الطباعة والرواتب معًا */
+function fmtDMY(d){ d=d||new Date(); return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear(); }
 
 /* ============ Storage (ملف JSON على الجهاز عبر جسر preload — بدون localStorage) ============ */
 const __mem = {};
@@ -4717,151 +4749,187 @@ function toggleAutoTheme(){
     : 'تم إيقاف المظهر التلقائي — التحكم يدوي','ok');
 }
 
-/* ============ نظام الموظفين والرواتب الأسبوعية (السبت → الجمعة) ============ */
+/* ============ نظام الرواتب المرن — مرن بالكامل، بلا أسبوع ثابت ============ */
+/* المصدر الحقيقي لكل رقم هنا هو assets/payroll/payroll-core.js (نواة الرواتب)
+   و assets/report/payroll-report.js (تقرير الطباعة). هذا الملف واجهة فقط:
+   لا يحتوي أي حساب مالي ولا أي تسمية أسبوع ثابتة.
+
+   الفرق الجوهري عن النسخة السابقة:
+   • لا يوجد "أسبوع" في مسار الصرف. الفترة تُشتق من سجلّ الحضور نفسه.
+   • الحضور لا يُنشأ تلقائيًا — يوم بلا تسجيل ليس حضورًا ولا غيابًا.
+   • كل عملية صرف تُحفظ كسجل مستقل بمبلغها وتاريخها ورقم مرجعها، فلا يمكن
+     تكرار أي دفعة ولا محوها، والحد الأقصى للصرف هو الرصيد المستحق فعلًا. */
+/* EMP_JOBS مجرد اقتراحات لواجهة الإضافة — الأجر الفعلي يُقرأ من سجل الموظف
+   (e.dailyWage) وهو مصدر الحقيقة الوحيد، ولا يُرمَّز أي أجر في أي حساب. */
 const EMP_JOBS=[ {name:'كاشير',wage:100}, {name:'مشغل ألعاب',wage:85} ];
-const EMP_DAYS=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
-let _emp={ list:null, screen:'dash', empId:null, weekKey:null };
+/* أسماء الأيام بترتيب الأسبوع (الأحد أولًا) — تُستخدم لعرض أسماء اليوم فقط */
+const EMP_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+/* خيارات حالة اليوم — القيمة المحفوظة في السجل هي المفتاح */
+const EMP_STATES=[ {v:'work',t:'✅ حضر'},{v:'vacation',t:'🌴 إجازة'},{v:'absent',t:'❌ غياب'} ];
+/* حقن مساعدي التطبيق في الوحدتين النقيتين (نفس نمط daily-report.js) حتى
+   تكون الحرقمة والهروب من HTML-EScape مصدرًا واحدًا في كل المخرجات. */
+MalahyPayroll.setUtil({esc:esc,fmtNum:fmtNum,dayNames:EMP_DAYS});
+MalahyPayrollReport.setUtil({esc:esc,fmtNum:fmtNum,fmtDMY:fmtDMY,fmtTime12:fmtTime12,dayNames:EMP_DAYS});
+/* فحص الإقلاع: إن لم تُحمَّل الوحدتان لأي سبب فلا تفتح شاشة الرواتب ولا
+   نكسر باقي البرنامج — يظهر للمستخدم سبب واضح فقط. */
+const PAYROLL_READY=!!(window.MalahyPayroll && window.MalahyPayrollReport);
+let _emp={ list:null, screen:'dash', empId:null, dateTs:null, batchId:null };
 
-function empLoad(){ if(!_emp.list){ _emp.list=loadJSON(K_EMP,[])||[]; empMigrate(); } return _emp.list; }
-function empSave(){ saveJSON(K_EMP,_emp.list||[]); }
+/* ---- مساعدو النواة (اختصارات تُقرؤها الوسائط أولًا) ---- */
+function PR(){ return window.MalahyPayroll||null; }
+function PRR(){ return window.MalahyPayrollReport||null; }
+function empCore(e){ if(PR()) PR().ensureLedger(e); return e; }
 
-/* ---- ترقية بيانات الإصدار السابق: المكافآت والجزاءات بقت عمليات مستقلة + ظهرت السلف ---- */
+/* ---- التخزين ---- */
+/* التحميل قراءةٌ خالصة: لا يكتب ولا يرحّل. فتحُ أي شاشة أو نافذة تسجيل يومي
+   لن يُعيد كتابة ملف البيانات إطلاقًا — الترحيل لا يكون إلا بإذن صريح. */
+function empLoad(){ if(!_emp.list){ _emp.list=loadJSON(K_EMP,[])||[]; } return _emp.list; }
+function empSave(){ return saveJSON(K_EMP,_emp.list||[]); }
+function empFind(empId){ return empLoad().find(function(x){return x && x.id===empId;})||null; }
+
+/* ---- الترحيل: الأسبوع القديم ← سجل مرن (بدون حذف أي سجل) ----
+   لا يعمل الترحيل تلقائيًا عند الفتح إطلاقًا: empLoad قراءةٌ خالصة، وفتحُ
+   شاشة الموظفين أو التسجيل اليومي لا يُعيد كتابة ملف البيانات. الترحيل لا
+   يكون إلا عبر empRunMigration بعد تأكيد صريح بكلمة السر (empAskPass) من
+   empMigrationGate. كلا المسارين يحفظ سجل تدقيق ثابتًا (legacyImport) يبقى
+   معروضًا بعد ختم المخطط، لأن إعادة تشغيل الترحيل لا تعيد العدّ.
+   لا يُعاد احتساب أي يوم مدفوع. */
 function empMigrate(){
+  if(!PR()) return false;
   let changed=false;
-  (_emp.list||[]).forEach(function(e){
-    (e.weeks||[]).forEach(function(w){
-      if(!Array.isArray(w.bonuses)){
-        w.bonuses=[];
-        (w.days||[]).forEach(function(d,i){ const v=Number(d.bonus)||0; if(v>0) w.bonuses.push({id:uid(),day:i,ts:dayTsOf(w.key,i),amount:v,reason:''}); d.bonus=0; });
-        changed=true;
-      }
-      if(!Array.isArray(w.penalties)){
-        w.penalties=[];
-        (w.days||[]).forEach(function(d,i){ const v=Number(d.penalty)||0; if(v>0) w.penalties.push({id:uid(),day:i,ts:dayTsOf(w.key,i),amount:v,reason:''}); d.penalty=0; });
-        changed=true;
-      }
-      if(!Array.isArray(w.advances)){ w.advances=[]; changed=true; }
-      if(!Array.isArray(w.deductions)){ w.deductions=[]; changed=true; }
-      if(typeof w.weekNote!=='string'){ w.weekNote=''; changed=true; }
-    });
+  empLoad().forEach(function(e){ if(PR().migrateEmployee(e,{nowTs:Date.now()}).changed) changed=true; });
+  if(changed) empSave();
+  return changed;
+}
+/* كشف الترحيل المعلّق — قراءةٌ خالصة: تفحص شرطي الختم فقط ولا تستدعي
+   migrateEmployee ولا تغيّر أي حقل. تُستدعى لعرض بوابة التأكيد. */
+function empPendingMigration(){
+  if(!PR()) return null;
+  let employees=0, weeks=0, weeksPaid=0;
+  empLoad().forEach(function(e){
+    if(!e) return;
+    const legacy = Array.isArray(e.weeks) ? e.weeks.filter(function(w){ return w && typeof w==='object'; }) : [];
+    const todo = legacy.filter(function(w){ return !w.legacyHandled; });
+    if(!todo.length) return;
+    employees++; weeks+=todo.length;
+    weeksPaid+=todo.filter(function(w){ return !!w.paid; }).length;
+  });
+  return { employees: employees, weeks: weeks, weeksPaid: weeksPaid };
+}
+/* بوابة الترحيل الصريحة — لا تكتب أي بايت قبل موافقة المستخدم.
+   تعتمد على بوابة الصلاحيات القائمة (employeeManage) في openEmployees،
+   ولا تستدعي empAskPass حفاظًا على قرار معماري phase 3C-2 (لا نوافذ كلمة سر). */
+function empMigrationGate(wrap){
+  const pend = empPendingMigration();
+  if(!pend || !pend.employees) return false;
+  const box=el('div',{class:'emp-flag'});
+  box.appendChild(el('div',{},[
+    '📦 سجلات رواتب قديمة تحتاج ترحيلًا إلى النظام المرن: ',
+    el('b',{text:fmtNum(pend.employees)}), ' موظف · ',
+    el('b',{text:fmtNum(pend.weeks)}), ' أسبوع',
+    pend.weeksPaid ? [' (منها ', el('b',{text:fmtNum(pend.weeksPaid)}), ' أسبوع مدفوع لن يُحتسب)'] : [],
+    '. لن يتغيّر أي رصيد قبل موافقتك.'
+  ]));
+  const acts=el('div',{class:'emp-quick',style:{marginTop:'8px'}});
+  const close=el('div',{});
+  acts.appendChild(el('button',{onClick:function(){
+    const err=el('div',{class:'modal-err'});
+    const ov=el('div',{class:'ovl2',onClick:function(ev){ if(ev.target===ov) close.remove(); }},[
+      el('div',{class:'modal'},[
+        el('h3',{},['📦 تأكيد ترحيل سجلات الرواتب']),
+        el('p',{text:'سيُرحَّل '+fmtNum(pend.employees)+' موظف ('+fmtNum(pend.weeks)+' أسبوع غير مُرحَّل). الأسابيع المدفوعة لن تدخل الرصيد ولن تُحتسب مرتين.'}),
+        err,
+        el('div',{class:'modal-actions'},[
+          el('button',{class:'cancel',text:'إلغاء',onClick:function(){ close.remove(); }}),
+          el('button',{class:'confirm',text:'ترحيل الآن',onClick:function(){
+            if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
+            close.remove();
+            empRunMigration();
+            toast('تم الترحيل — راجع سجل التدقيق','ok');
+            empGo('dash');
+          }}),
+        ]),
+      ]),
+    ]);
+    close.appendChild(ov);
+    document.body.appendChild(close);
+  }},['📦 ترحيل الآن']));
+  acts.appendChild(el('div',{class:'emp-hint'},['الترحيل لا يعمل تلقائيًا عند الفتح — يُطلب إذنك في كل مرة.']));
+  box.appendChild(acts);
+  wrap.appendChild(box);
+  return true;
+}
+/* ترحيل صريح يُطلب من المستخدم (أول تشغيل بعد التحديث) */
+function empRunMigration(){
+  if(!PR()) return null;
+  let changed=false, flags=0, imported=0, importedDays=0, importedOps=0;
+  empLoad().forEach(function(e){
+    const r=PR().migrateEmployee(e,{nowTs:Date.now()});
+    if(r.changed) changed=true;
+    imported+=r.imported||0;
+    importedDays+=r.importedDays||0;
+    importedOps+=r.importedOps||0;
+    flags+=((e.reviewFlags||[]).length);
   });
   if(changed) empSave();
+  return {changed:changed,imported:imported,importedDays:importedDays,importedOps:importedOps,flags:flags};
+}
+/* سجل تدقيق الترحيل للعرض والطباعة — لا يُعدّل أي رصيد ولا يعيد حساب أي يوم */
+function empMigrationAudit(){
+  if(!PR()) return null;
+  return PR().migrationAudit(empLoad());
+}
+function empPrintMigrationAudit(){
+  if(!PRR()) return;
+  if(!MalahyPerm.hasPerm('payroll')){ MalahyPerm.deny(); return; }
+  const a=empMigrationAudit();
+  const html=PRR().migrationAuditHTML(a,{paper:paperKind(),venue:payrollVenue(),ts:Date.now()});
+  malahyPrint.printTicket(html,{
+    jobName:'payroll-migration-audit',
+    success:'تم إرسال تقرير تدقيق الترحيل إلى الطابعة',
+    errorTitle:'تعذّر طباعة تقرير تدقيق الترحيل'
+  });
 }
 
-/* ---- الأسابيع: كل أسبوع وحدة مستقلة بمفتاح = تاريخ السبت اللي بيبدأ بيه ---- */
-function satStartOf(ts){ const d=new Date(ts); d.setHours(0,0,0,0); const off=(d.getDay()-6+7)%7; d.setDate(d.getDate()-off); return d; }
-function weekKeyOf(ts){ const s=satStartOf(ts); return s.getFullYear()+'-'+pad(s.getMonth()+1,2)+'-'+pad(s.getDate(),2); }
-function weekStartFromKey(key){ const p=String(key).split('-'); return new Date(+p[0],+p[1]-1,+p[2],0,0,0,0); }
-function weekEndFromKey(key){ const e=weekStartFromKey(key); e.setDate(e.getDate()+6); e.setHours(23,59,59,999); return e; }
-function dayDateOf(key,i){ const d=weekStartFromKey(key); d.setDate(d.getDate()+(Number(i)||0)); return d; }
-function dayTsOf(key,i){ const d=dayDateOf(key,i); d.setHours(12,0,0,0); return d.getTime(); }
-function dayIdxInWeek(key,ts){ const s=weekStartFromKey(key).getTime(); const diff=Math.floor((ts-s)/86400000); return (diff<0||diff>6)?-1:diff; }
-function defaultDayIdx(key){ const i=dayIdxInWeek(key,Date.now()); return i<0?0:i; }
-function fmtDMY(d){ return pad(d.getDate(),2)+'/'+pad(d.getMonth()+1,2)+'/'+d.getFullYear(); }
-function weekRangeLabel(key){ return 'السبت '+fmtDMY(weekStartFromKey(key))+' ← الجمعة '+fmtDMY(weekEndFromKey(key)); }
-function dateInputVal(ts){ const d=new Date(ts); return d.getFullYear()+'-'+pad(d.getMonth()+1,2)+'-'+pad(d.getDate(),2); }
-function empCurKey(){ return weekKeyOf(Date.now()); }
-
-function newWeek(key,wage){
-  return { key:key, startTs:weekStartFromKey(key).getTime(), endTs:weekEndFromKey(key).getTime(),
-           dailyWage:Number(wage)||0,
-           days:EMP_DAYS.map(function(){ return {status:'work',penalty:0,bonus:0,note:''}; }),
-           bonuses:[], penalties:[], advances:[], deductions:[], weekNote:'',
-           paid:false, paidAt:null, snapshot:null };
+/* ---- دفعات الصرف (مفتاح مستقل: ذرّي per-employee ولا يمسح سجل الموظفين) ---- */
+let _pb=null;
+function pbLoad(){ if(!_pb){ const d=loadJSON(K_PAYBATCH,null); _pb=(d&&typeof d==='object')?d:{}; } return _pb; }
+function pbSave(){ return saveJSON(K_PAYBATCH,_pb||{}); }
+function pbGet(id){ return pbLoad()[id]||null; }
+function pbPut(b){ const s=pbLoad(); s[b.id]=b; return pbSave(); }
+function pbList(){
+  const s=pbLoad();
+  return Object.keys(s).map(function(k){ return s[k]; })
+    .filter(function(b){ return b&&b.ts; })
+    .sort(function(a,b){ return b.ts-a.ts; });
 }
-/* أسبوع جديد تلقائيًا كل سبت — من غير ما يتمسح أي أسبوع قديم (المصروف وغير المصروف) */
-function ensureWeeks(){
-  const key=empCurKey(); let changed=false;
+
+/* ---- حركات مالية ---- */
+function money(n){ return fmtNum(n)+' ج'; }
+function dateInVal(ts){ const d=new Date(ts); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function keyToTsSafe(k){ const t=PR().tsOfDayKey(k); return isNaN(t)?Date.now():t; }
+function cycleLabelOf(e){ return PR().cycleInfo(e,Date.now()); }
+function cycleChip(e){
+  const c=cycleLabelOf(e);
+  const cls=c.overdueDays>0?'over':(c.due?'due':'');
+  let txt='🔁 '+c.label;
+  if(c.days>0&&c.dueTs) txt+=(c.overdueDays>0)?(' · متأخر '+c.overdueDays+' يوم'):(c.due?' · مستحق الآن':' · التالي '+fmtDMY(new Date(c.dueTs)));
+  return el('span',{class:'emp-cycle '+cls,title:c.label+(c.dueTs?(' — الاستحقاق التالي '+fmtDMY(new Date(c.dueTs))):'')},[txt]);
+}
+/* إجماليات كل الموظفين حتى لحظة معيّنة (بدون أي حساب مكرر) */
+function empTotals(cutoffTs){
+  const t={count:0,work:0,abs:0,bonus:0,pen:0,adv:0,ded:0,gross:0,paid:0,due:0,unpaid:0,batches:pbList().length};
   empLoad().forEach(function(e){
-    if(!empWeek(e,key)){ empWeekEnsure(e,key); changed=true; }
+    const s=PR().statsUpTo(e,cutoffTs);
+    t.count++; t.work+=s.work; t.abs+=s.abs;
+    t.bonus+=s.bonus; t.pen+=s.pen; t.adv+=s.adv; t.ded+=s.ded;
+    t.gross+=s.gross; t.paid+=s.paid; t.due+=s.due;
   });
-  if(changed) empSave();
-  return key;
-}
-/* ينشئ أسبوع الموظف لو مش موجود (بدل ما نعتمد على فتح نافذة الموظفين أول).
-   مطلوبة لربط السلف/الخصومات/المكافآت اليومية بأسبوع الموظف الصحيح. */
-function empWeekEnsure(e,key){
-  e.weeks=e.weeks||[];
-  let w=empWeek(e,key);
-  if(!w){
-    w=newWeek(key,e.dailyWage);
-    e.weeks.push(w);
-    e.weeks.sort(function(a,b){ return a.key<b.key?1:(a.key>b.key?-1:0); });
-  }
-  return w;
-}
-
-/* ============ رابط المصروفات بالموظفين (سلف) ============ */
-/* تعبئة قائمة الموظفين في قسم المصروفات — بنربطها برقم الموظف الثابت. */
-function renderExpEmpOptions(){
-  const sel=$('#expEmp'); if(!sel) return;
-  const cur=sel.value||'';
-  sel.innerHTML='';
-  sel.appendChild(el('option',{value:'',text:'مصروف عادي'}));
-  empLoad().forEach(function(e){
-    sel.appendChild(el('option',{value:e.id,text:'💵 سلفة: '+e.name}));
-  });
-  /* نحافظ على الاختيار الحالي لو لسه موجود */
-  if(cur&&empFind(cur)) sel.value=cur;
-}
-/* تسجيل سلفة موظف داخل أسبوعه الحالي (ترتبط برقمه الثابت + التاريخ الدقيق). */
-function recordEmployeeAdvance(empId,amount,reason,expenseId,ts){
-  const e=empFind(empId); if(!e) return null;
-  ts=ts||Date.now();
-  const key=weekKeyOf(ts);
-  const w=empWeekEnsure(e,key);
-  const day=Math.max(0,Math.min(6,dayIdxInWeek(key,ts)));
-  if(w.paid){ toast('راتب أسبوع هذه السلفة تم صرفه بالفعل — السلفة اتسجلت كمصروف فقط','warn'); return null; }
-  const adv={ id:uid(), day:day, ts:ts, amount:Math.max(0,Number(amount)||0),
-              reason:reason||'سلفة من المصروفات', note:'', expenseId:expenseId||null };
-  w.advances.push(adv);
-  empSave();
-  return adv;
-}
-/* حذف السلفة المرتبطة بمصروف من راتب الموظف (عند حذف المصروف). */
-function removeEmployeeAdvance(empId,expenseId){
-  const e=empFind(empId); if(!e||!expenseId) return;
-  (e.weeks||[]).forEach(function(w){
-    if(Array.isArray(w.advances)&&w.advances.some(function(x){return x.expenseId===expenseId;})){
-      w.advances=w.advances.filter(function(x){return x.expenseId!==expenseId;});
-    }
-  });
-  empSave();
-}
-
-/* ---- الحسابات: (أيام العمل × الأجر) + مكافآت − جزاءات − سلف − خصومات = الصافي ---- */
-function sumAmt(a){ let t=0; (a||[]).forEach(function(x){ t+=Number(x.amount)||0; }); return t; }
-function sumDayField(days,f){ let t=0; (days||[]).forEach(function(d){ t+=Number(d[f])||0; }); return t; }
-function calcWeek(w){
-  let work=0,vac=0,abs=0;
-  (w.days||[]).forEach(function(d){ if(d.status==='vacation')vac++; else if(d.status==='absent')abs++; else work++; });
-  const bonus=Array.isArray(w.bonuses)?sumAmt(w.bonuses):sumDayField(w.days,'bonus');
-  const pen  =Array.isArray(w.penalties)?sumAmt(w.penalties):sumDayField(w.days,'penalty');
-  const adv  =sumAmt(w.advances);
-  const ded  =sumAmt(w.deductions);
-  const gross=work*(Number(w.dailyWage)||0);
-  return {work:work,vac:vac,abs:abs,bonus:bonus,pen:pen,adv:adv,ded:ded,gross:gross,net:gross+bonus-pen-adv-ded};
-}
-/* بعد الصرف بنستخدم اللقطة المحفوظة عشان السجل ما يتغيرش أبدًا */
-function weekStats(w){
-  const s=(w.paid&&w.snapshot)?w.snapshot:calcWeek(w);
-  const r={work:0,vac:0,abs:0,bonus:0,pen:0,adv:0,ded:0,gross:0,net:0};
-  Object.keys(r).forEach(function(k){ const v=Number(s[k]); r[k]=isNaN(v)?0:v; });
-  return r;
-}
-function empDashboardStats(curKey){
-  const t={count:0,due:0,paid:0,unpaid:0,bonus:0,pen:0,adv:0,ded:0,work:0,vac:0,abs:0};
-  const L=empLoad(); t.count=L.length;
-  L.forEach(function(e){
-    const w=(e.weeks||[]).find(function(x){return x.key===curKey;}); if(!w) return;
-    const s=weekStats(w);
-    t.due+=s.net; t.bonus+=s.bonus; t.pen+=s.pen; t.adv+=s.adv; t.ded+=s.ded; t.work+=s.work; t.vac+=s.vac; t.abs+=s.abs;
-    if(w.paid) t.paid+=s.net; else t.unpaid+=s.net;
-  });
+  t.unpaid=t.due;
   return t;
 }
 
-/* ---- طبقة تأكيد بكلمة السر فوق نافذة الموظفين (ما تقفلش النافذة الأساسية) ---- */
+/* ---- طبقة تأكيد بكلمة السر فوق نافذة الموظفين (مُبقاة للتوافق، بلا استدعاءات) ---- */
 function empAskPass(o){
   o=o||{};
   const err=el('div',{class:'modal-err'});
@@ -4887,33 +4955,32 @@ function empAskPass(o){
   setTimeout(function(){ try{inp.focus();}catch(_){ } },40);
 }
 
-/* ---- نافذة صغيرة لإضافة مكافأة / جزاء / سلفة ---- */
-function empEntryModal(o){
+/* ==================== نافذة إضافة/تعديل عملية (مكافأة/جزاء/سلفة/خصم) ==================== */
+function empOpModal(o){
   o=o||{};
-  const daySel=el('select',{});
-  EMP_DAYS.forEach(function(nm,i){ daySel.appendChild(el('option',{value:String(i),text:nm+' — '+fmtDMY(dayDateOf(o.key,i))})); });
-  daySel.value=String(defaultDayIdx(o.key));
+  const dateIn=el('input',{type:'date',value:o.dayKey||dateInVal(Date.now())});
   const amtIn=el('input',{type:'number',min:'0',step:'1',placeholder:'0'});
-  const reasonIn=el('input',{type:'text',placeholder:'اختياري'});
-  const noteIn=o.withNote?el('textarea',{placeholder:'اختياري'}):null;
+  const reasonIn=el('input',{type:'text',placeholder:o.placeholder||'اختياري'});
+  const noteIn=o.withNote?el('textarea',{placeholder:'ملاحظات (اختياري)'}):null;
   const err=el('div',{class:'modal-err'});
   let closeFn=function(){};
   const go=function(){
     const amt=Math.max(0,Number(amtIn.value)||0);
     if(amt<=0){ err.textContent='اكتب قيمة أكبر من صفر'; try{amtIn.select();}catch(_){ } return; }
-    const i=Math.max(0,Math.min(6,parseInt(daySel.value,10)||0));
+    if(!dateIn.value){ err.textContent='اختر تاريخ العملية'; return; }
+    const ts=PR().tsOfDayKey(dateIn.value);
+    if(isNaN(ts)){ err.textContent='تاريخ غير صحيح'; return; }
     closeFn();
-    if(o.onSave) o.onSave({ id:uid(), day:i, ts:dayTsOf(o.key,i), amount:amt, reason:(reasonIn.value||'').trim(), note:noteIn?(noteIn.value||'').trim():'' });
+    if(o.onSave) o.onSave({ ts:ts, dayKey:dateIn.value, amount:amt, reason:(reasonIn.value||'').trim(), note:(noteIn&&noteIn.value||'').trim() });
   };
   const fields=[
-    el('div',{class:'field'},[el('label',{text:'اليوم'}),daySel]),
+    el('div',{class:'field'},[el('label',{text:'تاريخ العملية'}),dateIn]),
     el('div',{class:'field'},[el('label',{text:'القيمة (جنيه)'}),amtIn]),
     el('div',{class:'field full'},[el('label',{text:'السبب'}),reasonIn]),
   ];
   if(noteIn) fields.push(el('div',{class:'field full'},[el('label',{text:'ملاحظات'}),noteIn]));
   const box=el('div',{class:'modal'},[
     el('h3',{},[o.title||'➕ إضافة']),
-    el('p',{text:'الأسبوع: '+weekRangeLabel(o.key)}),
     el('div',{class:'emp-form'},fields),
     err,
     el('div',{class:'modal-actions'},[
@@ -4927,105 +4994,7 @@ function empEntryModal(o){
   setTimeout(function(){ try{amtIn.focus();}catch(_){ } },40);
 }
 
-/* ---- النافذة الرئيسية ---- */
-function openEmployees(){
-  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
-  _emp.list=null; empLoad(); ensureWeeks();
-  _emp.screen='dash'; _emp.empId=null; _emp.weekKey=null;
-  const wrap=el('div',{class:'modal emp-modal'},[ el('div',{id:'empRoot'}) ]);
-  showModal(wrap);
-  paintEmp();
-}
-function paintEmp(){
-  const root=$('#empRoot'); if(!root) return;
-  root.innerHTML='';
-  if(_emp.screen==='form') root.appendChild(empForm(_emp.empId));
-  else if(_emp.screen==='emp') root.appendChild(empView(_emp.empId,_emp.weekKey));
-  else if(_emp.screen==='stmt') root.appendChild(empStatement(_emp.empId,_emp.weekKey));
-  else root.appendChild(empDash());
-}
-function empGo(screen,empId,weekKey){ _emp.screen=screen; _emp.empId=empId||null; _emp.weekKey=weekKey||null; paintEmp(); }
-function empFind(empId){ return empLoad().find(function(x){return x.id===empId;}); }
-function empWeek(e,key){ return ((e&&e.weeks)||[]).find(function(x){return x.key===key;}); }
-
-/* ---- شاشة اللوحة (Dashboard) ---- */
-function empDash(){
-  const cur=ensureWeeks();
-  const st=empDashboardStats(cur);
-  const wrap=el('div',{});
-  wrap.appendChild(el('h3',{},['👥 الموظفون والرواتب']));
-  wrap.appendChild(el('div',{class:'emp-week-bar'},[
-    el('div',{},['بداية الأسبوع: ',el('b',{text:'السبت '+fmtDMY(weekStartFromKey(cur))}),'   ·   نهاية الأسبوع: ',el('b',{text:'الجمعة '+fmtDMY(weekEndFromKey(cur))})]),
-    el('span',{class:'emp-chip cur'},['🟢 الأسبوع الحالي'])
-  ]));
-  wrap.appendChild(el('div',{class:'rep-cards emp-c5'},[
-    repCard('👥 عدد الموظفين',fmtNum(st.count),'tickets'),
-    repCard('💰 إجمالي الرواتب المستحقة',fmtNum(st.due),'final'),
-    repCard('💵 الرواتب المصروفة',fmtNum(st.paid),'cash'),
-    repCard('⏳ الرواتب غير المصروفة',fmtNum(st.unpaid),'exp'),
-    repCard('💵 إجمالي السلف',fmtNum(st.adv),'elec'),
-    repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift'),
-    repCard('⚠️ إجمالي الجزاءات',fmtNum(st.pen),'exp'),
-    repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
-    repCard('📅 أيام العمل',fmtNum(st.work),'rev'),
-    repCard('🌴 الإجازات',fmtNum(st.vac),'gift'),
-    repCard('❌ الغياب',fmtNum(st.abs),'exp'),
-  ]));
-  wrap.appendChild(el('div',{class:'emp-quick'},[
-    el('button',{class:'pri',onClick:function(){empGo('form',null,null);}},['➕ إضافة موظف']),
-    el('button',{onClick:empPayAll},['💰 صرف جميع الرواتب']),
-    el('button',{onClick:exportSalaryPDF},['📄 تقرير الرواتب (PDF)']),
-    el('button',{onClick:exportWeekExcel},['📊 تقرير الأسبوع (Excel)']),
-    el('button',{onClick:empStartNewWeek},['🔄 بدء أسبوع جديد']),
-  ]));
-  const L=empLoad();
-  if(!L.length){
-    wrap.appendChild(el('div',{class:'emp-empty'},['لا يوجد موظفون بعد — اضغط «➕ إضافة موظف» لإضافة أول موظف.']));
-    return wrap;
-  }
-  const sec=el('div',{class:'emp-sec'});
-  sec.appendChild(el('div',{class:'emp-sec-h'},['📋 جدول الموظفين']));
-  const tbl=el('table',{class:'emp-table compact'});
-  tbl.appendChild(el('tr',{},['الاسم','الوظيفة','الأجر اليومي','السلف','الخصومات','صافي الأسبوع','حالة الصرف','التفاصيل'].map(function(h){return el('th',{text:h});})));
-  L.forEach(function(e){
-    const w=empWeek(e,cur);
-    const s=w?weekStats(w):{net:0,adv:0,ded:0};
-    const openIt=function(){ empGo('emp',e.id,cur); };
-    const chip=(w&&w.paid)?el('span',{class:'emp-chip locked'},['🔒 تم الصرف']):el('span',{class:'emp-chip pend'},['⏳ لم يتم الصرف']);
-    const acts=el('div',{class:'emp-acts'},[
-      el('button',{class:'pri',onClick:openIt},['📂 التفاصيل']),
-      el('button',{title:'كشف الحساب الأسبوعي',onClick:function(){ empGo('stmt',e.id,cur); }},['📄']),
-      (w&&!w.paid)?el('button',{class:'pay',title:'صرف الراتب',onClick:function(){empPayOne(e.id,cur);}},['💰']):null,
-      el('button',{title:'تسجيل يومي (حضور/انصراف/خصم/مكافأة)',onClick:function(){ openDailyReg(e.id); }},['🕐']),
-      el('button',{title:'تعديل بيانات الموظف',onClick:function(){MalahyPerm.requirePerm('employeeManage',{title:'✏️ تعديل موظف',message:'تأكيد تعديل بيانات «'+e.name+'»؟',confirmText:'متابعة',secondary:true,onOk:function(){ empGo('form',e.id,null); }});}},['✏️']),
-      el('button',{class:'del',title:'حذف الموظف',onClick:function(){empDelete(e.id);}},['🗑️']),
-    ]);
-    tbl.appendChild(el('tr',{},[
-      el('td',{},[el('span',{class:'emp-name',onClick:openIt},[e.name])]),
-      el('td',{text:e.job||'—'}),
-      el('td',{},[el('span',{class:'num',text:fmtNum(e.dailyWage)})]),
-      el('td',{},[el('span',{class:'num emp-blue',text:s.adv?('-'+fmtNum(s.adv)):'0'})]),
-      el('td',{},[el('span',{class:'num emp-neg',text:s.ded?('-'+fmtNum(s.ded)):'0'})]),
-      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(s.net)})]),
-      el('td',{},[chip]),
-      el('td',{},[acts]),
-    ]));
-  });
-  const t=empWeekTableData(cur);
-  tbl.appendChild(el('tr',{class:'emp-tot'},[
-    el('td',{colspan:'3',text:'الإجمالي'}),
-    el('td',{},[el('span',{class:'num emp-blue',text:t.tot.adv?('-'+fmtNum(t.tot.adv)):'0'})]),
-    el('td',{},[el('span',{class:'num emp-neg',text:t.tot.ded?('-'+fmtNum(t.tot.ded)):'0'})]),
-    el('td',{},[el('span',{class:'num',text:fmtNum(t.tot.net)})]),
-    el('td',{colspan:'2',text:''}),
-  ]));
-  sec.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
-  wrap.appendChild(sec);
-  return wrap;
-}
-
-
-/* ---- شاشة إضافة / تعديل موظف ---- */
+/* ==================== شاشة إضافة / تعديل موظف ==================== */
 function empForm(empId){
   const editing=!!empId;
   const e=editing?empFind(empId):null;
@@ -5034,13 +5003,13 @@ function empForm(empId){
   wrap.appendChild(el('h3',{},[editing?'✏️ تعديل موظف':'➕ إضافة موظف']));
   const nameIn=el('input',{type:'text',placeholder:'اسم الموظف'}); if(e) nameIn.value=e.name||'';
   const jobOther=el('input',{type:'text',placeholder:'اكتب اسم الوظيفة'}); jobOther.style.display='none'; jobOther.style.marginTop='7px';
-  const wageIn=el('input',{type:'number',min:'0',step:'1'}); wageIn.value=e?String(e.dailyWage):String(EMP_JOBS[0].wage);
+  const wageIn=el('input',{type:'number',min:'0',step:'1'}); wageIn.value=e?String(PR().wageOf(e)):String(EMP_JOBS[0].wage);
   const jobSel=el('select',{onChange:function(){
     if(jobSel.value==='__other'){ jobOther.style.display='block'; }
     else{
       jobOther.style.display='none';
       const j=EMP_JOBS.find(function(x){return x.name===jobSel.value;});
-      if(j&&!editing) wageIn.value=String(j.wage);
+      if(j&&!editing) wageIn.value=String(j.wage);   /* اقتراح مبدئي فقط */
     }
   }});
   EMP_JOBS.forEach(function(j){ jobSel.appendChild(el('option',{value:j.name,text:j.name+' — '+fmtNum(j.wage)+' ج/يوم'})); });
@@ -5050,7 +5019,12 @@ function empForm(empId){
     else { jobSel.value='__other'; jobOther.style.display='block'; jobOther.value=e.job||''; }
   }
   const phoneIn=el('input',{type:'tel',placeholder:'اختياري'}); if(e) phoneIn.value=e.phone||'';
-  const hireIn=el('input',{type:'date'}); hireIn.value=dateInputVal(e&&e.hiredAt?e.hiredAt:Date.now());
+  const hireIn=el('input',{type:'date'}); hireIn.value=dateInVal(e&&e.hiredAt?e.hiredAt:Date.now());
+  /* الدورة المفضلة — للجدولة والتتبّع فقط، ولا تمنع الصرف في أي وقت */
+  const cycleSel=el('select',{});
+  PR().CYCLE_ORDER.forEach(function(c){ cycleSel.appendChild(el('option',{value:c,text:PR().CYCLE_LABEL[c]})); });
+  cycleSel.value=e?(e.payCycle||'weekly'):'weekly';
+  const cycleHint=el('div',{class:'emp-hint'},['💡 الدورة المفضلة للتنظيم والمتابعة فقط — يمكنك صرف الراتب في أي وقت، حتى بعد يوم أو يومين من العمل، وبأي مبلغ حتى المستحق.']);
   const notesIn=el('textarea',{placeholder:'ملاحظات (اختياري)'}); if(e) notesIn.value=e.notes||'';
   const save=function(){
     const name=(nameIn.value||'').trim();
@@ -5060,27 +5034,30 @@ function empForm(empId){
     if(!job){ toast('اكتب اسم الوظيفة','warn'); return; }
     if(wage<=0){ toast('اكتب الأجر اليومي','warn'); return; }
     let hiredTs=Date.now();
-    if(hireIn.value){ const p=hireIn.value.split('-'); hiredTs=new Date(+p[0],+p[1]-1,+p[2]).getTime(); }
+    if(hireIn.value){ const t=PR().tsOfDayKey(hireIn.value); if(!isNaN(t)) hiredTs=t; }
     if(editing){
       e.name=name; e.job=job; e.phone=(phoneIn.value||'').trim(); e.notes=(notesIn.value||'').trim(); e.hiredAt=hiredTs;
-      if(e.dailyWage!==wage){
-        e.dailyWage=wage;
-        const w=empWeek(e,empCurKey());
-        if(w&&!w.paid) w.dailyWage=wage; /* الأسبوع الحالي غير المصروف يتبع الأجر الجديد — الأسابيع المصروفة لا تتغير */
-      }
+      e.payCycle=cycleSel.value;
+      /* تغيير الأجر لا يعيد كتابة الماضي: كل يوم محفوظ بأجره وقت تسجيله */
+      e.dailyWage=wage;
     }else{
-      empLoad().push({id:uid(),name:name,job:job,dailyWage:wage,phone:(phoneIn.value||'').trim(),hiredAt:hiredTs,notes:(notesIn.value||'').trim(),weeks:[]});
+      const ne={ id:uid(), name:name, job:job, dailyWage:wage, phone:(phoneIn.value||'').trim(),
+                 hiredAt:hiredTs, notes:(notesIn.value||'').trim(),
+                 payCycle:cycleSel.value, cycleAnchorDay:1 };
+      empCore(ne);
+      empLoad().push(ne);
     }
-    empSave(); ensureWeeks();
-    empGo('dash');
+    empSave(); empGo('dash');
     toast(editing?'تم تعديل بيانات الموظف':'تمت إضافة الموظف','ok');
   };
   wrap.appendChild(el('div',{class:'emp-form'},[
     el('div',{class:'field'},[el('label',{text:'الاسم'}),nameIn]),
     el('div',{class:'field'},[el('label',{text:'الوظيفة'}),jobSel,jobOther]),
     el('div',{class:'field'},[el('label',{text:'الأجر اليومي (جنيه)'}),wageIn]),
+    el('div',{class:'field'},[el('label',{text:'دورة الصرف المفضلة'}),cycleSel]),
     el('div',{class:'field'},[el('label',{text:'رقم الهاتف'}),phoneIn]),
     el('div',{class:'field'},[el('label',{text:'تاريخ التعيين'}),hireIn]),
+    el('div',{class:'field full'},[cycleHint]),
     el('div',{class:'field full'},[el('label',{text:'ملاحظات'}),notesIn]),
   ]));
   wrap.appendChild(el('div',{class:'modal-actions'},[
@@ -5090,75 +5067,129 @@ function empForm(empId){
   return wrap;
 }
 
-/* ---- قسم عمليات (مكافآت / جزاءات / سلف) ---- */
+/* ==================== قسم العمليات على مستوى الموظف ==================== */
 const EMP_KINDS={
-  bonuses  :{ic:'🎁',title:'المكافآت',add:'➕ إضافة مكافأة',mt:'🎁 إضافة مكافأة',sign:'+',cls:'emp-pos',note:false,empty:'لا توجد مكافآت هذا الأسبوع'},
-  penalties:{ic:'⚠️',title:'الجزاءات',add:'➕ إضافة جزاء',  mt:'⚠️ إضافة جزاء',  sign:'−',cls:'emp-neg',note:false,empty:'لا توجد جزاءات هذا الأسبوع'},
-  advances :{ic:'💵',title:'السلف',   add:'➕ إضافة سلفة',  mt:'💵 إضافة سلفة',  sign:'−',cls:'emp-blue',note:true, empty:'لا توجد سلف هذا الأسبوع'},
-  deductions:{ic:'➖',title:'الخصومات',add:'➕ إضافة خصم',  mt:'➖ إضافة خصم',   sign:'−',cls:'emp-neg',note:false,empty:'لا توجد خصومات هذا الأسبوع'}
+  bonuses  :{ic:'🎁',title:'المكافآت والمكافآت التشجيعية',mt:'🎁 إضافة مكافأة',cls:'emp-pos',note:false,empty:'لا توجد مكافآت مسجّلة'},
+  penalties:{ic:'⚠️',title:'الجزاءات',mt:'⚠️ إضافة جزاء',cls:'emp-neg',note:false,empty:'لا توجد جزاءات مسجّلة'},
+  advances :{ic:'💵',title:'السلف',mt:'💵 إضافة سلفة',cls:'emp-blue',note:true, empty:'لا توجد سلف مسجّلة'},
+  deductions:{ic:'➖',title:'الخصومات',mt:'➖ إضافة خصم',cls:'emp-neg',note:false,empty:'لا توجد خصومات مسجّلة'}
 };
-function empMoneySection(w,kind,locked){
+function empMoneySection(e,kind){
   const M=EMP_KINDS[kind];
-  const list=(w[kind]||[]).slice().sort(function(a,b){ return ((a.day||0)-(b.day||0))||((a.ts||0)-(b.ts||0)); });
+  const list=PR().opsUpTo(e,null)[kind]||[];
   const sec=el('div',{class:'emp-sec'});
   const head=el('div',{class:'emp-sec-h'},[M.ic+' '+M.title]);
   head.appendChild(el('span',{class:'sp'}));
-  head.appendChild(el('span',{class:'emp-sum',text:'الإجمالي: '+fmtNum(sumAmt(list))+' ج'}));
-  if(!locked){
-    head.appendChild(el('button',{class:'emp-add',onClick:function(){
-      empEntryModal({title:M.mt,key:w.key,withNote:M.note,onSave:function(entry){
-        if(!Array.isArray(w[kind])) w[kind]=[];
-        w[kind].push(entry);
-        empSave(); paintEmp();
-        toast('تمت الإضافة — '+M.title,'ok');
-      }});
-    }},[M.add]));
-  }
+  head.appendChild(el('span',{class:'emp-sum',text:'الإجمالي: '+fmtNum(PR().sum(list))+' ج'}));
+  head.appendChild(el('button',{class:'emp-add',onClick:function(){
+    empOpModal({title:M.mt,withNote:M.note,onSave:function(entry){
+      empCore(e);
+      e[kind]=e[kind]||[];
+      e[kind].push({ id:uid(), ts:entry.ts, dayKey:entry.dayKey, amount:entry.amount, reason:entry.reason, note:entry.note });
+      empSave(); paintEmp();
+      toast('تمت الإضافة — '+M.title,'ok');
+    }});
+  }},[M.mt]));
   sec.appendChild(head);
   if(!list.length){
     sec.appendChild(el('div',{class:'emp-empty',style:{padding:'18px',fontSize:'12.5px'}},[M.empty]));
     return sec;
   }
   const t=el('table',{class:'emp-table compact'});
-  const cols=(kind==='advances')?['اليوم','التاريخ','القيمة (ج)','السبب','ملاحظات','']:['اليوم','التاريخ','القيمة (ج)','السبب',''];
+  const cols=(kind==='advances')?['التاريخ','القيمة (ج)','السبب','ملاحظات','']:['التاريخ','القيمة (ج)','السبب',''];
   t.appendChild(el('tr',{},cols.map(function(h){return el('th',{text:h});})));
-  list.forEach(function(x){
+  list.slice().reverse().forEach(function(x){
     const cells=[
-      el('td',{},[el('b',{text:EMP_DAYS[x.day]||'—'})]),
-      el('td',{},[el('span',{class:'num',text:fmtDMY(new Date(x.ts||dayTsOf(w.key,x.day||0)))})]),
-      el('td',{},[el('span',{class:'num '+M.cls,style:{fontWeight:'900'},text:M.sign+fmtNum(x.amount)})]),
+      el('td',{},[el('span',{class:'num',text:PR().fmtDMYKey(x.dayKey||PR().dayKeyOfTs(x.ts))})]),
+      el('td',{},[el('span',{class:'num '+M.cls,style:{fontWeight:'900'},text:fmtNum(x.amount)})]),
       el('td',{text:x.reason||'—'}),
     ];
     if(kind==='advances') cells.push(el('td',{text:x.note||'—'}));
-    cells.push(el('td',{},[ locked?null:el('button',{class:'emp-mini del',title:'حذف',onClick:function(){
-      /* كل عملية حذف في البرنامج تتطلّب تأكيد كلمة السر */
+    cells.push(el('td',{},[el('button',{class:'emp-mini del',title:'حذف',onClick:function(){
       MalahyPerm.requirePerm('employeeManage',{
         title:'🗑️ حذف عملية',
         message:'حذف «'+M.title+'» بقيمة '+fmtNum(x.amount)+' ج نهائيًا؟',
         confirmText:'حذف', danger:true, secondary:true,
         onOk:function(){
-          w[kind]=(w[kind]||[]).filter(function(y){return y.id!==x.id;});
+          e[kind]=(e[kind]||[]).filter(function(y){return y.id!==x.id;});
           empSave(); paintEmp(); toast('تم الحذف','ok');
         }
       });
-    }},['🗑️']) ]));
+    }},['🗑️'])]));
     t.appendChild(el('tr',{},cells));
   });
   t.appendChild(el('tr',{class:'emp-tot'},[
-    el('td',{colspan:'2',text:'الإجمالي'}),
-    el('td',{},[el('span',{class:'num '+M.cls,text:M.sign+fmtNum(sumAmt(list))})]),
+    el('td',{text:'الإجمالي'}),
+    el('td',{},[el('span',{class:'num '+M.cls,text:fmtNum(PR().sum(list))})]),
     el('td',{colspan:(kind==='advances'?'3':'2'),text:''}),
   ]));
   sec.appendChild(el('div',{class:'tbl-wrap'},[t]));
-  if(locked&&kind==='advances'){
-    sec.appendChild(el('div',{class:'emp-hint'},['🔒 سلف هذا الأسبوع اتخصمت عند الصرف وأصبحت مؤرشفة داخل سجل الأسبوع.']));
+  if(kind==='advances'){
+    sec.appendChild(el('div',{class:'emp-hint'},['🔒 السلفة تُسجَّل مرة واحدة وتُخصم تلقائيًا من أول راتب يغطّيها — ولا تُخصم مرتين، وتبقى محفوظة في السجل للمراجعة.']));
   }
   return sec;
 }
 
+/* ==================== محرّر سجل الحضور المرن ==================== */
+/* يعرض الأيام المنتهية منذ آخر صرف (أو التعيين) حتى اليوم + أي يوم مسجَّل
+   سابقًا خارج هذه النافذة. الأيام غير المسجَّلة لا تُحتسب حضورًا ولا غيابًا
+   حتى يختار المستخدم حالتها صراحةً. */
+function empAttendanceSection(e){
+  const sec=el('div',{class:'emp-sec'});
+  const head=el('div',{class:'emp-sec-h'},['📅 سجل الحضور']);
+  head.appendChild(el('span',{class:'sp'}));
+  head.appendChild(el('span',{class:'emp-sum',text:'لا يُحتسب يوم غير مسجَّل — سجّل الحضور أو الغياب أو الإجازة'}));
+  sec.appendChild(head);
 
-/* ---- ملخص الحساب ---- */
-function empCalcBox(w,s){
+  const lastPaidList=PR().payoutsUpTo(e,null);
+  const lastPaidTs=lastPaidList.length?Number(lastPaidList[lastPaidList.length-1].ts):0;
+  const hiredTs=Number(e.hiredAt)||0;
+  const fromTs=lastPaidTs||hiredTs||PR().addDaysTs(PR().startOfDayTs(Date.now()),-30);
+  const toTs=PR().endOfDayTs(Date.now());
+  const keys={};
+  (e.days||[]).forEach(function(d){ if(d&&d.key) keys[d.key]=1; });
+  for(let t=PR().startOfDayTs(fromTs); t<=toTs; t=PR().addDaysTs(t,1)) keys[PR().dayKeyOfTs(t)]=1;
+  const list=Object.keys(keys).sort();
+  const rows=list.slice(-62).reverse();   /* آخر 62 يومًا كحد أقصى للعرض */
+
+  const t=el('table',{class:'emp-table emp-days emp-att'});
+  t.appendChild(el('tr',{},['اليوم','التاريخ','الحالة','ملاحظات'].map(function(h){return el('th',{text:h});})));
+  const stat={work:0,absent:0,vacation:0};
+  rows.forEach(function(key){
+    const ts=keyToTsSafe(key);
+    const rec=PR().dayRec(e,key);
+    const future=ts>toTs;
+    if(rec){ if(stat[rec.status]!==undefined) stat[rec.status]++; }
+    const sel=el('select',{onChange:function(){
+      const v=sel.value;
+      empCore(e);
+      if(v==='none'){ PR().clearDay(e,key); }
+      else { PR().markDay(e,key,v,{src:'manual'}); }
+      empSave(); paintEmp();
+    }});
+    const none=el('option',{value:'none',text:'— غير مسجّل —'}); sel.appendChild(none);
+    EMP_STATES.forEach(function(o){ const op=el('option',{value:o.v,text:o.t}); if(rec&&rec.status===o.v) op.selected=true; sel.appendChild(op); });
+    const note=el('input',{type:'text',placeholder:'—',onChange:function(){
+      empCore(e);
+      const r=PR().dayRec(e,key);
+      if(r){ r.note=note.value; empSave(); }
+    }});
+    note.value=(rec&&rec.note)||'';
+    const isFuture=future?el('span',{class:'emp-src'},['مستقبل']):(rec&&rec.src==='legacy'?el('span',{class:'emp-src'},['ترحيل']):(rec&&rec.src==='dreg'?el('span',{class:'emp-src'},['تسجيل يومي']):null));
+    t.appendChild(el('tr',{class:future?'future':''},[
+      el('td',{},[el('b',{text:PR().dayNameOf(ts)}),isFuture?el('div',{},[isFuture]):null]),
+      el('td',{},[el('span',{class:'num',style:{fontSize:'12px',color:'var(--muted-2)'},text:PR().fmtDMY(ts)})]),
+      el('td',{},[sel]),
+      el('td',{},[note]),
+    ]));
+  });
+  sec.appendChild(el('div',{class:'tbl-wrap emp-hist'},[t]));
+  sec.appendChild(el('div',{class:'emp-hint'},['✅ إجمالي الأيام المسجَّلة: حضور '+stat.work+' · غياب '+stat.absent+' · إجازة '+stat.vacation+' — احسب اليوم مرتين ولا تختلق سجلات.']));
+  return sec;
+}
+
+/* ==================== ملخص حساب الموظف ==================== */
+function empCalcBox(e,s){
   const row=function(cls,k,sub,v){
     return el('div',{class:'row '+cls},[
       el('div',{class:'k'},[k,(sub?el('small',{text:sub}):null)]),
@@ -5166,281 +5197,532 @@ function empCalcBox(w,s){
     ]);
   };
   return el('div',{class:'emp-sec emp-calc'},[
-    el('div',{class:'emp-sec-h'},['🧮 ملخص الحساب']),
-    row('','الأجر الأساسي','('+s.work+' يوم عمل × '+fmtNum(w.dailyWage)+' ج)',fmtNum(s.gross)+' ج'),
+    el('div',{class:'emp-sec-h'},['🧮 ملخص حساب الموظف']),
+    row('','الأجر اليومي','(سجل الموظف)',fmtNum(PR().wageOf(e))+' ج'),
+    row('','أيام الحضور','',fmtNum(s.work)+' يوم'),
+    row('','أيام الغياب','',fmtNum(s.abs)+' يوم'),
+    row('','إجمالي الأجر المكتسب','('+fmtNum(s.work)+' × أجر اليوم)',fmtNum(s.gross)+' ج'),
     row('plus','إجمالي المكافآت','','+ '+fmtNum(s.bonus)+' ج'),
     row('minus','إجمالي الجزاءات','','- '+fmtNum(s.pen)+' ج'),
     row('minus','إجمالي السلف','','- '+fmtNum(s.adv)+' ج'),
     row('minus','إجمالي الخصومات','','- '+fmtNum(s.ded)+' ج'),
-    row('net','💵 صافي الراتب المستحق','',fmtNum(s.net)+' ج'),
+    row('','إجمالي المصروف سابقًا','',fmtNum(s.paid)+' ج'),
+    row('net','💵 الرصيد المستحق','',fmtNum(s.due)+' ج'),
   ]);
 }
 
+/* ==================== صرف راتب موظف واحد ==================== */
+function empPayOne(empId,dateTs,amount){
+  if(!MalahyPerm.hasPerm('payroll')){ MalahyPerm.deny(); return; }
+  const e=empFind(empId); if(!e) return;
+  const ts=dateTs||Date.now();
+  const plan=PR().planPayout(e,{nowTs:Date.now(),dateTs:ts,amount:amount});
+  if(!plan.ok){ toast(plan.reason==='no-due'?('لا يوجد راتب مستحق لـ«'+e.name+'» حاليًا'):('المبلغ غير صحيح لـ«'+e.name+'»'),'warn'); return; }
+  const msg='صرف راتب «'+e.name+'» بتاريخ '+PR().fmtDMY(ts)+'\n\n'
+    +'الأجر المكتسب (المغطّى): '+money(plan.gross)+'  ·  الحضور: '+fmtNum(plan.work)+' يوم  ·  الغياب: '+fmtNum(plan.abs)+'\n'
+    +'مكافآت: '+money(plan.bonus)+(plan.pen?('  ·  جزاءات: '+money(plan.pen)):'')+'\n'
+    +'سلف: '+money(plan.adv)+(plan.ded?('  ·  خصومات: '+money(plan.ded)):'')+'\n'
+    +'مسدَّد سابقًا: '+money(plan.paidBefore)+'\n'
+/* بنود الدفعة قد لا تطابق المبلغ المصروف تمامًا حين يبلغ الرصيد
+       التراكمي ذروته قبل أن ينخفض بسبب عملية بتاريخ لاحق، أو حين يشمل
+       البنود المُسمّاة جزءًا سدَّدته دفعة سابقة. السطران يجعلان الحوار
+       مطابقًا لنفسه تمامًا كما في الإيصال المطبوع. */
+    +((plan.coveredNet||plan.itemsDiff)?('صافي بنود هذه الدفعة: '+money(plan.coveredNet)+'\n'):'')
+    +((plan.itemsDiff>0)?('بنود غير مُفصَّلة في هذا الإيصال: '+money(plan.itemsDiff)+'\n'):'')
+    +((plan.itemsDiff<0)?('يُسدَّد لاحقًا من بنود هذه الدفعة: -'+money(-plan.itemsDiff)+'\n'):'')
+    +'المبلغ المصروف الآن: '+money(plan.amount)+'\n'
+    +'المتبقي بعد الصرف: '+money(plan.balanceAfter);
+  MalahyPerm.requirePerm('payroll',{
+    title:'💰 صرف راتب — '+e.name,
+    message:msg,
+    confirmText:'صرف '+fmtNum(plan.amount)+' ج',
+    secondary:true,
+    onOk:function(){
+      const res=payCommit([plan],{dateTs:ts});
+      if(!res.ok){ toast('تعذّر حفظ عملية الصرف — لم يتم تعليم أي موظف كمدفوع','warn'); return; }
+      empGo('done',null,res.batch.id);
+    }
+  });
+}
 
-/* ---- شاشة موظف ---- */
-function empView(empId,key){
+/* ==================== تنفيذ الصرف (يحفظ كل موظف على حدة) ==================== */
+/* تُرجع {ok,batch,results}. الفشل الجزئي آمن: الموظف الذي يفشل حفظه يتراجع
+   تمامًا ولا يدخل في إجماليات الدفعة، ولا تُعاد محاولة موظف نجح مرتين. */
+function payCommit(plans,opts){
+  opts=opts||{};
+  const ts=Date.now();
+  const store=pbLoad();
+  const ref=PR().nextRef(store,ts);
+  const res=PR().commitBatch(_emp.list||empLoad(),plans,{
+    ts:ts, dateTs:opts.dateTs||ts, ref:ref, note:opts.note||''
+  },function(){ return empSave(); });
+  if(res.ok){
+    if(!pbPut(res.batch)){ toast('تم صرف الرواتب لكن تعذّر حفظ سجل الدفعة','warn'); }
+  }
+  return res;
+}
+
+/* ==================== شاشة مراجعة الصرف (فردي أو مجمّع) ==================== */
+/* opts: {dateTs, ids, amounts} — تُبنى خطط الصرف من الحالة الفعلية فقط،
+   وتُعاد كتابة الاختيارات والمبالغ في _emp لتبقى بعد كل إعادة رسم. */
+function empReviewScreen(opts){
+  opts=opts||{};
+  const dateTs=opts.dateTs||Date.now();
+  if(!opts.ids) opts.ids=(_emp.list||empLoad()).map(function(e){return e.id;});
+  if(!opts.amounts) opts.amounts={};
+  _emp.dateTs=dateTs; _emp.ids=opts.ids; _emp.amounts=opts.amounts;
+  const wrap=el('div',{});
+  wrap.appendChild(el('button',{class:'emp-back',onClick:function(){empGo('dash');}},['← رجوع']));
+  wrap.appendChild(el('h3',{},['💰 صرف رواتب الموظفين']));
+
+  const dateIn=el('input',{class:'emp-datein',type:'date',value:dateInVal(dateTs),
+    onChange:function(){ const t=PR().tsOfDayKey(dateIn.value); if(!isNaN(t)){ _emp.dateTs=t; paintEmp(); } }});
+  wrap.appendChild(el('div',{class:'emp-week-bar'},[
+    el('div',{},['💵 تاريخ الصرف: ',dateIn,'   —   يُصرف في أي يوم، دون قيد على الدورة']),
+    el('div',{},[el('button',{class:'emp-add',onClick:function(){
+      _emp.ids=(_emp.list||empLoad()).map(function(e){return e.id;});
+      _emp.amounts={};
+      paintEmp();
+    }},['تحديد الكل']),' ',el('button',{class:'emp-add',onClick:function(){ _emp.ids=[]; paintEmp(); }},['إلغاء تحديد الكل'])])
+  ]));
+
+  const plans=opts.ids.map(function(id){
+    const e=empFind(id); if(!e) return null;
+    return PR().planPayout(e,{nowTs:Date.now(),dateTs:dateTs,amount:opts.amounts[id]});
+  }).filter(Boolean);
+
+  const payable=plans.filter(function(p){ return p.ok; });
+
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['📋 مراجعة الصرف قبل التأكيد']));
+  const t=el('table',{class:'emp-review'});
+  t.appendChild(el('tr',{},['الموظف','الوظيفة','الأجر اليومي','حضور','غياب','الأجر المكتسب','سلف+خصومات','مسدَّد سابقًا','المصروف الآن','المتبقي بعده'].map(function(h){return el('th',{text:h});})));
+  const tot={gross:0,ded:0,paidBefore:0,amount:0,balanceAfter:0};
+  plans.forEach(function(p){
+    const e=empFind(p.empId);
+    const chk=el('input',{class:'emp-pick',type:'checkbox',disabled:!p.ok});
+    chk.checked=!!p.ok;
+    chk.onchange=function(){
+      const i=opts.ids.indexOf(p.empId);
+      if(chk.checked&&i<0) opts.ids.push(p.empId);
+      if(!chk.checked&&i>=0) opts.ids.splice(i,1);
+    };
+    const amtIn=el('input',{class:'emp-amt',type:'number',min:'0',step:'any',placeholder:fmtNum(p.due),
+      value:p.ok?fmtNum(p.amount):'',disabled:!p.ok});
+    amtIn.onchange=function(){
+      const v=Math.max(0,Number(String(amtIn.value).replace(/,/g,''))||0);
+      opts.amounts=opts.amounts||{};
+      opts.amounts[p.empId]=Math.min(v,p.due);
+      paintEmp();
+    };
+    const ded=r2s(p.adv+p.pen+p.ded);
+    /* الإجماليات تُحسب من المرشّحين للصرف فقط: الموظف الذي لا مستحق له
+       أرقامه التاريخية قد تكون موجودة لكنها ليست جزءًا من هذه العملية. */
+    if(p.ok){ tot.gross+=p.gross; tot.ded+=ded; tot.paidBefore+=p.paidBefore; tot.amount+=p.amount; tot.balanceAfter+=p.balanceAfter; }
+    const moneyCell=function(v){ return p.ok?el('span',{class:'num',text:fmtNum(v)}):el('span',{class:'num',text:'—'}); };
+    t.appendChild(el('tr',{},[
+      el('td',{},[chk,' ',el('span',{class:'emp-name',onClick:function(){empGo('emp',p.empId,null);}},[p.name]),(!p.ok?el('div',{class:'emp-hint',style:{margin:'2px 0 0'}},['لا يوجد مستحق']):null)]),
+      el('td',{text:p.job||'—'}),
+      el('td',{},[el('span',{class:'num',text:fmtNum(p.dailyWage)})]),
+      el('td',{},[moneyCell(p.work)]),
+      el('td',{},[moneyCell(p.abs)]),
+      el('td',{},[moneyCell(p.gross),((p.ok&&p.itemsDiff)?el('div',{class:'emp-hint',style:{margin:'2px 0 0'},text:'صافي البنود '+fmtNum(p.coveredNet)+(p.itemsDiff>0?(' + غير مُفصَّل '+fmtNum(p.itemsDiff)):(' − يُسدَّد لاحقًا '+fmtNum(-p.itemsDiff)))}):null)]),
+      el('td',{},[el('span',{class:'num emp-neg',text:(p.ok&&ded)?('-'+fmtNum(ded)):'0'})]),
+      el('td',{},[moneyCell(p.paidBefore)]),
+      el('td',{},[amtIn]),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:p.ok?fmtNum(p.balanceAfter):'—'})]),
+    ]));
+  });
+  t.appendChild(el('tr',{class:'tot'},[
+    el('td',{colspan:'5',text:'الإجمالي ('+fmtNum(payable.length)+' موظف)'}),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot.gross)})]),
+    el('td',{},[el('span',{class:'num emp-neg',text:tot.ded?('-'+fmtNum(tot.ded)):'0'})]),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot.paidBefore)})]),
+    el('td',{},[el('span',{class:'num',style:{fontSize:'14px'},text:fmtNum(tot.amount)})]),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot.balanceAfter)})]),
+  ]));
+  sec.appendChild(el('div',{class:'tbl-wrap'},[t]));
+  wrap.appendChild(sec);
+  wrap.appendChild(el('div',{class:'emp-hint',style:{marginBottom:'12px'}},['💰 إجمالي المصروف في هذه العملية: '+money(tot.amount)+' — المبلغ لا يتجاوز المستحق لكل موظف، ويمكنك تسديده على دفعات جزئية.']));
+
+  const go=function(){
+    const chosen=payable.filter(function(p){
+      const id=p.empId;
+      return (opts.ids||[]).indexOf(id)>=0;
+    });
+    if(!chosen.length){ toast('اختر موظفًا واحدًا على الأقل للصرف','warn'); return; }
+    const sum=chosen.reduce(function(a,p){ return a+p.amount; },0);
+    MalahyPerm.requirePerm('payroll',{
+      title:'✅ تأكيد صرف الرواتب',
+      message:'سيتم صرف '+fmtNum(chosen.length)+' موظف بتاريخ '+PR().fmtDMY(dateTs)+'\nإجمالي المصروف: '+money(sum)+'\n\nلن يتم صرف أي موظف لم يُحفظ سجله بنجاح.',
+      confirmText:'تأكيد الصرف',
+      secondary:true,
+      onOk:function(){
+        const res=payCommit(chosen,{dateTs:dateTs});
+        if(!res.ok){ toast('تعذّر حفظ عمليات الصرف — لم يتم تعليم أي موظف كمدفوع','warn'); return; }
+        empGo('done',null,res.batch.id);
+      }
+    });
+  };
+  wrap.appendChild(el('button',{class:'emp-paybtn',onClick:go},['💰 تأكيد صرف '+fmtNum(payable.length)+' موظف بإجمالي '+fmtNum(tot.amount)+' ج']));
+  return wrap;
+}
+function r2s(n){ return Math.round((Number(n)||0)*100)/100; }
+
+/* ==================== شاشة نتيجة الصرف + الطباعة ==================== */
+function empDoneScreen(batchId){
+  const b=pbGet(batchId);
+  const wrap=el('div',{});
+  wrap.appendChild(el('button',{class:'emp-back',onClick:function(){empGo('dash');}},['← رجوع']));
+  wrap.appendChild(el('h3',{},['✅ تم تنفيذ عملية الصرف']));
+  if(!b){ wrap.appendChild(el('div',{class:'emp-empty'},['لم يتم العثور على سجل الدفعة.'])); return wrap; }
+  const m=PRR().batchModel(b,{venue:payrollVenue()});
+  wrap.appendChild(el('div',{class:'emp-week-bar'},[
+    el('div',{},['🔖 رقم الدفعة: ',el('b',{text:b.ref}),'   ·   التاريخ: ',el('b',{text:PR().fmtDMY(b.ts)})]),
+    el('div',{},[el('span',{class:'emp-chip cur'},['تم الحفظ'])])
+  ]));
+  wrap.appendChild(el('div',{class:'rep-cards emp-c4'},[
+    repCard('👥 عدد الموظفين',fmtNum(m.count),'tickets'),
+    repCard('💵 إجمالي المصروف',fmtNum(m.totals.amount),'cash'),
+    repCard('📈 إجمالي الأجر المكتسب',fmtNum(m.totals.gross),'rev'),
+    repCard('💸 إجمالي السلف والخصومات',fmtNum(m.totals.deductionsTotal),'exp'),
+  ]));
+  if(b.failCount){
+    wrap.appendChild(el('div',{class:'emp-flag'},['⚠️ '+b.failCount+' موظف فشل حفظ صرفه ولم يُعلَّم كمدفوع — يمكن إعادة المحاولة لهما بأمان دون تكرار أي عملية.']));
+  }
+  const acts=el('div',{class:'emp-quick'},[
+    el('button',{class:'pri',onClick:function(){ payrollPrintBatch(b.id); }},['🖨️ طباعة تقرير الرواتب']),
+    el('button',{onClick:function(){ payrollPrintAllReceipts(b.id); }},['🧾 طباعة إيصالات الموظفين']),
+    el('button',{onClick:function(){ exportBatchPDF(b.id); }},['📄 تصدير PDF']),
+    el('button',{onClick:function(){ exportBatchCSV(b.id); }},['📊 تصدير Excel']),
+    el('button',{onClick:function(){ empGo('batches'); }},['📜 كل الدفعات وإعادة الطباعة']),
+    el('button',{onClick:function(){ empGo('dash'); }},['🏠 لوحة الموظفين']),
+  ]);
+  wrap.appendChild(acts);
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['🧾 إيصارات الصرف']));
+  const t=el('table',{class:'emp-table compact'});
+  t.appendChild(el('tr',{},['الموظف','المبلغ المصروف','المتبقي','الحالة',''].map(function(h){return el('th',{text:h});})));
+  b.items.forEach(function(it){
+    t.appendChild(el('tr',{},[
+      el('td',{text:it.empName||'—'}),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(it.amount)})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(it.balanceAfter)})]),
+      el('td',{},[it.status==='saved'?el('span',{class:'emp-chip cur'},['💾 محفوظ']):el('span',{class:'emp-chip locked'},['❌ فشل الحفظ'])]),
+      el('td',{},[el('div',{class:'emp-acts'},[
+        el('button',{class:'emp-mini',title:'طباعة الإيصال',onClick:function(){ payrollPrintReceipt(b.id,it.empId); }},['🖨️']),
+      ])]),
+    ]));
+  });
+  sec.appendChild(el('div',{class:'tbl-wrap'},[t]));
+  wrap.appendChild(sec);
+  return wrap;
+}
+
+/* ==================== سجل الدفعات (إعادة الطباعة) ==================== */
+function empBatchesScreen(){
+  const wrap=el('div',{});
+  wrap.appendChild(el('button',{class:'emp-back',onClick:function(){empGo('dash');}},['← رجوع']));
+  wrap.appendChild(el('h3',{},['📜 سجل دفعات الصرف']));
+  const list=pbList();
+  if(!list.length){ wrap.appendChild(el('div',{class:'emp-empty'},['لا توجد دفعات صرف محفوظة بعد.'])); return wrap; }
+  const t=el('table',{class:'emp-table compact'});
+  t.appendChild(el('tr',{},['رقم الدفعة','التاريخ','عدد الموظفين','إجمالي المصروف','إجمالي السلف والخصومات','تفاصيل'].map(function(h){return el('th',{text:h});})));
+  list.forEach(function(b){
+    const m=PRR().batchModel(b,{venue:payrollVenue()});
+    t.appendChild(el('tr',{},[
+      el('td',{},[el('b',{text:b.ref||'—'})]),
+      el('td',{},[el('span',{class:'num',text:PR().fmtDMY(b.ts)})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(m.count)})]),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(m.totals.amount)})]),
+      el('td',{},[el('span',{class:'num emp-neg',text:fmtNum(m.totals.deductionsTotal)})]),
+      el('td',{},[el('div',{class:'emp-acts'},[
+        el('button',{title:'طباعة التقرير المجمّع',onClick:function(){ payrollPrintBatch(b.id); }},['🖨️']),
+        el('button',{title:'طباعة إيصالات الدفعة',onClick:function(){ payrollPrintAllReceipts(b.id); }},['🧾']),
+        el('button',{title:'عرض الدفعة',onClick:function(){ empGo('done',null,b.id); }},['👁️']),
+      ])]),
+    ]));
+  });
+  wrap.appendChild(el('div',{class:'tbl-wrap'},[t]));
+  return wrap;
+}
+
+/* ==================== شاشة الموظف ==================== */
+function empView(empId){
   const e=empFind(empId);
   if(!e){ _emp.screen='dash'; return empDash(); }
-  const cur=empCurKey();
-  key=key||cur; _emp.weekKey=key;
-  let w=empWeek(e,key);
-  if(!w&&key===cur){ ensureWeeks(); w=empWeek(e,key); }
-  if(!w){ _emp.screen='dash'; return empDash(); }
-  const s=weekStats(w);
-  const locked=!!w.paid;
-  const isCur=(key===cur);
+  empCore(e);
+  /* نفس نقطة القطع التي تستخدمها لوحة المراجعة والصرف (نهاية اليوم) حتى
+     يطابق «الرصيد المستحق» هنا ما يمكن صرفه فعلًا ولا يظهر رقمان مختلفان. */
+  const s=PR().statsUpTo(e, PR().endOfDayTs(Date.now()));
   const wrap=el('div',{});
   wrap.appendChild(el('button',{class:'emp-back',onClick:function(){empGo('dash');}},['← رجوع لكل الموظفين']));
   wrap.appendChild(el('h3',{},['👤 '+e.name]));
 
-  /* 1) بيانات الموظف */
-  let info='الوظيفة: '+(e.job||'—')+'   ·   الأجر اليومي لهذا الأسبوع: '+fmtNum(w.dailyWage)+' ج';
-  if(e.phone) info+='   ·   الهاتف: '+e.phone;
-  info+='   ·   تاريخ التعيين: '+fmtDMY(new Date(e.hiredAt||Date.now()));
-  if(e.notes) info+='\nملاحظات: '+e.notes;
+  /* بيانات الموظف + الدورة المفضلة */
+  const info='الوظيفة: '+(e.job||'—')+'   ·   الأجر اليومي: '+money(PR().wageOf(e))
+    +'\nتاريخ التعيين: '+fmtDMY(new Date(e.hiredAt||Date.now()))
+    +(e.phone?('   ·   الهاتف: '+e.phone):'')
+    +(e.notes?('\nملاحظات: '+e.notes):'');
   wrap.appendChild(el('div',{class:'emp-sec'},[
     el('div',{class:'emp-sec-h'},['🪪 بيانات الموظف']),
     el('div',{class:'emp-info',text:info}),
+    el('div',{style:{marginTop:'10px',display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}},[cycleChip(e),
+      el('button',{class:'emp-add',onClick:function(){ empEditCycle(e); }},['⚙️ تغيير الدورة المفضلة'])]),
+    el('div',{class:'emp-hint'},['💡 الدورة المفضلة للتنظيم فقط — الصرف متاح في أي وقت وبأي مبلغ حتى المستحق، ولا يمكن أن يمنع صرفًا مستحقًا.'])
   ]));
 
-  /* 2) ملخص الأسبوع */
-  let chip;
-  if(locked) chip=el('span',{class:'emp-chip locked'},['🔒 تم إغلاق الأسبوع — تم الصرف'+(w.paidAt?(' '+fmtDMY(new Date(w.paidAt))):'')]);
-  else if(isCur) chip=el('span',{class:'emp-chip cur'},['🟢 الأسبوع الحالي']);
-  else chip=el('span',{class:'emp-chip pend'},['⏳ أسبوع سابق — غير مصروف']);
-  wrap.appendChild(el('div',{class:'emp-week-bar'},[
-    el('div',{},['الأسبوع: ',el('b',{text:weekRangeLabel(key)})]),
-    chip
-  ]));
+  /* بطاقات الأرقام */
   wrap.appendChild(el('div',{class:'rep-cards emp-c4'},[
-    repCard('📅 أيام العمل',fmtNum(s.work),'rev'),
-    repCard('❌ الغياب',fmtNum(s.abs),'exp'),
+    repCard('📅 أيام الحضور',fmtNum(s.work),'rev'),
+    repCard('❌ أيام الغياب',fmtNum(s.abs),'exp'),
     repCard('🌴 الإجازات',fmtNum(s.vac),'gift'),
-    repCard('💰 الأجر الأساسي',fmtNum(s.gross),'cash'),
-    repCard('🎁 إجمالي المكافآت',fmtNum(s.bonus),'gift'),
-    repCard('⚠️ إجمالي الجزاءات',fmtNum(s.pen),'exp'),
-    repCard('💵 إجمالي السلف',fmtNum(s.adv),'elec'),
-    repCard('➖ إجمالي الخصومات',fmtNum(s.ded),'exp'),
-    repCard('💵 صافي الراتب',fmtNum(s.net),'final'),
+    repCard('💰 الأجر المكتسب',fmtNum(s.gross),'cash'),
+    repCard('🎁 المكافآت',fmtNum(s.bonus),'gift'),
+    repCard('⚠️ الجزاءات',fmtNum(s.pen),'exp'),
+    repCard('💵 السلف',fmtNum(s.adv),'elec'),
+    repCard('➖ الخصومات',fmtNum(s.ded),'exp'),
+    repCard('💸 المصروف سابقًا',fmtNum(s.paid),'exp'),
+    repCard('💵 الرصيد المستحق',fmtNum(s.due),'final'),
   ]));
 
-  /* 3) جدول الحضور — بعرض كامل (مع أوقات الحضور/الانصراف من التسجيل اليومي) */
-  const attend=el('div',{class:'emp-sec'});
-  attend.appendChild(el('div',{class:'emp-sec-h'},['📅 جدول الحضور']));
-  const tbl=el('table',{class:'emp-table emp-days'});
-  tbl.appendChild(el('tr',{},['اليوم','التاريخ','الحضور','الانصراف','الحالة','ملاحظات'].map(function(h){return el('th',{text:h});})));
-  (w.days||[]).forEach(function(d,i){
-    const sel=el('select',{onChange:function(){ d.status=sel.value; empSave(); paintEmp(); }});
-    [['work','✅ حضر'],['vacation','🌴 إجازة'],['absent','❌ غياب']].forEach(function(o){
-      const op=el('option',{value:o[0],text:o[1]}); if((d.status||'work')===o[0]) op.selected=true; sel.appendChild(op);
-    });
-    sel.disabled=locked;
-    const note=el('input',{type:'text',placeholder:'—',onChange:function(){ d.note=note.value; empSave(); }});
-    note.value=d.note||''; note.disabled=locked;
-    const dayKey=dateInputVal(dayDateOf(key,i).getTime());
-    const dr=drRec(empId,dayKey);
-    tbl.appendChild(el('tr',{},[
-      el('td',{},[el('b',{text:EMP_DAYS[i]})]),
-      el('td',{},[el('span',{class:'num',style:{fontSize:'12px',color:'var(--muted-2)'},text:fmtDMY(dayDateOf(key,i))})]),
-      el('td',{},[el('span',{class:'num dr-time',text:dr&&dr.inTs?fmtTime12(new Date(dr.inTs)):'—'})]),
-      el('td',{},[el('span',{class:'num dr-time',text:dr&&dr.outTs?fmtTime12(new Date(dr.outTs)):'—'})]),
-      el('td',{},[sel]),
-      el('td',{},[note]),
-    ]));
-  });
-  attend.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
-  wrap.appendChild(attend);
+  /* سجل الحضور المرن */
+  wrap.appendChild(empAttendanceSection(e));
 
-  /* 4) شبكة: [المكافآت | الجزاءات] ثم [السلف | الخصومات] ثم [ملخص الحساب] */
+  /* العمليات */
   wrap.appendChild(el('div',{class:'emp-grid'},[
-    empMoneySection(w,'bonuses',locked),
-    empMoneySection(w,'penalties',locked),
-    empMoneySection(w,'advances',locked),
-    empMoneySection(w,'deductions',locked),
-    el('div',{class:'full'},[empCalcBox(w,s)]),
+    empMoneySection(e,'bonuses'),
+    empMoneySection(e,'penalties'),
+    empMoneySection(e,'advances'),
+    empMoneySection(e,'deductions'),
+    el('div',{class:'full'},[empCalcBox(e,s)]),
   ]));
 
-  /* 5) صرف الراتب — بعرض كامل */
-  if(!locked){
-    wrap.appendChild(el('button',{class:'emp-paybtn',onClick:function(){empPayOne(e.id,key);}},['💰 صرف الراتب — الصافي '+fmtNum(s.net)+' ج']));
-  }
-
-  /* 6) كشف الحساب — بعرض كامل */
+  /* صرف (فردي/جزئي) */
+  const amtIn=el('input',{class:'emp-amt',type:'number',min:'0',step:'any',placeholder:fmtNum(s.due),
+    value:s.due>0?fmtNum(s.due):''});
   wrap.appendChild(el('div',{class:'emp-sec'},[
-    el('div',{class:'emp-sec-h'},['📄 كشف الحساب الأسبوعي']),
-    el('div',{class:'emp-info',text:'كشف كامل بكل تفاصيل الأسبوع: الحضور، المكافآت، الجزاءات، السلف، تفاصيل العمليات وحالة الصرف — جاهز للطباعة والتصدير PDF / Excel.'}),
-    el('div',{style:{marginTop:'12px'}},[
-      el('button',{class:'emp-stmtbtn',onClick:function(){ empGo('stmt',e.id,key); }},['📄 فتح كشف الحساب الأسبوعي'])
+    el('div',{class:'emp-sec-h'},['💰 صرف راتب']),
+    el('div',{class:'emp-info',text:'المبلغ المصروف الآن (حتى المستحق فقط):'}),
+    el('div',{style:{marginTop:'10px',display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}},[
+      amtIn,
+      el('button',{class:'emp-paybtn',style:{margin:'0',width:'auto',padding:'12px 22px'},
+        onClick:function(){ empPayOne(e.id,Date.now(),Number(String(amtIn.value).replace(/,/g,''))||0); }},['💰 صرف']),
     ]),
+    el('div',{class:'emp-hint'},['✅ يمكنك الصرف بعد يوم واحد أو يومين، أو تسديد الراتب على دفعات جزئية. لا يتم احتساب أي يوم مرتين بعد الصرف.']),
   ]));
 
-  /* 7) سجل الرواتب — بعرض كامل */
-  const hist=el('div',{class:'emp-sec'});
-  hist.appendChild(el('div',{class:'emp-sec-h'},['📜 سجل الرواتب']));
-  const ht=el('table',{class:'emp-table compact'});
-  ht.appendChild(el('tr',{},['الأسبوع','عمل','غياب','إجازة','مكافآت','جزاءات','سلف','خصومات','إجمالي الراتب','الصافي','الحالة',''].map(function(h){return el('th',{text:h});})));
-  (e.weeks||[]).forEach(function(x){
-    const xs=weekStats(x);
-    const stTxt=x.paid?('تم الصرف'+(x.paidAt?(' '+fmtDMY(new Date(x.paidAt))):'')):'لم يتم الصرف';
-    ht.appendChild(el('tr',{},[
-      el('td',{},[
-        el('span',{class:'num',text:fmtDMY(weekStartFromKey(x.key))+' ← '+fmtDMY(weekEndFromKey(x.key))}),
-        (x.key===cur?el('span',{class:'emp-chip cur',style:{marginInlineStart:'6px',padding:'2px 8px',fontSize:'10.5px'}},['الحالي']):null)
-      ]),
-      el('td',{},[el('span',{class:'num',text:String(xs.work)})]),
-      el('td',{},[el('span',{class:'num',text:String(xs.abs)})]),
-      el('td',{},[el('span',{class:'num',text:String(xs.vac)})]),
-      el('td',{},[el('span',{class:'num emp-pos',text:fmtNum(xs.bonus)})]),
-      el('td',{},[el('span',{class:'num emp-neg',text:fmtNum(xs.pen)})]),
-      el('td',{},[el('span',{class:'num emp-blue',text:fmtNum(xs.adv)})]),
-      el('td',{},[el('span',{class:'num emp-neg',text:fmtNum(xs.ded)})]),
-      el('td',{},[el('span',{class:'num',text:fmtNum(xs.gross)})]),
-      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(xs.net)})]),
-      el('td',{text:stTxt}),
-      el('td',{},[
-        el('div',{class:'emp-acts'},[
-          el('button',{title:'عرض الأسبوع',onClick:function(){ empGo('emp',e.id,x.key); }},['👁️']),
-          el('button',{title:'كشف الحساب',onClick:function(){ empGo('stmt',e.id,x.key); }},['📄']),
-          (!x.paid)?el('button',{class:'pay',title:'صرف الراتب',onClick:function(){empPayOne(e.id,x.key);}},['💰']):null
-        ])
-      ]),
-    ]));
-  });
-  hist.appendChild(el('div',{class:'tbl-wrap'},[ht]));
-  wrap.appendChild(hist);
+  /* سجل الصرف */
+  wrap.appendChild(empPayoutHistory(e));
+
+  /* سجل الأسابيع القديم (قراءة فقط — محفوظ كما هو) */
+  const legacy=empLegacySection(e);
+  if(legacy) wrap.appendChild(legacy);
   return wrap;
 }
-
-
-/* ---- كشف الحساب الأسبوعي ---- */
-function weekOps(w){
-  const ops=[];
-  (w.days||[]).forEach(function(d,i){
-    ops.push({day:i,kind:'day',status:(d.status||'work'),note:d.note||''});
-    (w.bonuses||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'bonus',amount:x.amount,reason:x.reason||''}); });
-    (w.penalties||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'pen',amount:x.amount,reason:x.reason||''}); });
-    (w.advances||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'adv',amount:x.amount,reason:x.reason||'',note:x.note||''}); });
-    (w.deductions||[]).filter(function(x){return (Number(x.day)||0)===i;}).forEach(function(x){ ops.push({day:i,kind:'ded',amount:x.amount,reason:x.reason||''}); });
+function empEditCycle(e){
+  const sel=el('select',{});
+  PR().CYCLE_ORDER.forEach(function(c){ sel.appendChild(el('option',{value:c,text:PR().CYCLE_LABEL[c]})); });
+  sel.value=e.payCycle||'weekly';
+  const err=el('div',{class:'modal-err'});
+  let closeFn=function(){};
+  const box=el('div',{class:'modal'},[
+    el('h3',{},['⚙️ دورة الصرف المفضلة']),
+    el('p',{text:'اختر الدورة التي تريد صرف راتب هذا الموظف على أساسها. هذه الدورة للتنظيم والتتبّع فقط ولا تمنع الصرف في أي وقت.'}),
+    el('div',{class:'field'},[el('label',{text:'الدورة'}),sel]),
+    el('div',{class:'emp-hint'},['• كل 7 أيام · كل 15 يوم · شهري · يدوي (بلا موعد تلقائي)']),
+    err,
+    el('div',{class:'modal-actions'},[
+      el('button',{class:'cancel',text:'إلغاء',onClick:function(){closeFn();}}),
+      el('button',{class:'confirm',text:'حفظ',onClick:function(){
+        e.payCycle=sel.value; empSave(); closeFn(); paintEmp(); toast('تم حفظ دورة الصرف المفضلة','ok');
+      }}),
+    ]),
+  ]);
+  const ov=el('div',{class:'ovl2',onKeydown:function(ev){ if(ev.key==='Escape'){ ev.stopPropagation(); closeFn(); } },onClick:function(ev){ if(ev.target===ov) closeFn(); }},[box]);
+  document.body.appendChild(ov);
+  closeFn=function(){ try{ov.remove();}catch(_){ } };
+}
+function empPayoutHistory(e){
+  const ps=PR().payoutsUpTo(e,null);
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['🧾 سجل صرف هذا الموظف']));
+  if(!ps.length){ sec.appendChild(el('div',{class:'emp-empty'},['لم يتم صرف راتب لهذا الموظف بعد.'])); return sec; }
+  const t=el('table',{class:'emp-table compact'});
+  t.appendChild(el('tr',{},['التاريخ','الفترة المغطاة','المبلغ','المتبقي بعدها','رقم الدفعة',''].map(function(h){return el('th',{text:h});})));
+  ps.slice().reverse().forEach(function(p){
+    const cov=p.covered||{};
+    const b=p.batchId?pbGet(p.batchId):null;
+    t.appendChild(el('tr',{},[
+      el('td',{},[el('span',{class:'num',text:PR().fmtDMY(p.ts)})]),
+      el('td',{},[el('span',{class:'num',style:{fontSize:'11.5px'},text:(cov.fromKey&&cov.toKey)?(fmtDMYKeyLegacy(cov.fromKey)+' ← '+fmtDMYKeyLegacy(cov.toKey)):('عدد أيام الحضور: '+fmtNum(cov.work))})]),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(p.amount)})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(p.balanceAfter)})]),
+      el('td',{},[el('span',{class:'num',style:{fontSize:'11.5px'},text:p.ref||'—'})]),
+      el('td',{},[el('div',{class:'emp-acts'},[
+        (b?el('button',{title:'طباعة الإيصال',onClick:function(){ payrollPrintReceipt(b.id,e.id); }},['🖨️']):null),
+      ])]),
+    ]));
   });
-  if(w.paid) ops.push({day:-1,kind:'paid',ts:w.paidAt});
-  return ops;
+  sec.appendChild(el('div',{class:'tbl-wrap emp-hist'},[t]));
+  sec.appendChild(el('div',{class:'emp-hint'},['🔒 كل عملية صرف محفوظة بمبلغها وتاريخها ورقم مرجعها — لا تُحذف ولا تُعدّل، ويظل سجل الحضور كما هو.']));
+  return sec;
 }
-function opInfo(o,key){
-  if(o.kind==='day'){
-    if(o.status==='vacation') return {ic:'🌴',cls:'off',title:'إجازة',amount:'',extra:o.note};
-    if(o.status==='absent')   return {ic:'❌',cls:'off',title:'غياب', amount:'',extra:o.note};
-    return {ic:'✔️',cls:'',title:'حضور',amount:'',extra:o.note};
+function fmtDMYKeyLegacy(k){ const t=PR().tsOfDayKey(k); return isNaN(t)?String(k):fmtDMY(new Date(t)); }
+/* سجل الأسابيع القديم: يُعرض للقراءة فقط ولا يُحذف — توافق كامل مع البيانات السابقة */
+function empLegacySection(e){
+  const ws=(e.weeks||[]).filter(function(w){ return w; });
+  if(!ws.length) return null;
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['🗄️ سجل الأسابيع القديم (تاريخي — للقراءة فقط)']));
+  const t=el('table',{class:'emp-table compact'});
+  t.appendChild(el('tr',{},['الأسبوع','أيام العمل','غياب','الأجر','السلف','الخصومات','الصافي','حالة الصرف'].map(function(h){return el('th',{text:h});})));
+  ws.slice().reverse().forEach(function(w){
+    let startTs=Number(w.startTs);
+    if(!isFinite(startTs)||!startTs){ startTs=PR().tsOfDayKey(w.key); }
+    if(!isFinite(startTs)||!startTs){ return; }
+    const s=PR().legacyNet(w);
+    const work=(w.days||[]).filter(function(d){ return (d.status||'work')==='work'; }).length;
+    t.appendChild(el('tr',{},[
+      el('td',{},[el('span',{class:'num',text:fmtDMY(new Date(startTs))})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(work)})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum((w.days||[]).filter(function(d){return d.status==='absent';}).length)})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(work*Number(w.dailyWage||0))})]),
+      el('td',{},[el('span',{class:'num emp-blue',text:fmtNum(PR().sum(w.advances))})]),
+      el('td',{},[el('span',{class:'num emp-neg',text:fmtNum(PR().sum(w.deductions))})]),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(s)})]),
+      el('td',{text:w.paid?('تم الصرف '+(w.paidAt?fmtDMY(new Date(w.paidAt)):'')):('لم يتم الصرف')}),
+    ]));
+  });
+  sec.appendChild(el('div',{class:'tbl-wrap emp-hist'},[t]));
+  const la=PR().legacyAuditOf(e);
+  if(la&&(la.days||la.ops||la.weeksPaid||la.weeksUnpaid)){
+    sec.appendChild(el('div',{class:'emp-hint'},[
+      '🗂️ عند الترحيل: ', el('b',{text:fmtNum(la.days)}), ' يوم حضور مُرحَّل (',
+      el('b',{text:fmtNum(la.work)}), ' عمل · ', el('b',{text:fmtNum(la.abs)}), ' غياب · ',
+      el('b',{text:fmtNum(la.vac)}), ' إجازة)',
+      ' · ', el('b',{text:fmtNum(la.ops)}), ' عملية',
+      ' · ', el('b',{text:fmtNum(la.weeksPaid)}), ' أسبوع مدفوع لم يُعد احتسابه',
+      ' · ', el('b',{text:fmtNum(la.weeksUnpaid)}), ' أسبوع غير مدفوع'
+    ]));
   }
-  if(o.kind==='bonus') return {ic:'🎁',cls:'b',title:'مكافأة',amount:'+'+fmtNum(o.amount)+' ج',extra:o.reason};
-  if(o.kind==='pen')   return {ic:'⚠️',cls:'p',title:'جزاء',  amount:'−'+fmtNum(o.amount)+' ج',extra:o.reason};
-  if(o.kind==='adv')   return {ic:'💵',cls:'a',title:'سلفة',  amount:'−'+fmtNum(o.amount)+' ج',extra:[o.reason,o.note].filter(Boolean).join(' — ')};
-  if(o.kind==='ded')   return {ic:'➖',cls:'p',title:'خصم',   amount:'−'+fmtNum(o.amount)+' ج',extra:o.reason};
-  if(o.kind==='paid')  return {ic:'💰',cls:'paid',title:'تم صرف الراتب',amount:'',extra:(o.ts?ticketStamp(new Date(o.ts)):'')};
-  return {ic:'•',cls:'',title:'',amount:'',extra:''};
+  sec.appendChild(el('div',{class:'emp-hint'},['🔒 سجل النظام القديم محفوظ كما هو بدون أي حذف أو تعديل — الجديد يحسب عليه فقط.']));
+  return sec;
 }
-function empStatement(empId,key){
-  const e=empFind(empId);
-  if(!e){ _emp.screen='dash'; return empDash(); }
-  key=key||empCurKey(); _emp.weekKey=key;
-  const w=empWeek(e,key);
-  if(!w){ _emp.screen='emp'; return empView(empId,empCurKey()); }
-  const s=weekStats(w);
+
+/* ==================== لوحة الموظفين ==================== */
+function empDash(){
+  const cutoff=PR().endOfDayTs(Date.now());
+  const st=empTotals(cutoff);
   const wrap=el('div',{});
-  wrap.appendChild(el('button',{class:'emp-back',onClick:function(){ empGo('emp',e.id,key); }},['← رجوع لصفحة الموظف']));
-  wrap.appendChild(el('h3',{},['📄 كشف الحساب الأسبوعي']));
-
+  empMigrationGate(wrap);
+  wrap.appendChild(el('h3',{},['👥 الموظفون والرواتب']));
   wrap.appendChild(el('div',{class:'emp-week-bar'},[
-    el('div',{},['👤 ',el('b',{text:e.name}),'   ·   ',(e.job||'—'),'   ·   الأجر اليومي: ',el('b',{text:fmtNum(w.dailyWage)+' ج'}),'   ·   الأسبوع: ',el('b',{text:weekRangeLabel(key)})]),
-    w.paid?el('span',{class:'emp-chip cur'},['🟢 تم صرف الراتب']):el('span',{class:'emp-chip pend'},['🟡 لم يتم صرف الراتب'])
+    el('div',{},['📅 كل الأرقام محسوبة من سجل الحضور الفعلي حتى ',el('b',{text:PR().fmtDMY(Date.now())}),
+      ' — لا يوجد أسبوع ثابت، ويمكن الصرف في أي وقت.']),
+    el('span',{class:'emp-chip cur'},['🔓 صرف مرن'])
   ]));
-  wrap.appendChild(el('div',{class:'rep-cards emp-c4'},[
-    repCard('📅 أيام العمل',fmtNum(s.work),'rev'),
-    repCard('❌ الغياب',fmtNum(s.abs),'exp'),
-    repCard('🌴 الإجازات',fmtNum(s.vac),'gift'),
-    repCard('💵 صافي الراتب',fmtNum(s.net),'final'),
-  ]));
-  wrap.appendChild(el('div',{class:'stmt-acts'},[
-    el('button',{class:'emp-stmtbtn',onClick:function(){ exportStatementPDF(e.id,key); }},['📄 تصدير PDF']),
-    el('button',{class:'emp-stmtbtn',onClick:function(){ exportStatementExcel(e.id,key); }},['📊 تصدير Excel']),
-  ]));
-
-  /* شبكة: [ملخص الحساب | حالة الراتب] */
-  const stSec=el('div',{class:'emp-sec'});
-  stSec.appendChild(el('div',{class:'emp-sec-h'},['💳 حالة الراتب']));
-  if(w.paid){
-    const dt=w.paidAt?new Date(w.paidAt):null;
-    stSec.appendChild(el('div',{class:'emp-info',text:'🟢 تم صرف الراتب'+(dt?('\nتاريخ ووقت الصرف: '+ticketStamp(dt)):'')+'\nالمبلغ المصروف: '+fmtNum(s.net)+' ج'}));
-  }else{
-    stSec.appendChild(el('div',{class:'emp-info',text:'🟡 لم يتم صرف الراتب بعد\nالمستحق حتى الآن: '+fmtNum(s.net)+' ج'}));
-    stSec.appendChild(el('div',{style:{marginTop:'12px'}},[
-      el('button',{class:'emp-paybtn',style:{margin:'0'},onClick:function(){empPayOne(e.id,key);}},['💰 صرف الراتب — '+fmtNum(s.net)+' ج'])
-    ]));
+  /* تنبيهات الترحيل */
+/* سجل تدقيق الترحيل — يُعرض للمستخدم بلا أي تعديل على الأرصدة */
+  const audit=empMigrationAudit();
+  if(audit&&(audit.days||audit.ops||audit.migrated||audit.weeksPaid||audit.flags)){
+    const box=el('div',{class:'emp-flag'});
+    const parts=[
+      '🗂️ تدقيق ترحيل سجل الموظفين: ',
+      el('b',{text:fmtNum(audit.days)}), ' يوم حضور مُرحَّل (',
+      el('b',{text:fmtNum(audit.work)}), ' عمل · ', el('b',{text:fmtNum(audit.abs)}), ' غياب · ',
+      el('b',{text:fmtNum(audit.vac)}), ' إجازة)',
+      ' · ', el('b',{text:fmtNum(audit.ops)}), ' عملية (سلف/خصومات/مكافآت/جزاءات)',
+      ' عبر ', el('b',{text:fmtNum(audit.migrated)}), ' موظف',
+      ' من ', el('b',{text:fmtNum(audit.weeksUnpaid)}), ' أسبوع غير مدفوع.'
+    ];
+    if(audit.weeksPaid) parts.push(' الأسابيع المدفوعة (', el('b',{text:fmtNum(audit.weeksPaid)}), ') لم تُعد احتسابًا ولا دخلت الرصيد.');
+    else parts.push(' لا توجد أسابيع مدفوعة مُرحَّلة.');
+    if(audit.at) parts.push(' تاريخ الترحيل: '+fmtDMY(new Date(audit.at))+'.');
+    parts.push(' الأرقام للتدقيق فقط — لم تتغيّر أي أرصدة تاريخية.');
+    box.appendChild(el('div',{},parts));
+    const acts=el('div',{class:'emp-quick',style:{marginTop:'8px'}});
+    acts.appendChild(el('button',{onClick:empPrintMigrationAudit},['🖨️ طباعة تقرير تدقيق الترحيل']));
+    acts.appendChild(el('div',{class:'emp-hint'},['التفاصيل لكل موظف في بطاقته ← «سجل الأسابيع القديم».']));
+    box.appendChild(acts);
+    wrap.appendChild(box);
   }
-  wrap.appendChild(el('div',{class:'emp-grid'},[ empCalcBox(w,s), stSec ]));
-
-  /* تفاصيل العمليات — بعرض كامل */
-  const opsSec=el('div',{class:'emp-sec'});
-  opsSec.appendChild(el('div',{class:'emp-sec-h'},['📋 تفاصيل العمليات']));
-  const list=el('div',{class:'ops'});
-  weekOps(w).forEach(function(o){
-    const I=opInfo(o,key);
-    list.appendChild(el('div',{class:'op '+I.cls},[
-      el('span',{class:'ic',text:I.ic}),
-      el('span',{class:'dy',text:(o.day>=0?EMP_DAYS[o.day]:'')}),
-      el('span',{class:'tx'},[el('b',{text:I.title}),(I.extra?('   ·   '+I.extra):'')]),
-      el('span',{class:'am',text:I.amount}),
+  const flagged=empLoad().filter(function(e){ return (e.reviewFlags||[]).length; });
+  if(flagged.length){
+    const names=flagged.map(function(e){ return e.name; }).join('، ');
+    wrap.appendChild(el('div',{class:'emp-flag'},['⚠️ سجلات تحتاج مراجعة ('+flagged.length+' موظف): '+esc(names)+' — لم تتغيّر أي قيمة مالية في هذه السجلات.']));
+  }
+  wrap.appendChild(el('div',{class:'rep-cards emp-c5'},[
+    repCard('👥 عدد الموظفين',fmtNum(st.count),'tickets'),
+    repCard('💰 إجمالي الأجر المكتسب',fmtNum(st.gross),'rev'),
+    repCard('💸 إجمالي المصروف',fmtNum(st.paid),'exp'),
+    repCard('💵 إجمالي المستحق',fmtNum(st.due),'final'),
+    repCard('💵 إجمالي السلف',fmtNum(st.adv),'elec'),
+    repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift'),
+    repCard('⚠️ إجمالي الجزاءات',fmtNum(st.pen),'exp'),
+    repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
+    repCard('📅 أيام الحضور',fmtNum(st.work),'rev'),
+    repCard('❌ أيام الغياب',fmtNum(st.abs),'exp'),
+  ]));
+  wrap.appendChild(el('div',{class:'emp-quick'},[
+    el('button',{class:'pri',onClick:function(){empGo('form',null,null);}},['➕ إضافة موظف']),
+    el('button',{class:'pri',onClick:function(){ empSetReview(); }},['💰 صرف الرواتب']),
+    el('button',{onClick:function(){ empGo('batches'); }},['📜 سجل الدفعات']),
+    el('button',{onClick:function(){ openDailyReg(); }},['🕐 التسجيل اليومي']),
+    el('button',{onClick:function(){ exportPayrollPDF(); }},['📄 تقرير الرواتب (PDF)']),
+    el('button',{onClick:function(){ exportPayrollCSV(); }},['📊 تصدير Excel']),
+  ]));
+  const L=empLoad();
+  if(!L.length){
+    wrap.appendChild(el('div',{class:'emp-empty'},['لا يوجد موظفون بعد — اضغط «➕ إضافة موظف» لإضافة أول موظف.']));
+    return wrap;
+  }
+  const sec=el('div',{class:'emp-sec'});
+  sec.appendChild(el('div',{class:'emp-sec-h'},['📋 جدول الموظفين']));
+  const tbl=el('table',{class:'emp-table compact'});
+  tbl.appendChild(el('tr',{},['الاسم','الوظيفة','الأجر اليومي','الدورة','حضور','غياب','الأجر المكتسب','سلف+خصومات','مصروف سابقًا','المستحق','تفاصيل'].map(function(h){return el('th',{text:h});})));
+  const tot={gross:0,ded:0,paid:0,due:0};
+  L.forEach(function(e){
+    empCore(e);
+    const s=PR().statsUpTo(e,cutoff);
+    const openIt=function(){ empGo('emp',e.id,null); };
+    const ded=r2s(s.adv+s.pen+s.ded);
+    tot.gross+=s.gross; tot.ded+=ded; tot.paid+=s.paid; tot.due+=s.due;
+    const acts=el('div',{class:'emp-acts'},[
+      el('button',{class:'pri',onClick:openIt},['📂']),
+      (s.due>0?el('button',{class:'pay',title:'صرف راتب',onClick:function(){empPayOne(e.id,Date.now());}},['💰']):null),
+      el('button',{title:'تسجيل يومي (حضور/انصراف/خصم/مكافأة)',onClick:function(){ openDailyReg(e.id); }},['🕐']),
+      el('button',{title:'تعديل بيانات الموظف',onClick:function(){MalahyPerm.requirePerm('employeeManage',{title:'✏️ تعديل موظف',message:'تأكيد تعديل بيانات «'+e.name+'»؟',confirmText:'متابعة',secondary:true,onOk:function(){ empGo('form',e.id,null); }});}},['✏️']),
+      el('button',{class:'del',title:'حذف الموظف',onClick:function(){empDelete(e.id);}},['🗑️']),
+    ]);
+    tbl.appendChild(el('tr',{},[
+      el('td',{},[el('span',{class:'emp-name',onClick:openIt},[e.name])]),
+      el('td',{text:e.job||'—'}),
+      el('td',{},[el('span',{class:'num',text:fmtNum(PR().wageOf(e))})]),
+      el('td',{},[cycleChip(e)]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(s.work)})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(s.abs)})]),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900'},text:fmtNum(s.gross)})]),
+      el('td',{},[el('span',{class:'num emp-neg',text:ded?('-'+fmtNum(ded)):'0'})]),
+      el('td',{},[el('span',{class:'num',text:fmtNum(s.paid)})]),
+      el('td',{},[el('span',{class:'num',style:{fontWeight:'900',color:s.due>0?'var(--success-bright)':'var(--muted-2)'},text:fmtNum(s.due)})]),
+      el('td',{},[acts]),
     ]));
   });
-  opsSec.appendChild(list);
-  wrap.appendChild(opsSec);
-
-  /* ملاحظات — بعرض كامل */
-  const nSec=el('div',{class:'emp-sec'});
-  nSec.appendChild(el('div',{class:'emp-sec-h'},['📝 ملاحظات']));
-  const ta=el('textarea',{class:'emp-note-in',placeholder:'أي ملاحظات إضافية تخص الموظف خلال هذا الأسبوع…',onChange:function(){ w.weekNote=ta.value; empSave(); toast('تم حفظ الملاحظات','ok'); }});
-  ta.value=w.weekNote||'';
-  nSec.appendChild(ta);
-  wrap.appendChild(nSec);
+  tbl.appendChild(el('tr',{class:'emp-tot'},[
+    el('td',{colspan:'3',text:'الإجمالي'}),
+    el('td',{text:''}),
+    el('td',{},[el('span',{class:'num',text:fmtNum(st.work)})]),
+    el('td',{},[el('span',{class:'num',text:fmtNum(st.abs)})]),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot.gross)})]),
+    el('td',{},[el('span',{class:'num emp-neg',text:tot.ded?('-'+fmtNum(tot.ded)):'0'})]),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot.paid)})]),
+    el('td',{},[el('span',{class:'num',text:fmtNum(tot.due)})]),
+    el('td',{text:''}),
+  ]));
+  sec.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
+  wrap.appendChild(sec);
   return wrap;
-}
-
-
-/* ---- الصرف والحذف والأسبوع الجديد ---- */
-function empPayOne(empId,key){
-  const e=empFind(empId); if(!e) return;
-  const w=empWeek(e,key); if(!w){ toast('لا يوجد أسبوع بهذا التاريخ','warn'); return; }
-  if(w.paid){ toast('راتب هذا الأسبوع تم صرفه بالفعل — لا يمكن الصرف مرتين','warn'); return; }
-  const s=calcWeek(w);
-  let msg='صرف راتب «'+e.name+'» عن أسبوع '+weekRangeLabel(key)+'.\n';
-  msg+='الأجر الأساسي '+fmtNum(s.gross)+' + مكافآت '+fmtNum(s.bonus)+' − جزاءات '+fmtNum(s.pen)+' − سلف '+fmtNum(s.adv)+' − خصومات '+fmtNum(s.ded)+' = الصافي '+fmtNum(s.net)+' جنيه.';
-  MalahyPerm.requirePerm('payroll',{
-    title:'💰 صرف الراتب',
-    message:msg,
-    confirmText:'صرف الراتب',
-    secondary:true,
-    onOk:function(){
-      w.paid=true; w.paidAt=Date.now(); w.snapshot=s;
-      empSave(); paintEmp();
-      toast('تم صرف راتب '+e.name+' — '+fmtNum(s.net)+' جنيه','ok');
-    }
-  });
-}
-function empPayAll(){
-  const cur=empCurKey(); const L=empLoad();
-  const pend=L.filter(function(e){ const w=empWeek(e,cur); return w&&!w.paid; });
-  if(!pend.length){ toast('كل رواتب هذا الأسبوع تم صرفها بالفعل','warn'); return; }
-  let tot=0,adv=0; pend.forEach(function(e){ const c=calcWeek(empWeek(e,cur)); tot+=c.net; adv+=c.adv; });
-  MalahyPerm.requirePerm('payroll',{
-    title:'💰 صرف جميع الرواتب',
-    message:'هيتم صرف رواتب '+pend.length+' موظف عن الأسبوع الحالي بإجمالي '+fmtNum(tot)+' جنيه'+(adv?(' (بعد خصم سلف بقيمة '+fmtNum(adv)+' جنيه)'):'')+'.',
-    confirmText:'صرف الكل',
-    secondary:true,
-    onOk:function(){
-      pend.forEach(function(e){ const w=empWeek(e,cur); const s=calcWeek(w); w.paid=true; w.paidAt=Date.now(); w.snapshot=s; });
-      empSave(); paintEmp();
-      toast('تم صرف رواتب '+pend.length+' موظف بإجمالي '+fmtNum(tot)+' جنيه','ok');
-    }
-  });
 }
 function empDelete(empId){
   const e=empFind(empId); if(!e) return;
@@ -5455,208 +5737,167 @@ function empDelete(empId){
     }
   });
 }
-function empStartNewWeek(){
-  MalahyPerm.requirePerm('employeeManage',{
-    title:'🔄 بدء أسبوع جديد',
-    message:'البرنامج بيبدأ أسبوع جديد تلقائيًا كل يوم سبت مع الاحتفاظ بكل الأسابيع السابقة. الزر ده بيتأكد إن أسبوع هذا الأسبوع متسجّل لكل الموظفين.',
-    confirmText:'متابعة',
-    secondary:true,
-    onOk:function(){
-      const before=empLoad().map(function(e){return (e.weeks||[]).length;}).join(',');
-      const key=ensureWeeks();
-      const after=empLoad().map(function(e){return (e.weeks||[]).length;}).join(',');
-      paintEmp();
-      toast(before!==after?('تم إنشاء أسبوع جديد: '+weekRangeLabel(key)):'الأسبوع الحالي مسجّل بالفعل — الأسبوع الجديد بيبدأ تلقائيًا كل سبت','ok');
-    }
-  });
+
+/* ==================== نافذة الموظفين (التنقّل) ==================== */
+function openEmployees(){
+  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
+  if(!PAYROLL_READY){ toast('تعذّر تحميل نظام الرواتب — أعد تشغيل البرنامج','warn'); return; }
+  _emp.list=null; _pb=null;
+  empLoad();
+  _emp.screen='dash'; _emp.empId=null; _emp.dateTs=null; _emp.batchId=null;
+  const wrap=el('div',{class:'modal emp-modal'},[ el('div',{id:'empRoot'}) ]);
+  showModal(wrap);
+  paintEmp();
+}
+function paintEmp(){
+  const root=$('#empRoot'); if(!root) return;
+  root.innerHTML='';
+  try{
+    if(_emp.screen==='form') root.appendChild(empForm(_emp.empId));
+    else if(_emp.screen==='emp') root.appendChild(empView(_emp.empId));
+    else if(_emp.screen==='review') root.appendChild(empReviewScreen({dateTs:_emp.dateTs||Date.now(), ids:_emp.ids, amounts:_emp.amounts}));
+    else if(_emp.screen==='done') root.appendChild(empDoneScreen(_emp.batchId));
+    else if(_emp.screen==='batches') root.appendChild(empBatchesScreen());
+    else root.appendChild(empDash());
+  }catch(err){ logErr('paintEmp',err); root.appendChild(el('div',{class:'emp-empty'},['حدث خطأ في عرض هذه الشاشة: '+err.message])); }
+}
+function empGo(screen,empId,batchId){
+  _emp.screen=screen; _emp.empId=empId||null; _emp.batchId=batchId||null;
+  if(screen!=='review'){ _emp.ids=null; _emp.amounts=null; }
+  paintEmp();
+}
+function empSetReview(){
+  _emp.screen='review'; _emp.ids=null; _emp.amounts=null; _emp.dateTs=Date.now();
+  paintEmp();
 }
 
-/* ---- تقارير الرواتب (كل الموظفين) ---- */
-function empWeekTableData(curKey){
-  const rows=[]; const tot={work:0,vac:0,abs:0,bonus:0,pen:0,adv:0,ded:0,gross:0,net:0,paid:0,unpaid:0};
+/* ==================== الطباعة الحرارية — تقرير مجمّع وإيصال فرعي ==================== */
+/* اسم النشاط: الاسم المهيّأ في الإعدادات، وإلا الاسم المطلوب افتراضيًا. */
+function payrollVenue(){
+  const s=settings();
+  const n=(typeof s.brandName==='string')?s.brandName.trim():'';
+  return n||PRR().DEFAULT_VENUE;
+}
+/* بناء HTML من سجل الدفعة المحفوظ — نفس المصدر للتقرير والإيصال */
+function payrollBatchHTML(batchId){
+  const b=pbGet(batchId); if(!b) return '';
+  return PRR().batchHTML(b,{venue:payrollVenue(),paper:paperKind()});
+}
+function payrollReceiptHTML(batchId,empId){
+  const b=pbGet(batchId); if(!b) return '';
+  const it=(b.items||[]).find(function(x){ return x && x.empId===empId; });
+  if(!it) return '';
+  return PRR().receiptHTML(it,{venue:payrollVenue(),paper:paperKind(),ts:b.ts,ref:b.ref,batchId:b.id});
+}
+/* إرسال مستند للطباعة باستخدام الطابعة المختارة + رسائل الخطأ العربية نفسها */
+async function payrollSend(html,okMsg){
+  if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return false; }
+  const st=settings();
+  try{
+    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
+    return printResultToast(res,okMsg);
+  }catch(e){ logErr('payrollPrint',e); toast('تعذّرت الطباعة','warn'); return false; }
+}
+function payrollPrintBatch(batchId){
+  const html=payrollBatchHTML(batchId);
+  if(!html){ toast('تعذّر العثور على تقرير الدفعة','warn'); return; }
+  return payrollSend(html,'تم إرسال تقرير الرواتب للطابعة 🖨️');
+}
+function payrollPrintReceipt(batchId,empId){
+  const html=payrollReceiptHTML(batchId,empId);
+  if(!html){ toast('تعذّر العثور على إيصال الصرف','warn'); return; }
+  return payrollSend(html,'تم إرسال الإيصال للطابعة 🖨️');
+}
+async function payrollPrintAllReceipts(batchId){
+  const b=pbGet(batchId); if(!b) return;
+  const saved=(b.items||[]).filter(function(x){ return x && x.status==='saved'; });
+  if(!saved.length){ toast('لا توجد إيصالات محفوظة في هذه الدفعة','warn'); return; }
+  let n=0;
+  for(const it of saved){
+    const ok=await payrollSend(payrollReceiptHTML(batchId,it.empId),null);
+    if(ok) n++;
+  }
+  toast(n===saved.length?('تم إرسال '+n+' إيصال للطابعة 🖨️'):('تم إرسال '+n+' من '+saved.length+' إيصال — راجع توصيل الطابعة'),n===saved.length?'ok':'warn');
+}
+
+/* ==================== تصدير PDF / Excel من نفس المصدر ==================== */
+function exportPayrollPDF(){
+  const html=PRR().batchHTML(pbLatest(),{venue:payrollVenue(),paper:'a4'});
+  if(!html||!pbLatest()){ toast('لا توجد دفعة صرف محفوظة لعمل تقرير','warn'); return; }
+  if(!(window.malahyExport&&window.malahyExport.savePDF)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
+  window.malahyExport.savePDF({html:html,suggestedName:'تقرير-رواتب-'+Date.now()+'.pdf'})
+    .then(function(res){ if(res&&res.ok) toast('تم حفظ تقرير الرواتب PDF','ok'); else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn'); })
+    .catch(function(){ toast('تعذّر حفظ الملف','warn'); });
+}
+function exportBatchPDF(batchId){
+  const b=pbGet(batchId); if(!b) return;
+  if(!(window.malahyExport&&window.malahyExport.savePDF)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
+  window.malahyExport.savePDF({html:PRR().batchHTML(b,{venue:payrollVenue(),paper:'a4'}),suggestedName:'تقرير-رواتب-'+(b.ref||'')+'.pdf'})
+    .then(function(res){ if(res&&res.ok) toast('تم حفظ تقرير الدفعة PDF','ok'); else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn'); })
+    .catch(function(){ toast('تعذّر حفظ الملف','warn'); });
+}
+function exportBatchCSV(batchId){
+  const b=pbGet(batchId); if(!b) return;
+  if(!(window.malahyExport&&window.malahyExport.saveCSV)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
+  const m=PRR().batchModel(b,{venue:payrollVenue()});
+  const rows=[['تقرير صرف رواتب الموظفين — '+m.venue],['رقم الدفعة',m.ref],['تاريخ الصرف',m.dateText],['الوقت',m.timeText],[]];
+  rows.push(['الموظف','الوظيفة','الأجر اليومي','أيام الحضور','أيام الغياب','الأجر المكتسب','مكافآت','جزاءات','سلف','خصومات','مسدَّد سابقًا','المصروف','المتبقي','من تاريخ','إلى تاريخ']);
+  (b.items||[]).forEach(function(it){
+    if(it.status!=='saved') return;
+    rows.push([it.empName,it.job,it.dailyWage,it.work,it.abs,it.gross,it.bonus,it.pen,it.adv,it.ded,it.paidBefore,it.amount,it.balanceAfter,(it.period||{}).fromKey||'',(it.period||{}).toKey||'']);
+  });
+  rows.push([]); rows.push(['الإجمالي','','',m.totals.work,m.totals.abs,m.totals.gross,m.totals.bonus,m.totals.pen,m.totals.adv,m.totals.ded,m.totals.paidBefore,m.totals.amount,m.totals.balanceAfter]);
+  rows.push(['عدد الموظفين',m.count]);
+  window.malahyExport.saveCSV({rows:rows,suggestedName:'تقرير-رواتب-'+(b.ref||'')+'.csv'})
+    .then(function(res){ if(res&&res.ok) toast('تم حفظ تقرير الدفعة (Excel)','ok'); else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn'); })
+    .catch(function(){ toast('تعذّر حفظ الملف','warn'); });
+}
+function exportPayrollCSV(){
+  const l=pbList(); if(!l.length){ toast('لا توجد دفعة صرف محفوظة لعمل تقرير','warn'); return; }
+  exportBatchCSV(l[0].id);
+}
+function pbLatest(){ const l=pbList(); return l.length?l[0].id:null; }
+
+/* ============ رواتب مرنة — تسجيل السلف عبر المصروفات (نفسه كما كان) ============ */
+/* تعبئة قائمة الموظفين في قسم المصروفات — بنربطها برقم الموظف الثابت. */
+function renderExpEmpOptions(){
+  const sel=$('#expEmp'); if(!sel) return;
+  const cur=sel.value||'';
+  sel.innerHTML='';
+  sel.appendChild(el('option',{value:'',text:'مصروف عادي'}));
   empLoad().forEach(function(e){
-    const w=empWeek(e,curKey); if(!w) return;
-    const s=weekStats(w);
-    rows.push({name:e.name,job:e.job||'',wage:w.dailyWage,work:s.work,vac:s.vac,abs:s.abs,bonus:s.bonus,pen:s.pen,adv:s.adv,ded:s.ded,gross:s.gross,net:s.net,paid:!!w.paid,paidAt:w.paidAt||null});
-    tot.work+=s.work; tot.vac+=s.vac; tot.abs+=s.abs; tot.bonus+=s.bonus; tot.pen+=s.pen; tot.adv+=s.adv; tot.ded+=s.ded; tot.gross+=s.gross; tot.net+=s.net;
-    if(w.paid) tot.paid+=s.net; else tot.unpaid+=s.net;
+    sel.appendChild(el('option',{value:e.id,text:'💵 سلفة: '+e.name}));
   });
-  return {rows:rows,tot:tot};
+  if(cur&&empFind(cur)) sel.value=cur;
 }
-const RPT_CSS='*{box-sizing:border-box;font-family:"Segoe UI",Tahoma,Arial,sans-serif;}'
-  +'body{padding:0;margin:0;color:#1a1430;}'
-  +'h1{font-size:19px;margin:0 0 3px;color:#3b2f6b;}.sub{color:#666;font-size:11.5px;}'
-  +'h2{font-size:14px;margin:16px 0 8px;color:#3b2f6b;border-right:4px solid #a78bfa;padding-right:8px;}'
-  +'table{width:100%;border-collapse:collapse;margin:8px 0 14px;}'
-  +'th,td{border:1px solid #cfc9e0;padding:6px 8px;font-size:11.5px;text-align:right;}'
-  +'th{background:#efeaff;}td.n,th.n{text-align:center;direction:ltr;}'
-  +'tr.tot td{background:#f1ecff;font-weight:900;}'
-  +'.cards{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;}'
-  +'.card{flex:1;min-width:110px;border:1px solid #cfc9e0;border-radius:9px;padding:9px;text-align:center;}'
-  +'.card .k{font-size:10.5px;color:#666;}.card .v{font-size:15px;font-weight:800;direction:ltr;}'
-  +'.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:3px solid #8b5cf6;padding-bottom:9px;margin-bottom:12px;}'
-  +'.badge{border:1px solid #cfc9e0;border-radius:8px;padding:7px 13px;font-size:12px;font-weight:800;white-space:nowrap;}'
-  +'.badge.ok{background:#e8f9f1;border-color:#7fd6ae;color:#0f7a52;}'
-  +'.badge.no{background:#fff8e6;border-color:#f0c674;color:#8a6100;}'
-  +'.note{border:1px dashed #cfc9e0;border-radius:9px;padding:10px;min-height:46px;font-size:12px;white-space:pre-wrap;color:#3b2f6b;}'
-  +'.foot{margin-top:14px;text-align:center;color:#888;font-size:10.5px;border-top:1px solid #e6e1f2;padding-top:8px;}';
-function salaryReportHTML(curKey,d){
-  const genAt=ticketStamp(new Date());
-  let rowsH='';
-  d.rows.forEach(function(r){
-    rowsH+='<tr><td>'+esc(r.name)+'</td><td>'+esc(r.job)+'</td><td class="n">'+fmtNum(r.wage)+'</td><td class="n">'+fmtNum(r.work)+'</td><td class="n">'+fmtNum(r.vac)+'</td><td class="n">'+fmtNum(r.abs)+'</td><td class="n">'+fmtNum(r.gross)+'</td><td class="n">'+fmtNum(r.bonus)+'</td><td class="n">'+fmtNum(r.pen)+'</td><td class="n">'+fmtNum(r.adv)+'</td><td class="n">'+fmtNum(r.ded)+'</td><td class="n">'+fmtNum(r.net)+'</td><td>'+(r.paid?('تم الصرف'+(r.paidAt?(' '+fmtDMY(new Date(r.paidAt))):'')):'لم يتم الصرف')+'</td></tr>';
-  });
-  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{size:A4;margin:12mm;}'+RPT_CSS+'</style></head><body>'
-    +'<div class="hd"><div><h1>💰 كشف رواتب الأسبوع — '+esc(brandName())+'</h1>'
-    +'<div class="sub">الأسبوع: '+weekRangeLabel(curKey)+' · تاريخ الإصدار: '+genAt+'</div></div></div>'
-    +'<div class="cards">'
-    +'<div class="card"><div class="k">إجمالي المستحق</div><div class="v">'+fmtNum(d.tot.net)+' ج</div></div>'
-    +'<div class="card"><div class="k">تم صرفه</div><div class="v">'+fmtNum(d.tot.paid)+' ج</div></div>'
-    +'<div class="card"><div class="k">غير مصروف</div><div class="v">'+fmtNum(d.tot.unpaid)+' ج</div></div>'
-    +'<div class="card"><div class="k">إجمالي السلف</div><div class="v">'+fmtNum(d.tot.adv)+' ج</div></div>'
-    +'<div class="card"><div class="k">إجمالي المكافآت</div><div class="v">'+fmtNum(d.tot.bonus)+' ج</div></div>'
-    +'<div class="card"><div class="k">إجمالي الجزاءات</div><div class="v">'+fmtNum(d.tot.pen)+' ج</div></div>'
-    +'<div class="card"><div class="k">إجمالي الخصومات</div><div class="v">'+fmtNum(d.tot.ded)+' ج</div></div>'
-    +'</div>'
-    +'<table><tr><th>الموظف</th><th>الوظيفة</th><th class="n">الأجر اليومي</th><th class="n">عمل</th><th class="n">إجازة</th><th class="n">غياب</th><th class="n">الأجر الأساسي</th><th class="n">مكافآت</th><th class="n">جزاءات</th><th class="n">سلف</th><th class="n">خصومات</th><th class="n">الصافي</th><th>الحالة</th></tr>'
-    +rowsH
-    +'<tr class="tot"><td colspan="3">الإجمالي</td><td class="n">'+fmtNum(d.tot.work)+'</td><td class="n">'+fmtNum(d.tot.vac)+'</td><td class="n">'+fmtNum(d.tot.abs)+'</td><td class="n">'+fmtNum(d.tot.gross)+'</td><td class="n">'+fmtNum(d.tot.bonus)+'</td><td class="n">'+fmtNum(d.tot.pen)+'</td><td class="n">'+fmtNum(d.tot.adv)+'</td><td class="n">'+fmtNum(d.tot.ded)+'</td><td class="n">'+fmtNum(d.tot.net)+'</td><td></td></tr>'
-    +'</table>'
-    +'<div class="foot">تم إنشاؤه بواسطة برنامج '+esc(brandName())+'</div>'
-    +'</body></html>';
+/* تسجيل سلفة موظف: تُحفظ في سجل الموظف مع رابطها بالمصروف واسمه وتاريخها،
+   وتُخصم مرة واحدة فقط من أول راتب يغطّيها، وتبقى مسجّلة للمراجعة دائمًا. */
+function recordEmployeeAdvance(empId,amount,reason,expenseId,ts){
+  const e=empFind(empId); if(!e) return null;
+  empCore(e);
+  const adv=PR().addAdvance(e,{amount:amount,reason:reason,expenseId:expenseId,ts:ts||Date.now()});
+  empSave();
+  return adv;
 }
-async function exportSalaryPDF(){
-  const cur=empCurKey(); const d=empWeekTableData(cur);
-  if(!d.rows.length){ toast('لا يوجد موظفون لعمل تقرير','warn'); return; }
-  if(!(window.malahyExport&&window.malahyExport.savePDF)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
-  try{
-    const res=await window.malahyExport.savePDF({html:salaryReportHTML(cur,d),suggestedName:'كشف-رواتب-'+cur+'.pdf'});
-    if(res&&res.ok) toast('تم حفظ كشف الرواتب PDF','ok');
-    else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn');
-  }catch(_){ toast('تعذّر حفظ الملف','warn'); }
-}
-async function exportWeekExcel(){
-  const cur=empCurKey(); const d=empWeekTableData(cur);
-  if(!d.rows.length){ toast('لا يوجد موظفون لعمل تقرير','warn'); return; }
-  if(!(window.malahyExport&&window.malahyExport.saveCSV)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
-  const rows=[];
-  rows.push(['تقرير أسبوع الرواتب — '+brandName()]);
-  rows.push(['من','السبت '+fmtDMY(weekStartFromKey(cur)),'إلى','الجمعة '+fmtDMY(weekEndFromKey(cur))]);
-  rows.push([]);
-  rows.push(['الموظف','الوظيفة','الأجر اليومي','أيام العمل','إجازة','غياب','الأجر الأساسي','مكافآت','جزاءات','سلف','خصومات','صافي الراتب','حالة الصرف','تاريخ الصرف']);
-  d.rows.forEach(function(r){
-    rows.push([r.name,r.job,r.wage,r.work,r.vac,r.abs,r.gross,r.bonus,r.pen,r.adv,r.ded,r.net,(r.paid?'تم الصرف':'لم يتم الصرف'),(r.paidAt?fmtDMY(new Date(r.paidAt)):'')]);
-  });
-  rows.push([]);
-  rows.push(['الإجمالي','','',d.tot.work,d.tot.vac,d.tot.abs,d.tot.gross,d.tot.bonus,d.tot.pen,d.tot.adv,d.tot.ded,d.tot.net,'','']);
-  rows.push(['إجمالي المصروف',d.tot.paid]);
-  rows.push(['إجمالي غير المصروف',d.tot.unpaid]);
-  try{
-    const res=await window.malahyExport.saveCSV({rows:rows,suggestedName:'تقرير-اسبوع-الرواتب-'+cur+'.csv'});
-    if(res&&res.ok) toast('تم حفظ تقرير الأسبوع (Excel)','ok');
-    else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn');
-  }catch(_){ toast('تعذّر حفظ الملف','warn'); }
-}
-
-/* ---- تصدير كشف الحساب الأسبوعي (PDF / Excel) ---- */
-function statementHTML(e,w,key,s){
-  const genAt=ticketStamp(new Date());
-  const paidTxt=w.paid?('🟢 تم صرف الراتب'+(w.paidAt?(' — '+ticketStamp(new Date(w.paidAt))):'')):'🟡 لم يتم صرف الراتب';
-  let opsH='';
-  weekOps(w).forEach(function(o){
-    const I=opInfo(o,key);
-    const dayTxt=(o.day>=0)?(EMP_DAYS[o.day]+' '+fmtDMY(dayDateOf(key,o.day))):'—';
-    opsH+='<tr><td>'+esc(dayTxt)+'</td><td>'+esc(I.ic+' '+I.title)+'</td><td class="n">'+esc(I.amount||'—')+'</td><td>'+esc(I.extra||'—')+'</td></tr>';
-  });
-  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{size:A4;margin:13mm;}'+RPT_CSS+'</style></head><body>'
-    +'<div class="hd"><div><h1>📄 كشف الحساب الأسبوعي</h1>'
-    +'<div class="sub">'+esc(brandName())+' · تاريخ الإصدار: '+genAt+'</div></div>'
-    +'<div class="badge '+(w.paid?'ok':'no')+'">'+esc(paidTxt)+'</div></div>'
-    +'<h2>👤 بيانات الموظف</h2>'
-    +'<table>'
-    +'<tr><th>الاسم</th><td>'+esc(e.name)+'</td><th>الوظيفة</th><td>'+esc(e.job||'—')+'</td><th class="n">الأجر اليومي</th><td class="n">'+fmtNum(w.dailyWage)+' ج</td></tr>'
-    +'<tr><th>بداية الأسبوع</th><td>السبت '+fmtDMY(weekStartFromKey(key))+'</td><th>نهاية الأسبوع</th><td>الجمعة '+fmtDMY(weekEndFromKey(key))+'</td><th class="n">الهاتف</th><td class="n">'+esc(e.phone||'—')+'</td></tr>'
-    +'<tr><th class="n">أيام العمل</th><td class="n">'+fmtNum(s.work)+'</td><th class="n">أيام الغياب</th><td class="n">'+fmtNum(s.abs)+'</td><th class="n">الإجازات</th><td class="n">'+fmtNum(s.vac)+'</td></tr>'
-    +'</table>'
-    +'<h2>💰 تفاصيل الحساب</h2>'
-    +'<table>'
-    +'<tr><td>الأجر الأساسي ('+fmtNum(s.work)+' يوم × '+fmtNum(w.dailyWage)+' ج)</td><td class="n">'+fmtNum(s.gross)+' ج</td></tr>'
-    +'<tr><td>+ إجمالي المكافآت</td><td class="n">'+fmtNum(s.bonus)+' ج</td></tr>'
-    +'<tr><td>− إجمالي الجزاءات</td><td class="n">'+fmtNum(s.pen)+' ج</td></tr>'
-    +'<tr><td>− إجمالي السلف</td><td class="n">'+fmtNum(s.adv)+' ج</td></tr>'
-    +'<tr><td>− إجمالي الخصومات</td><td class="n">'+fmtNum(s.ded)+' ج</td></tr>'
-    +'<tr class="tot"><td>💵 صافي الراتب المستحق</td><td class="n">'+fmtNum(s.net)+' ج</td></tr>'
-    +'</table>'
-    +'<h2>📋 تفاصيل العمليات</h2>'
-    +'<table><tr><th>اليوم</th><th>العملية</th><th class="n">القيمة</th><th>السبب / ملاحظات</th></tr>'+opsH+'</table>'
-    +'<h2>💳 حالة الراتب</h2>'
-    +'<table><tr><th>الحالة</th><td>'+esc(paidTxt)+'</td><th class="n">المبلغ</th><td class="n">'+fmtNum(s.net)+' ج</td></tr></table>'
-    +'<h2>📝 ملاحظات</h2>'
-    +'<div class="note">'+esc(w.weekNote||'—')+'</div>'
-    +'<div class="foot">تم إنشاؤه بواسطة برنامج '+esc(brandName())+'</div>'
-    +'</body></html>';
-}
-async function exportStatementPDF(empId,key){
-  const e=empFind(empId); if(!e) return;
-  const w=empWeek(e,key); if(!w){ toast('لا يوجد أسبوع بهذا التاريخ','warn'); return; }
-  if(!(window.malahyExport&&window.malahyExport.savePDF)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
-  const s=weekStats(w);
-  try{
-    const res=await window.malahyExport.savePDF({html:statementHTML(e,w,key,s),suggestedName:'كشف-حساب-'+e.name+'-'+key+'.pdf'});
-    if(res&&res.ok) toast('تم حفظ كشف الحساب PDF','ok');
-    else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn');
-  }catch(_){ toast('تعذّر حفظ الملف','warn'); }
-}
-async function exportStatementExcel(empId,key){
-  const e=empFind(empId); if(!e) return;
-  const w=empWeek(e,key); if(!w){ toast('لا يوجد أسبوع بهذا التاريخ','warn'); return; }
-  if(!(window.malahyExport&&window.malahyExport.saveCSV)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
-  const s=weekStats(w);
-  const rows=[];
-  rows.push(['كشف الحساب الأسبوعي — '+brandName()]);
-  rows.push(['الموظف',e.name,'الوظيفة',e.job||'','الأجر اليومي',w.dailyWage]);
-  rows.push(['بداية الأسبوع','السبت '+fmtDMY(weekStartFromKey(key)),'نهاية الأسبوع','الجمعة '+fmtDMY(weekEndFromKey(key))]);
-  rows.push(['أيام العمل',s.work,'أيام الغياب',s.abs,'الإجازات',s.vac]);
-  rows.push([]);
-  rows.push(['تفاصيل الحساب']);
-  rows.push(['الأجر الأساسي ('+s.work+' × '+w.dailyWage+')',s.gross]);
-  rows.push(['+ إجمالي المكافآت',s.bonus]);
-  rows.push(['- إجمالي الجزاءات',s.pen]);
-  rows.push(['- إجمالي السلف',s.adv]);
-  rows.push(['- إجمالي الخصومات',s.ded]);
-  rows.push(['صافي الراتب المستحق',s.net]);
-  rows.push([]);
-  rows.push(['تفاصيل العمليات']);
-  rows.push(['اليوم','التاريخ','العملية','القيمة','السبب / ملاحظات']);
-  weekOps(w).forEach(function(o){
-    const I=opInfo(o,key);
-    rows.push([ (o.day>=0?EMP_DAYS[o.day]:''), (o.day>=0?fmtDMY(dayDateOf(key,o.day)):''), I.title, (I.amount||''), (I.extra||'') ]);
-  });
-  rows.push([]);
-  rows.push(['حالة الراتب',(w.paid?'تم صرف الراتب':'لم يتم صرف الراتب'),(w.paid&&w.paidAt?ticketStamp(new Date(w.paidAt)):'')]);
-  rows.push(['ملاحظات',w.weekNote||'']);
-  try{
-    const res=await window.malahyExport.saveCSV({rows:rows,suggestedName:'كشف-حساب-'+e.name+'-'+key+'.csv'});
-    if(res&&res.ok) toast('تم حفظ كشف الحساب (Excel)','ok');
-    else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn');
-  }catch(_){ toast('تعذّر حفظ الملف','warn'); }
+/* حذف السلفة المرتبطة بمصروف عند حذف المصروف من شاشة المصروفات */
+function removeEmployeeAdvance(empId,expenseId){
+  const e=empFind(empId); if(!e||!expenseId) return;
+  PR().removeAdvanceByExpense(e,expenseId);
+  empSave();
 }
 
 /* ============ التسجيل اليومي للموظفين (حضور / انصراف / خصم / مكافأة) ============ */
-/* قسم مستقل مرتبط مباشرة بقاعدة بيانات الموظفين. كل سجل يومي يربط برقم الموظف
-   الثابت (empId) عشان السجل التاريخي يفضل محفوظ حتى لو اتغير اسم الموظف. */
+/* كل سجل يومي يربط برقم الموظف الثابت فيبقى محفوظًا حتى لو تغيّر الاسم.
+   تسجيل الحضور/الانصراف يُنشئ صف حضور في السجل المرن — وهو المصدر الوحيد
+   الذي يحسب الراتب. */
 const K_DREG='malahy_daily_reg_v1';
 let _dreg={ list:null, dayKey:null, empId:null };
-
 function drLoad(){ if(!_dreg.list){ _dreg.list=loadJSON(K_DREG,[])||[]; } return _dreg.list; }
-function drSave(){ saveJSON(K_DREG,_dreg.list||[]); }
-/* مفتاح يوم العمل الحالي (نفس قواعد يوم العمل المطبّقة: قبل 10 ص → اليوم السابق) */
+function drSave(){ return saveJSON(K_DREG,_dreg.list||[]); }
 function drTodayKey(){ return businessDayKey(Date.now()); }
-/* سجل يوم لموظف (بدون إنشاء) */
 function drRec(empId,dayKey){
-  return drLoad().find(function(r){ return r.empId===empId && r.dayKey===dayKey; })||null;
+  return drLoad().find(function(r){ return r && r.empId===empId && r.dayKey===dayKey; })||null;
 }
-/* سجل يوم لموظف (ينشئه لو مش موجود) */
 function drEnsureRec(empId,dayKey){
   let r=drRec(empId,dayKey);
   if(!r){
@@ -5665,18 +5906,12 @@ function drEnsureRec(empId,dayKey){
   }
   return r;
 }
-/* اسم اليوم التفصيلي لمفتاح يوم (بدون قواعد الساعات — اليوم نفسه) */
 function drDayLabel(dayKey){
   const d=keyToDate(dayKey);
   return AR_DAYS[d.getDay()]+' '+d.getDate()+' '+AR_MONTHS[d.getMonth()]+' '+d.getFullYear();
 }
-/* أسبوع الموظف اللي يقع فيه اليوم ده (مع حساب اليوم داخله) */
-function drWeekOf(e,dayKey){
-  const ts=keyToDate(dayKey).getTime();
-  return { key:weekKeyOf(ts), w:empWeek(e,weekKeyOf(ts)), ts:ts, idx:dayIdxInWeek(weekKeyOf(ts),ts) };
-}
-
-/* ============ الحضور والانصراف ============ */
+function drName(e){ return PR().dayNameOf(PR().tsOfDayKey(drTodayKey())); }
+/* تسجيل الحضور ⇒ صف حضور في السجل المرن (يوم واحد لا يُحتسب مرتين) */
 function drRecordIn(empId,dayKey){
   const e=empFind(empId); if(!e) return;
   const r=drRec(empId,dayKey);
@@ -5685,6 +5920,9 @@ function drRecordIn(empId,dayKey){
   const nr=drEnsureRec(empId,dayKey);
   nr.inTs=now; nr.updatedAt=now;
   drSave();
+  empCore(e);
+  PR().markDay(e,dayKey,'work',{src:'dreg',dregId:nr.id});
+  empSave();
   toast('✅ تم تسجيل حضور '+e.name+' — '+fmtTime12(new Date(now)),'ok');
   paintDreg();
 }
@@ -5695,70 +5933,50 @@ function drRecordOut(empId,dayKey){
   const now=Date.now();
   const nr=drEnsureRec(empId,dayKey);
   nr.outTs=now; nr.updatedAt=now;
-  drSave();
+  if(!nr.inTs){ /* انصراف بدون حضور ⇒ يُسجَّل حضورًا (الدليل قائم فعلًا) */
+    empCore(e); PR().markDay(e,dayKey,'work',{src:'dreg',dregId:nr.id});
+  }
+  drSave(); empSave();
   toast('🏠 تم تسجيل انصراف '+e.name+' — '+fmtTime12(new Date(now)),'ok');
   paintDreg();
 }
-
-/* ============ الخصم والمكافأة (يتزامنوا مع الراتب الأسبوعي) ============ */
-/* تحديث قيمة الخصم أو المكافأة في السجل اليومي + مرآتها داخل أسبوع الموظف.
-   المرآة بتستبدل القديم (عن طريق dregId) فمفيش تكرار، وبتحافظ على التاريخ الدقيق. */
+/* خصم/مكافأة يومية ⇒ تُكتب في سجل عمليات الموظف المرن مرة واحدة فقط */
 function drSetAmount(empId,dayKey,field,amount){
-  /* تكتب داخل سجل الموظفين (K_EMP) → تتطلّب صلاحية إدارة الموظفين.
-     الفرض الفعلي على مستوى العملية الرئيسية يحمي المفتاح نفسه. */
   if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return false; }
   const e=empFind(empId); if(!e) return false;
   const kind=field==='deduction'?'deductions':'bonuses';
   const label=field==='deduction'?'خصم يومي':'مكافأة يومية';
-  const pos=drWeekOf(e,dayKey);
-  if(pos.w&&pos.w.paid){ toast('🔒 أسبوع هذا اليوم تم صرف راتبه — لا يمكن التعديل','warn'); return false; }
   const r=drEnsureRec(empId,dayKey);
   r[field]=Math.max(0,Number(amount)||0);
   r.updatedAt=Date.now();
-  const w=pos.w||empWeekEnsure(e,pos.key);
-  if(!Array.isArray(w[kind])) w[kind]=[];
-  const arr=w[kind];
-  const i=arr.findIndex(function(x){return x.dregId===r.id;});
+  empCore(e);
+  const ts=keyToTsSafe(dayKey);
+  const arr=e[kind]||(e[kind]=[]);
+  const i=arr.findIndex(function(x){ return x && x.dregId===r.id; });
   if(r[field]>0){
-    const entry={ id:(i>=0?arr[i].id:uid()), dregId:r.id, day:pos.idx, ts:pos.ts, amount:r[field], reason:label, src:'daily' };
+    const entry={ id:(i>=0?arr[i].id:uid()), dregId:r.id, ts:ts, dayKey:dayKey,
+                  amount:r[field], reason:label, note:'', src:'daily' };
     if(i>=0) arr[i]=entry; else arr.push(entry);
-  } else {
-    if(i>=0) arr.splice(i,1);
-  }
-  empPruneAutoWeeks(e);
-  drSave(); empSave();
+  } else if(i>=0){ arr.splice(i,1); }
+  empSave(); drSave();
   paintDregSummary();
   return true;
 }
-/* تنظيف الأسابيع الفارغة اللي أنشأها التسجيل اليومي (ماعدا الأسبوع الحالي والمصروف) */
-function empPruneAutoWeeks(e){
-  const cur=empCurKey();
-  e.weeks=(e.weeks||[]).filter(function(w){
-    if(!w.auto) return true;
-    if(w.key===cur) return true;
-    if(w.paid) return true;
-    const has=(w.bonuses&&w.bonuses.length)||(w.penalties&&w.penalties.length)||(w.advances&&w.advances.length)||(w.deductions&&w.deductions.length);
-    return !!has;
-  });
-}
-
-/* ============ ملخص اليوم ============ */
 function drDayStats(dayKey){
   const t={present:0,departed:0,ded:0,bonus:0};
   drLoad().forEach(function(r){
-    if(r.dayKey!==dayKey) return;
+    if(!r||r.dayKey!==dayKey) return;
     if(r.inTs) t.present++;
     if(r.outTs) t.departed++;
-    t.ded+=Number(r.deduction)||0;
-    t.bonus+=Number(r.bonus)||0;
+    t.ded+=Number(r.deduction)||0; t.bonus+=Number(r.bonus)||0;
   });
   return t;
 }
-
-/* ============ النافذة الرئيسية للقسم ============ */
 function openDailyReg(empId){
   if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
-  _emp.list=null; empLoad(); ensureWeeks();
+  if(!PAYROLL_READY){ toast('تعذّر تحميل نظام الرواتب — أعد تشغيل البرنامج','warn'); return; }
+  _emp.list=null; _pb=null;
+  empLoad();
   _dreg.list=null; drLoad();
   _dreg.dayKey=drTodayKey();
   _dreg.empId=empId||null;
@@ -5772,14 +5990,10 @@ function paintDreg(){
   root.appendChild(drBody());
 }
 function drGo(dayKey){ _dreg.dayKey=dayKey; paintDreg(); }
-
-/* شاشة الجدول اليومي */
 function drBody(){
   const dayKey=_dreg.dayKey||drTodayKey();
   const wrap=el('div',{});
   wrap.appendChild(el('h3',{},['🕐 التسجيل اليومي للموظفين']));
-
-  /* شريط التاريخ: تنقّل بين الأيام + اختيار يدوي */
   const prevBtn=el('button',{class:'emp-back',style:{margin:'0',padding:'8px 12px'},onClick:function(){
     const d=keyToDate(dayKey); d.setDate(d.getDate()-1); drGo(businessDayKey(d.getTime()));
   }},['→ اليوم السابق']);
@@ -5788,32 +6002,27 @@ function drBody(){
   }},['اليوم التالي ←']);
   const dateIn=el('input',{type:'date',value:dayKey,onChange:function(){
     if(!dateIn.value) return;
-    const p=dateIn.value.split('-').map(Number);
-    if(p.length===3&&p[0]>0&&p[1]>0&&p[2]>0) drGo(businessDayKey(new Date(p[0],p[1]-1,p[2]).getTime()));
+    const t=PR().tsOfDayKey(dateIn.value); if(isNaN(t)) return;
+    drGo(PR().dayKeyOfTs(t));
   }});
   const todayBtn=el('button',{class:'emp-back',style:{margin:'0',padding:'8px 12px'},onClick:function(){ drGo(drTodayKey()); }},['📍 اليوم']);
-
   const isToday=(dayKey===drTodayKey());
-  const bar=el('div',{class:'emp-week-bar'},[
+  wrap.appendChild(el('div',{class:'emp-week-bar'},[
     el('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},[prevBtn,nextBtn,todayBtn,dateIn]),
     el('div',{style:{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}},[
       el('span',{},['التاريخ: ',el('b',{text:drDayLabel(dayKey)})]),
       isToday?el('span',{class:'emp-chip cur'},['🟢 اليوم الحالي']):el('span',{class:'emp-chip pend'},['🗓️ يوم سابق'])
     ])
-  ]);
-  wrap.appendChild(bar);
-
+  ]));
   if(_dreg.empId){
     const e=empFind(_dreg.empId);
     if(e){
-      bar.appendChild(el('span',{class:'emp-chip pend'},['👤 مفلتر: '+e.name]));
-      wrap.appendChild(el('div',{style:{marginBottom:'12px'}},[
-        el('button',{class:'emp-back',style:{margin:'0'},onClick:function(){ _dreg.empId=null; paintDreg(); }},['← عرض كل الموظفين'])
+      wrap.appendChild(el('div',{class:'emp-week-bar'},[
+        el('span',{class:'emp-chip pend'},['👤 مفلتر: '+e.name]),
+        el('button',{class:'emp-add',onClick:function(){ _dreg.empId=null; paintDreg(); }},['← عرض كل الموظفين'])
       ]));
     }
   }
-
-  /* ملخص اليوم */
   const st=drDayStats(dayKey);
   const L=_dreg.empId?(empFind(_dreg.empId)?[empFind(_dreg.empId)]:[]):empLoad();
   wrap.appendChild(el('div',{class:'rep-cards emp-c5',id:'drSummary'},[
@@ -5823,66 +6032,46 @@ function drBody(){
     repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
     repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift'),
   ]));
-
   if(!L.length){
-    wrap.appendChild(el('div',{class:'emp-empty'},['لا يوجد موظفون بعد — أضف موظفًا من قسم «الموظفون» أولًا عشان يظهر هنا.']));
+    wrap.appendChild(el('div',{class:'emp-empty'},['لا يوجد موظفون بعد — أضف موظفًا من قسم «الموظفون» أولًا.']));
     return wrap;
   }
-
-  /* هل أسبوع هذا اليوم تم صرف راتبه؟ (يُقفل التعديل للقراءة فقط) */
-  let dayLocked=false;
-  L.forEach(function(e){ const pos=drWeekOf(e,dayKey); if(pos.w&&pos.w.paid) dayLocked=true; });
-
   const sec=el('div',{class:'emp-sec'});
   sec.appendChild(el('div',{class:'emp-sec-h'},['📋 جدول التسجيل اليومي']));
   sec.appendChild(el('div',{class:'emp-hint',style:{marginTop:'0',marginBottom:'10px'}},[
-    '✅ «حضور» و 🏠 «انصراف» بيسجّلوا الوقت الدقيق للضغطة (مرة واحدة فقط في اليوم). ',
-    '➖ الخصم و 🎁 المكافأة بيظهروا تلقائيًا في الراتب الأسبوعي للموظف. الأيام اللي تم صرف راتب أسبوعها تبقى للقراءة فقط.'
+    '✅ تسجيل «حضور» يُنشئ يوم عمل في سجل الحضور — وهو المصدر الوحيد لحساب الراتب. ',
+    '➖ الخصم و 🎁 المكافأة يظهران تلقائيًا في راتبه.'
   ]));
   const tbl=el('table',{class:'emp-table dr-table'});
   tbl.appendChild(el('tr',{},['الموظف','الحضور','الانصراف','الخصم (ج)','المكافأة (ج)','حالة اليوم','تفاصيل'].map(function(h){return el('th',{text:h});})));
-
   L.forEach(function(e){
     const r=drRec(e.id,dayKey);
-    const pos=drWeekOf(e,dayKey);
-    const locked=!!(pos.w&&pos.w.paid);
-    const canPunch=isToday&&!locked;
-
-    /* الحضور */
+    const canPunch=isToday;
     const inKids=[];
     if(r&&r.inTs) inKids.push(el('span',{class:'num dr-time',text:fmtTime12(new Date(r.inTs))}));
     if(canPunch) inKids.push(el('button',{class:'dr-btn dr-in',disabled:!!(r&&r.inTs),onClick:function(){ drRecordIn(e.id,dayKey); }},[r&&r.inTs?'✓ تم':'✅ حضور']));
     else if(!r||!r.inTs) inKids.push(el('span',{class:'dr-na',text:'—'}));
-
-    /* الانصراف */
     const outKids=[];
     if(r&&r.outTs) outKids.push(el('span',{class:'num dr-time',text:fmtTime12(new Date(r.outTs))}));
     if(canPunch) outKids.push(el('button',{class:'dr-btn dr-out',disabled:!!(r&&r.outTs),onClick:function(){ drRecordOut(e.id,dayKey); }},[r&&r.outTs?'✓ تم':'🏠 انصراف']));
     else if(!r||!r.outTs) outKids.push(el('span',{class:'dr-na',text:'—'}));
-
-    /* الخصم */
     const dedIn=el('input',{class:'dr-amt num',type:'number',min:'0',step:'any',placeholder:'0',
-      value:(r&&r.deduction)?String(r.deduction):'', disabled:locked,
+      value:(r&&r.deduction)?String(r.deduction):'',
       onChange:function(){
         const v=parseFloat(dedIn.value);
         if(isNaN(v)||v<0){ toast('اكتب قيمة خصم صحيحة','warn'); return; }
         if(drSetAmount(e.id,dayKey,'deduction',v)) toast('تم حفظ خصم '+e.name+' — '+fmtNum(v)+' ج','ok');
       }});
-    /* المكافأة */
     const bonIn=el('input',{class:'dr-amt num',type:'number',min:'0',step:'any',placeholder:'0',
-      value:(r&&r.bonus)?String(r.bonus):'', disabled:locked,
+      value:(r&&r.bonus)?String(r.bonus):'',
       onChange:function(){
         const v=parseFloat(bonIn.value);
         if(isNaN(v)||v<0){ toast('اكتب قيمة مكافأة صحيحة','warn'); return; }
         if(drSetAmount(e.id,dayKey,'bonus',v)) toast('تم حفظ مكافأة '+e.name+' — '+fmtNum(v)+' ج','ok');
       }});
-
-    /* حالة اليوم */
-    let statusTxt='غياب', statusCls='dr-st-absent';
+    let statusTxt='لم يُسجَّل', statusCls='';
     if(r&&r.inTs&&r.outTs){ statusTxt='حضر وانصرف'; statusCls='dr-st-full'; }
     else if(r&&r.inTs){ statusTxt='حضر (لم ينصرف)'; statusCls='dr-st-in'; }
-    else if(locked){ statusTxt='—'; statusCls=''; }
-
     tbl.appendChild(el('tr',{},[
       el('td',{},[el('span',{class:'emp-name',onClick:function(){ openDailyReg(e.id); }},[e.name]),el('div',{class:'dr-job',text:e.job||'—'})]),
       el('td',{class:'dr-cell'},inKids),
@@ -5891,19 +6080,14 @@ function drBody(){
       el('td',{},[bonIn]),
       el('td',{},[el('span',{class:'dr-status '+statusCls,text:statusTxt})]),
       el('td',{},[el('button',{class:'emp-mini',title:'فتح صفحة الموظف والراتب',onClick:function(){
-        closeOverlay(); openEmployees(); empGo('emp',e.id,empCurKey());
+        closeOverlay(); openEmployees(); empGo('emp',e.id,null);
       }},['📂'])]),
     ]));
   });
   sec.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
   wrap.appendChild(sec);
-
-  if(dayLocked){
-    wrap.appendChild(el('div',{class:'emp-hint'},['🔒 تم صرف راتب هذا الأسبوع — سجل هذا اليوم للقراءة فقط (محفوظ للمراجعة).']));
-  }
   return wrap;
 }
-/* إعادة رسم ملخص اليوم فقط (بدل ما نعيد الجدول كله ونفقد التركيز) */
 function paintDregSummary(){
   const box=$('#drSummary'); if(!box) return;
   const dayKey=_dreg.dayKey||drTodayKey();
@@ -5916,8 +6100,6 @@ function paintDregSummary(){
    repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
    repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift')].forEach(function(c){ box.appendChild(c); });
 }
-
-
 /* ============ إدارة الألعاب والتذاكر ============ */
 /* شاشة إدارة كتالوج الألعاب: إضافة/تعديل/تفعيل/تعطيل/حذف.
    العمليات الحساسة محميّة بكلمة سر النظام (نفس آلية الخصم/المصروفات).

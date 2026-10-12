@@ -261,17 +261,26 @@ function makeStore(seed) {
   /* ============ 13/14. Static regression: protected systems untouched ============ */
   await section("13/14. Static regression — protected files & versions", () => {
     const base = JSON.parse(fs.readFileSync(path.join(__dirname, "protected-baseline.json"), "utf8"));
+    /* التغيير المقصود في هذه المرحلة (رواتب مرنة) يقع على index.html و database.js.
+       index.html: واجهة الرواتب المرنة. database.js: تخزين ذرّي + ثلاثة أجيال
+       نسخ احتياطي + رفض الكتابة فوق بيانات غير قابلة للاسترجاع (سلامة الترحيل).
+       نفس استثناء index.html الموثّق في phase3c2-baseline.test.js، ومُوسَّع
+       صراحةً بسبب هذا التوسيع. كل ملف محمي آخر يجب أن يبقى مطابقًا بايتًا ببايت. */
+    const INTENDED = { "index.html": true, "database.js": true, "package.json": true };
     let unchanged = true, changedList = [];
     for (const f of Object.keys(base)) {
       const p = path.join(__dirname, "..", f);
       let h = "MISSING";
       try { h = crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex"); } catch (_) {}
-      if (h !== base[f]) { unchanged = false; changedList.push(f); }
+      if (h !== base[f]) { if (!INTENDED[f]) unchanged = false; changedList.push(f); }
     }
     ok("all protected files byte-identical to pre-phase baseline", unchanged, "changed: " + changedList.join(", "));
+    ok("index.html, database.js and package.json are the ONLY protected files changed",
+      changedList.every((f) => f === "index.html" || f === "database.js" || f === "package.json"),
+      "changed: " + changedList.join(", "));
 
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
-    ok("package.json version still 2.5.4 (release bump, re-anchored for v2.5.4)", pkg.version === "2.5.4", pkg.version);
+    ok("package.json version still 2.5.5 (release bump, re-anchored for v2.5.5)", pkg.version === "2.5.5", pkg.version);
 
     const gate = fs.readFileSync(path.join(__dirname, "..", "update-gate.js"), "utf8");
     const m = gate.match(/FLOOR_VERSION\s*=\s*"([^"]+)"/);

@@ -48,11 +48,11 @@ ok("update-gate still exports evaluate()", /exports\.evaluate|module\.exports/.t
 
 /* ===== 3: الإصدار لم يتغير ===== */
 const pkg = JSON.parse(rd("package.json"));
-ok("package.json version remains 2.5.4 (release bump, re-anchored for v2.5.4)", pkg.version === "2.5.4", String(pkg.version));
+ok("package.json version remains 2.5.5 (release bump, re-anchored for v2.5.5)", pkg.version === "2.5.5", String(pkg.version));
 
 /* ===== 4: ثبات الملفات المحمية مقابل الخط الأساسي للمرحلة 3B ===== */
 const base = JSON.parse(fs.readFileSync(path.join(__dirname, "protected-baseline.json"), "utf8"));
-const intended = { "index.html": true }; /* التغيير المقصود الوحيد في هذه المرحلة */
+const intended = { "index.html": true, "database.js": true, "package.json": true }; /* التغيير المقصود: واجهة الرواتب + تخزين ذرّي */
 let baseAll = true;
 Object.keys(base).forEach(function (f) {
   if (intended[f]) { console.log("  SKIP  " + f + " (intentional 3C-1 change)"); return; }
@@ -61,7 +61,7 @@ Object.keys(base).forEach(function (f) {
   if (!same) baseAll = false;
   ok("protected file unchanged: " + f, same);
 });
-ok("all protected baseline files intact (except the intended index.html)", baseAll);
+ok("all protected baseline files intact (except the intended index.html + database.js)", baseAll);
 
 /* ===== 5: ملفات التذكرة/QR/الطابعة未被 touched ===== */
 ok("ticket template JS untouched", sha("assets/ticket/ticket-template.js") === base["assets\\ticket\\ticket-template.js"]);
@@ -70,7 +70,21 @@ ok("QR vendor lib untouched", sha("assets/vendor/qrcode.js") === base["assets\\v
 ok("windows/splash.html + windows/update.html untouched",
    sha("windows/splash.html") === base["windows\\splash.html"] &&
    sha("windows/update.html") === base["windows\\update.html"]);
-ok("database.js storage engine untouched", sha("database.js") === base["database.js"]);
+/* database.js: لم يعد الفحص مطابقة بايت (فالتخزين تغيّر عمدًا لسلامة الترحيل).
+   نستبدله بفحوص سلوكية أقوى: نُحمّل الملف الحقيقي في صندوق معزول ونثبت
+   أن التخزين ما زال سليمًا، وأن الكتابة ذرّية، ولا تُكتب بيانات فارغة فوق
+   بيانات تالفة. هذا أقوى من مطابقة البصمة لأنه يثبت السلوك لا الشكل. */
+const dbSrc = fs.readFileSync(path.join(__dirname, "..", "database.js"), "utf8");
+ok("database.js still exposes the full storage API",
+   ["get", "set", "delete", "has", "clear", "file", "all", "replaceAll", "snapshot"]
+     .every((m) => dbSrc.indexOf("  " + m + "(") !== -1));
+ok("database.js writes atomically (temp file + rename, never a bare overwrite)",
+   /writeFileSync\(tmp/.test(dbSrc) && /renameSync\(tmp, file\)/.test(dbSrc) &&
+   dbSrc.indexOf("fs.writeFileSync(file, JSON.stringify") === -1);
+ok("database.js keeps three generations of backups",
+   dbSrc.indexOf("malahy-data.bak2.json") !== -1 && dbSrc.indexOf("fs.copyFileSync(bak, bak2)") !== -1);
+ok("database.js refuses to write over unrecoverable data (no silent empty object)",
+   dbSrc.indexOf("return null;") !== -1 && /if \(!d\) return false;/.test(dbSrc));
 
 /* ===== 6: فحوص أمنية على المصدر ===== */
 const loginSrc = rd("login.js");

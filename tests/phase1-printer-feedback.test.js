@@ -80,7 +80,7 @@ FakeBrowserWindow.createdCount = 0;
 
 const appStub = {
   getPath: (n) => (n === "userData" ? SANDBOX : SANDBOX),
-  getVersion: () => "2.5.4",
+  getVersion: () => "2.5.5",
   requestSingleInstanceLock: () => true,
   on: () => {},
   whenReady: () => Promise.resolve(),

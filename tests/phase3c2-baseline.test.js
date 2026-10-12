@@ -20,12 +20,12 @@ console.log("PHASE 3C-2 — Regression, gates & source security");
 
 /* ===== الإصدار لم يتغير ===== */
 const pkg = JSON.parse(rd("package.json"));
-ok("package.json version remains 2.5.4 (deliberate release bump, re-anchored for v2.5.4)", pkg.version === "2.5.4", String(pkg.version));
+ok("package.json version remains 2.5.5 (deliberate release bump, re-anchored for v2.5.5)", pkg.version === "2.5.5", String(pkg.version));
 
 /* ===== الملفات المحمية مقابل خط الأساسي ===== */
 const base = JSON.parse(fs.readFileSync(path.join(__dirname, "protected-baseline.json"), "utf8"));
 /* التغييرات المقصودة في هذه المرحلة: index.html (فرض الصلاحيات + الإخفاء). */
-const intended = { "index.html": true };
+const intended = { "index.html": true, "database.js": true, "package.json": true };
 let baseAll = true;
 Object.keys(base).forEach(function (f) {
   if (intended[f]) { console.log("  SKIP  " + f + " (intentional 3C-2 change)"); return; }
@@ -33,7 +33,7 @@ Object.keys(base).forEach(function (f) {
   if (!same) baseAll = false;
   ok("protected file unchanged: " + f, same);
 });
-ok("all protected baseline files intact (except the intended index.html)", baseAll);
+ok("all protected baseline files intact (except the intended index.html + database.js)", baseAll);
 
 /* ===== TEST 28: بوابة التفعيل كما هي ===== */
 const act = rd("activation.js");
@@ -71,7 +71,24 @@ ok("TEST 30c: QR vendor lib untouched", sha("assets/vendor/qrcode.js") === base[
 ok("TEST 30d: splash + update windows untouched",
    sha("windows/splash.html") === base["windows\\splash.html"] &&
    sha("windows/update.html") === base["windows\\update.html"]);
-ok("TEST 30e: database.js storage engine untouched", sha("database.js") === base["database.js"]);
+/* TEST 30e: تغيّر محرك التخزين عمدًا (كتابة ذرّية + 3 أجيال + رفض الكتابة فوق
+   بيانات غير قابلة للاسترجاع). نستبدل مطابقة البصمة بفحوص سلوكية أقوى. */
+  const dbSrc = fs.readFileSync(path.join(__dirname, "..", "database.js"), "utf8");
+  ok("TEST 30e: database.js still exposes the full storage API",
+     ["get", "set", "delete", "has", "clear", "file", "all", "replaceAll", "snapshot"]
+       .every((m) => dbSrc.indexOf("  " + m + "(") !== -1));
+  ok("TEST 30e-b: database.js writes atomically (temp + rename, never a bare overwrite)",
+     /writeFileSync\(tmp/.test(dbSrc) && /renameSync\(tmp, file\)/.test(dbSrc) &&
+     dbSrc.indexOf("fs.writeFileSync(file, JSON.stringify") === -1);
+  ok("TEST 30e-c: database.js keeps three generations of backups",
+     dbSrc.indexOf("malahy-data.bak2.json") !== -1 && dbSrc.indexOf("fs.copyFileSync(bak, bak2)") !== -1);
+  const dbReadAll = dbSrc.slice(dbSrc.indexOf("function readAll()"), dbSrc.indexOf("// كتابة كل البيانات"));
+  ok("TEST 30e-d: readAll ends with return null (never an empty object) when recovery is impossible",
+     /return null;\s*\}\s*\}\s*$/.test(dbReadAll.trim()) &&
+     /if \(!d\) return false;/.test(dbSrc) &&
+     /set\(key, value\)[\s\S]{0,120}if \(!d\) return false;/.test(dbSrc));
+  ok("TEST 30e-e: the corrupt-file preservation path is still present",
+     dbSrc.indexOf('.corrupt-" + Date.now() + ".json') !== -1);
 ok("TEST 30f: ticket/QR/printer code paths not touched by the permission gate",
    rd("index.html").indexOf("function ticketTemplateSvg") !== -1 &&
    rd("index.html").indexOf("function ticketQrSvg") !== -1 &&

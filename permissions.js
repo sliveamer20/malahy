@@ -74,6 +74,7 @@ var SENSITIVE_KEYS = {
   "malahy_pos_pass_v1":     { write: ["settings"], del: ["settings"] },
   "malahy_pos_history_v1":  { write: ["dayReset", "historyDelete"], del: ["historyDelete"] },
   "malahy_employees_v1":    { write: ["employeeManage", "payroll"], del: ["employeeManage"] },
+  "malahy_payroll_batches_v1": { write: ["payroll", "employeeManage"], del: ["employeeManage"] },
   "malahy_pos_games_v1":    { write: ["gameManage"], del: ["gameManage"] },
   "malahy_pos_settings_v1": { write: ["settings"], del: ["settings"] },
   "malahy_users_v1":        { write: null, del: null }
