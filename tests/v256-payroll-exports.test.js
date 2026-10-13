@@ -395,7 +395,7 @@ console.log("\n-- 7) UI wiring + permissions --");
 console.log("\n-- 8) scope guards --");
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  eq("8a version is 2.5.7 (the authorized release bump)", pkg.version, "2.5.7");
+  eq("8a version is 2.5.8 (the authorized release bump)", pkg.version, "2.5.8");
   eq("8b no new runtime dependency", Object.keys(pkg.dependencies).length, 1);
   eq("8c no new dev dependency", Object.keys(pkg.devDependencies).length, 2);
   ok("8c2 the scripts block is intact (start/dist/publish)",

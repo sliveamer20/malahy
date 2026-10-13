@@ -887,7 +887,7 @@ console.log("\n-- C) previous-days history scrolling --");
 console.log("\n-- D) scope guards --");
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  eq("D1 the app version is 2.5.7 (the authorized v2.5.7 patch release bump)", pkg.version, "2.5.7");
+  eq("D1 the app version is 2.5.8 (the authorized v2.5.8 patch release bump)", pkg.version, "2.5.8");
 
   /* مرجع ثابت: حالة ما قبل إصدار v2.5.6 (آخر HEAD مستقر قبل التزام الإصدار).
      بعد دمج العمل في HEAD لم يعد فرق HEAD مجديًا، لذا نُثبّت خط الأساس
