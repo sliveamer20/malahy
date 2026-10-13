@@ -2739,6 +2739,11 @@ function renderList(which){
       kids.push(el('span',{class:'adv-badge',title:'سلفة تُخصم من راتب الموظف'},
         ['💵 سلفة', (item.empName?(' · '+item.empName):''), (item.ts?(' · '+fmtDMY(new Date(item.ts))+' '+fmtTime12(new Date(item.ts))):'')]));
     }
+    if(which==='exp'&&item.isSalary){
+      /* وسم الراتب: مرتبط بعملية صرف محفوظة بمعرّف ثابت — لا يتكرر ولا يُحذف */
+      kids.push(el('span',{class:'adv-badge',title:'مصروف راتب فعلي مرتبط بعملية الصرف '+(item.batchRef||'')+' — المبلغ المصروف نقدًا'},
+        ['💰 راتب', (item.empName?(' · '+item.empName):''), (item.ts?(' · '+fmtDMY(new Date(item.ts))+' '+fmtTime12(new Date(item.ts))):'')]));
+    }
     kids.push(el('span',{class:'i-amt num',text:fmtNum(item.amount)}));
     if(which==='gift'){
       kids.push(el('button',{class:'rep',title:'إعادة طباعة تذكرة الهدية',onClick:()=>reprintGift(item.id)},'🖨️'));
@@ -2980,8 +2985,15 @@ function deleteItem(which,itemId){
     danger:true,
     onOk:()=>{
       if(which==='exp'){
-        /* حذف السلفة المرتبطة من راتب الموظف قبل حذف المصروف (حماية من التكرار) */
         const it=state.expenses.find(x=>x.id===itemId);
+        /* بند راتب موظف = حركة نقدية حقيقية محفوظة ومربوطة بسجل الصرف.
+           حذفه من هنا يُسقط الحركة من يومها بلا أثر في سجل الرواتب ⇒ نفقد
+           المصروف دون تسوية. نرفض الحذف ونوجّه إلى سجل الصرف. */
+        if(it&&it.isSalary){
+          toast('هذا بند راتب مرتبط بعملية صرف محفوظة — لا يمكن حذفه. ('+(it.batchRef||'مرجع الدفعة')+')','warn');
+          return;
+        }
+        /* حذف السلفة المرتبطة من راتب الموظف قبل حذف المصروف (حماية من التكرار) */
         if(it&&it.isAdvance&&it.empId) removeEmployeeAdvance(it.empId,itemId);
         state.expenses=state.expenses.filter(x=>x.id!==itemId);
       }
@@ -2990,6 +3002,22 @@ function deleteItem(which,itemId){
       toast('تم الحذف','ok');
     }
   });
+}
+
+/* صفّ مصروف واحد لتقرير اليوم/الأرشيف: البيان والمبلغ دائمًا، ومعهما
+   رابط وبيانات بند الراتب حتى يبقى الإجمالي ومصدره قابلين للتدقيق بعد الأرشفة. */
+function dayExpenseRow(x){
+  const row={desc:x.desc,amount:x.amount};
+  if(x.isSalary){
+    row.isSalary=true; row.payoutId=x.payoutId||null; row.batchId=x.batchId||null;
+    row.batchRef=x.batchRef||''; row.empId=x.empId||null; row.empName=x.empName||'';
+    row.days=x.days||0; row.gross=x.gross||0; row.bonus=x.bonus||0;
+    row.pen=x.pen||0; row.adv=x.adv||0; row.ded=x.ded||0;
+    row.paidBefore=x.paidBefore||0; row.due=x.due||0;
+    row.balanceAfter=x.balanceAfter||0; row.partial=!!x.partial;
+    row.ts=x.ts||0; row.dateKey=x.dateKey||'';
+  }
+  return row;
 }
 
 /* ============ Save ============ */
@@ -3035,7 +3063,7 @@ function archiveDay(t){
     cashRevenue:t.cashRevenue, elecRevenue:t.elecRevenue,
     cashTickets:t.cashTickets, elecTickets:t.elecTickets,
     breakdown,
-    expenseList:state.expenses.map(x=>({desc:x.desc,amount:x.amount})),
+    expenseList:state.expenses.map(dayExpenseRow),
     giftList:state.gifts.map(x=>({desc:x.desc,amount:x.amount,seq:x.seq||0,at:x.at||null})),
   });
   /* saveJSON ترجع false لو الكتابة فشلت — نمرّرها لـ doRestart عشان توقف المسح */
@@ -4401,7 +4429,7 @@ function printTodayReport(){
       cashRevenue:t.cashRevenue, elecRevenue:t.elecRevenue,
       cashTickets:t.cashTickets, elecTickets:t.elecTickets,
       breakdown:gameBreakdown(),
-      expenseList:state.expenses.map(function(x){ return {desc:x.desc,amount:x.amount}; }),
+      expenseList:state.expenses.map(dayExpenseRow),
       giftList:state.gifts.map(function(x){ return {desc:x.desc,amount:x.amount,seq:x.seq||0,at:x.at||null}; }),
       isToday:true
     };
@@ -5308,8 +5336,50 @@ function payCommit(plans,opts){
   },function(){ return empSave(); });
   if(res.ok){
     if(!pbPut(res.batch)){ toast('تم صرف الرواتب لكن تعذّر حفظ سجل الدفعة','warn'); }
+    /* صرف فعلي محفوظ ⇒ ينزل نقده إلى مصروفات اليوم بنفس قيمته بالضبط.
+       بند واحد لكل موظف دُفع فعلًا، ومفتاحه payoutId فلا يتكرر أبدًا.
+       الفشل هنا لا يُرجِع الصرف (مال خرج من الدرج فعلًا) — يُسجَّل ويُنبَّه. */
+    try{ recordPayrollExpenses(res.batch, ts); }
+    catch(e){ logErr('recordPayrollExpenses',e); toast('تم صرف الرواتب لكن تعذّر تسجيل مصروف الرواتب في اليوم','warn'); }
   }
   return res;
+}
+
+/* ==================== صرف الرواتب ⇒ مصروفات اليوم ====================
+   يربط الصرف الفعلي بقائمة «المصروفات اليومية» القائمة أصلًا (نفس المصدر
+   الحقيقة الذي يخصم منها الإجمالي ويُطبع في تقرير اليوم) — لا مصدر ثانٍ.
+   · لكل بند `item.status==='saved'` فقط ⇒ الفاشل/المتخطّى/الملغى لا يظهر.
+   · المبلغ = `item.amount` أي **المصروف نقدًا**، لا الأجر المكتسب؛ فالسلف
+     والخصومات والجزاءات تبقى معروضة داخل البيان ولا تُخصم نقدًا مرتين.
+   · `payoutId` (المعرّف الثابت داخل سجل الصرف) هو مفتاح منع التكرار: إعادة
+     تشغيل نفس الدفعة أو فتح التقرير أو طباعته لا تُنتج بندًا ثانيًا.
+   · الطباعة والتصدير فقط يقرآن `state.expenses` — لا يكتبان فيها أبدًا. */
+function recordPayrollExpenses(batch,paidTs){
+  const entries=PR().salaryExpenseEntries(batch,{ts:paidTs});
+  if(!entries.length) return {added:0,skipped:0,total:0};
+  state.expenses=state.expenses||[];
+  /* فهرس البنود المرتبطة أصلًا ⇒ لا نكتب مرتين مهما أُعيدت الدفعة */
+  const seen={};
+  state.expenses.forEach(function(x){ if(x&&x.isSalary&&x.payoutId) seen[x.payoutId]=1; });
+  let added=0, skipped=0;
+  entries.forEach(function(en){
+    if(seen[en.payoutId]){ skipped++; return; }
+    seen[en.payoutId]=1;
+    state.expenses.push({
+      id:uid(), desc:en.desc, amount:en.amount,
+      isSalary:true,
+      payoutId:en.payoutId, batchId:en.batchId, batchRef:en.batchRef,
+      empId:en.empId, empName:en.empName,
+      days:en.days, gross:en.gross, bonus:en.bonus,
+      pen:en.pen, adv:en.adv, ded:en.ded,
+      paidBefore:en.paidBefore, due:en.due,
+      balanceAfter:en.balanceAfter, partial:en.partial,
+      ts:en.ts, dateKey:en.dateKey
+    });
+    added++;
+  });
+  if(added){ persist(); renderList('exp'); renderSummary(); }
+  return {added:added, skipped:skipped, total:PR().salaryExpenseTotal(entries)};
 }
 
 /* ==================== شاشة مراجعة الصرف (فردي أو مجمّع) ==================== */

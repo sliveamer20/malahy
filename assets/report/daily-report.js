@@ -135,9 +135,23 @@
         };
       });
 
-    /* ---- المصروفات ---- */
+    /* ---- المصروفات ----
+       فصل **مجرد للتعرض فقط**: بنود الرواتب (isSalary) تُطبع أولًا في سطر
+       مختصر لكل موظف مع سطر إجمالي واحد، وبقية المصروفات كما هي. لا يتغيّر
+       أي حساب: m.summary.expenses يبقى واحدًا من day.expenses (المصدر
+       الرسمي)، وإجمالي الرواتب مجموع فعلي من بنود الرواتب نفسها فقط. */
     const expensesList = (day.expenseList || [])
-      .map(function (x) { return { desc: x.desc || 'مصروف', amount: round2(num(x.amount)) }; });
+      .map(function (x) {
+        return {
+          desc: x.desc || 'مصروف',
+          amount: round2(num(x.amount)),
+          salary: !!x.isSalary
+        };
+      });
+    const salaryExpenses = expensesList.filter(function (x) { return x.salary; });
+    const otherExpenses  = expensesList.filter(function (x) { return !x.salary; });
+    /* المجموع يُبنى من البنود المحفوظة نفسها — لا من رقم مخزَّن منفصل. */
+    const salaryTotal = round2(salaryExpenses.reduce(function (s, x) { return s + x.amount; }, 0));
 
     /* ---- التذاكر / طرق الدفع ---- */
     const tickets = {
@@ -151,11 +165,14 @@
       games: games,
       gifts: gifts,
       expenses: expensesList,
+      salaryExpenses: salaryExpenses,
+      otherExpenses: otherExpenses,
       summary: {
         gameSales: gameSales,
         giftSales: giftSales,
         totalSales: totalSales,
         expenses: expenses,
+        salaryTotal: salaryTotal,
         final: finalTotal
       },
       tickets: tickets
@@ -177,6 +194,9 @@
       + '.hr{white-space:nowrap;overflow:hidden;font-size:' + fs + 'px;letter-spacing:0;margin:3px 0;}'
       + '.r{display:flex;justify-content:space-between;gap:6px;margin:2px 0;}'
       + '.r .l{text-align:right;min-width:0;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
+      /* سطر راتب مختصر: نص متصل يلتفّ عند الحاجة (اسم عربي طويل أو مبلغ كبير)
+         بدل صفّ عمودين — لا قصّ ولا تجاوز لحدود الورق ولا تمديد للتقرير. */
+      + '.pw{margin:1px 0;overflow-wrap:anywhere;word-break:break-word;line-height:1.4;}'
       + '.sub2{font-size:' + (fs - 2) + 'px;font-weight:700;color:#000;margin:0 0 2px 4px;}'
       + '.rr{border-bottom:1px dashed #000;padding:3px 0;}'
       + '.rl{display:flex;justify-content:space-between;gap:6px;}'
@@ -195,6 +215,7 @@
       + '.hr{border-top:1px dashed #000;margin:7px 0;}'
       + '.r{display:flex;justify-content:space-between;gap:12px;margin:3px 0;}'
       + '.r .l{text-align:right;min-width:0;} .r .v{text-align:left;white-space:nowrap;font-weight:800;}'
+      + '.pw{margin:1px 0;overflow-wrap:anywhere;word-break:break-word;line-height:1.5;}'
       + '.sub2{font-size:' + (fs - 1) + 'px;font-weight:700;color:#000;margin:0 0 3px 6px;}'
       + '.rr{border-bottom:1px dashed #000;padding:5px 0;}'
       + '.rl{display:flex;justify-content:space-between;gap:12px;}'
@@ -265,7 +286,15 @@
     /* ---- 4) المصروفات ---- */
     if (m.expenses.length) {
       h += '<div class="b" data-sec="expenses">المصروفات:</div>';
-      m.expenses.forEach(function (x) { h += row(x.desc, money(x.amount)); });
+      /* بنود الرواتب: سطر مختصر واحد لكل موظف دُفع فعلًا في هذا اليوم،
+         يليه سطر إجمالي الرواتب. لا عنوان إضافي ولا فاصل إضافي ولا صفحة. */
+      m.salaryExpenses.forEach(function (x) {
+        h += '<div class="pw">' + esc(x.desc) + '<span class="num">' + esc(money(x.amount)) + '</span></div>';
+      });
+      if (m.salaryExpenses.length) {
+        h += '<div class="pw b">إجمالي الرواتب المصروفة: <span class="num">' + esc(money(m.summary.salaryTotal)) + '</span></div>';
+      }
+      m.otherExpenses.forEach(function (x) { h += row(x.desc, money(x.amount)); });
       h += row('إجمالي المصروفات', money(m.summary.expenses));
       h += hr();
     }

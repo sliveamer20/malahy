@@ -926,6 +926,104 @@
     return before - e.advances.length;
   }
 
+  /* ============================ مصروف الرواتب في يوم الصرف ============================
+   * الجسر بين سجلّ الصرف الفعلي وقائمة «المصروفات اليومية».
+   *
+   * المبدأ: الخارج النقدي الوحيد من دفعات الرواتب هو المبلغ الذي خرج فعلًا من
+   * الدرج. لذلك بند المصروف يُبنى من **الدفعة المحفوظة** وحدها، وبمبلغ
+   * item.amount (المصروف نقدًا) لا من الأجر المكتسب:
+   *      بند المصروف = المبلغ المصروف فعلًا في هذه الدفعة
+   *                    ( gross + bonus − pen − adv − ded + itemsDiff )
+   * والأجر المكتسب والسلف والخصومات تبقى **معروضة داخل البيان** فقط — لا
+   * تتحوّل هي نفسها إلى مصروفات، فلا يُخصم النقد مرتين.
+   *
+   * شروط القبول (كلها شرط معًا — أي نقص ⇒ لا بند ولا خصم):
+   *   1) item.status === 'saved'  : صرف حقيقي محفوظ (لا مُتخطّى ولا فاشل).
+   *   2) item.payoutId            : معرّف ثابت داخل سجلّ الصرف ⇒ رابط المصدر.
+   *   3) amount > 0               : حركة نقدية حقيقية فقط.
+   *   4) empName غير فارغ         : الاسم من سجل الموظف الرسمي في السجل.
+   * المعرّف payoutId هو مفتاح منع التكرار: نفس الصرف لا ينتج بندين أبدًا مهما
+   * أُعيدت المحاولة أو فُتح التقرير أو طُبع.
+   * ============================================================================ */
+
+  /* صياغة عدد الأيام بالعربية: صفر⇒لا يُطبع، 1⇒يوم واحد، 2⇒يومان،
+     3-10⇒«ن أيام»، 11 فأكثر⇒«ن يومًا» */
+  function arDayCount(n) {
+    n = Math.round(r2(n));
+    if (!(n > 0)) return '';
+    if (n === 1) return 'يوم واحد';
+    if (n === 2) return 'يومان';
+    if (n <= 10) return (fmt(n) + ' أيام');
+    return (fmt(n) + ' يومًا');
+  }
+  function fmt(n) { return util().fmtNum(n); }
+
+  /* البيان المختصر: «راتب <الاسم> | <أيام> | إجمالي … - سلفة … - خصم … | المصروف»
+     وتُلحق شاشة الطباعة «<المبلغ> ج» بعده مباشرة فيبقى سطرًا واحدًا مضغوطًا.
+     البنود صفرية لا تُطبع إطلاقًا (لا «سلفة 0» ولا «خصم 0»). */
+  function salaryDesc(x) {
+    var parts = ['راتب ' + x.empName];
+    var d = arDayCount(x.days);
+    if (d) parts.push(d);
+    var calc = ['إجمالي ' + fmt(x.gross)];
+    if (x.bonus > 0) calc.push('مكافأة ' + fmt(x.bonus));
+    if (x.adv > 0) calc.push('سلفة ' + fmt(x.adv));
+    if (x.pen > 0) calc.push('جزاء ' + fmt(x.pen));
+    if (x.ded > 0) calc.push('خصم ' + fmt(x.ded));
+    parts.push(calc.join(' - '));
+    parts.push('المصروف');
+    return parts.join(' | ');
+  }
+
+  /* بنود المصروفات اليومية المشتقة من دفعة محفوظة — قراءة خالصة (لا كتابة).
+     opts.ts = لحظة الصرف الفعلية (النقد) ⇒ تاريخ البند. */
+  function salaryExpenseEntries(batch, opts) {
+    opts = opts || {};
+    if (!batch) return [];
+    var paidTs = num(opts.ts, num(batch.ts, Date.now()));
+    var out = [];
+    (Array.isArray(batch.items) ? batch.items : []).forEach(function (it) {
+      if (!it || it.status !== 'saved') return;          /* (1) صرف محفوظ فقط */
+      var payoutId = it.payoutId || '';                  /* (2) رابط المصدر */
+      if (!payoutId) return;
+      var amount = r2(num(it.amount));                   /* (3) نقد حقيقي */
+      if (!(amount > 0)) return;
+      var empName = String(it.empName == null ? '' : it.empName).trim();  /* (4) */
+      if (!empName) return;
+      var due = r2(num(it.due));
+      var x = {
+        payoutId: payoutId,
+        batchId: batch.id || null,
+        batchRef: batch.ref || '',
+        empId: it.empId || null,
+        empName: empName,
+        days: r2(num(it.work)),
+        gross: r2(num(it.gross)),
+        bonus: r2(num(it.bonus)),
+        pen: r2(num(it.pen)),
+        adv: r2(num(it.adv)),
+        ded: r2(num(it.ded)),
+        amount: amount,
+        paidBefore: r2(num(it.paidBefore)),
+        due: due,
+        balanceAfter: r2(num(it.balanceAfter)),
+        partial: amount < due - 1e-9,
+        ts: paidTs,
+        dateKey: dayKeyOfTs(paidTs)
+      };
+      x.desc = salaryDesc(x);
+      out.push(x);
+    });
+    return out;
+  }
+
+  /* إجمالي المصروف الفعلي للرواتب — يُجمع من البنود نفسها لا من رقم مخزَّن */
+  function salaryExpenseTotal(entries) {
+    var t = 0;
+    (entries || []).forEach(function (e) { if (e) t += num(e.amount); });
+    return r2(t);
+  }
+
   /* ============================ التصدير ============================ */
   return {
     SCHEMA: SCHEMA,
@@ -945,6 +1043,8 @@
     cycleOf: cycleOf, cycleInfo: cycleInfo,
     planPayout: planPayout, applyPayout: applyPayout, buildBatch: buildBatch,
     commitBatch: commitBatch, retotal: retotal, nextRef: nextRef,
+    salaryDesc: salaryDesc, arDayCount: arDayCount,
+    salaryExpenseEntries: salaryExpenseEntries, salaryExpenseTotal: salaryExpenseTotal,
     migrateEmployee: migrateEmployee, legacyNet: legacyNet,
     rollbackMigration: rollbackMigration,
     legacyAuditOf: legacyAuditOf, migrationAudit: migrationAudit,

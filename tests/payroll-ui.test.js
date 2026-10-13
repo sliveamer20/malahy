@@ -80,9 +80,18 @@ function makeEnv(opts) {
     MalahyPayrollReport: R,
     malahyPrint: { printTicket: async function () { return { ok: true }; } }
   };
+  /* يوم حيّ وهمي — نفس شكل state في index.html (يوم POS مفتوح) */
+  const state = { startedAt: opts.startedAt || Date.now(), counts: {}, ecounts: {}, expenses: [], gifts: [], pprices: {} };
+  const persist = function () { return saveJSON("malahy_pos_state_v1", state); };
+  const logErr = function (w, e) { (env.logs = env.logs || []).push({ w: w, e: String(e) }); };
+  const painted = { list: 0, summary: 0 };
+  const renderList = function () { painted.list++; };
+  const renderSummary = function () { painted.summary++; };
+  env.state = state;
+  env.painted = painted;
   const names = ["PR", "PRR", "empCore", "empLoad", "empSave", "empFind", "empMigrate", "empRunMigration",
     "empMigrationAudit", "empPrintMigrationAudit", "empPendingMigration",
-    "pbLoad", "pbSave", "pbGet", "pbPut", "pbList", "payCommit",
+    "pbLoad", "pbSave", "pbGet", "pbPut", "pbList", "payCommit", "recordPayrollExpenses",
     "recordEmployeeAdvance", "removeEmployeeAdvance",
     "payrollVenue", "payrollBatchHTML", "payrollReceiptHTML", "pbLatest"];
   const body = names.map(function (n) { return extractFunction(htmlSrc, n); }).join("\n")
@@ -91,17 +100,20 @@ function makeEnv(opts) {
     + "empPendingMigration:empPendingMigration,"
     + "empPrintMigrationAudit:empPrintMigrationAudit,"
     + "pbLoad:pbLoad,pbGet:pbGet,pbPut:pbPut,pbList:pbList,"
-    + "payCommit:payCommit,recordEmployeeAdvance:recordEmployeeAdvance,"
+    + "payCommit:payCommit,recordPayrollExpenses:recordPayrollExpenses,"
+    + "recordEmployeeAdvance:recordEmployeeAdvance,"
     + "removeEmployeeAdvance:removeEmployeeAdvance,payrollVenue:payrollVenue,"
     + "payrollBatchHTML:payrollBatchHTML,payrollReceiptHTML:payrollReceiptHTML,pbLatest:pbLatest,"
     + "getList:function(){ return _emp.list; },clearList:function(){ _emp.list=null; }"
+    + ",setState:function(s){ state.expenses=(s&&s.expenses)||[]; }"
     + ",setBatches:function(b){ _pb=b; },getBatches:function(){ return _pb; }};";
   /* eslint-disable no-new-func */
   const api = new Function("loadJSON", "saveJSON", "uid", "toast", "settings", "paperKind",
-    "window", "K_EMP", "K_PAYBATCH", "_emp", "_pb", body)(
+    "window", "K_EMP", "K_PAYBATCH", "_emp", "_pb", "state", "persist",
+    "renderList", "renderSummary", "logErr", body)(
     loadJSON, saveJSON, uid, toast, settings, paperKind,
     win, "malahy_employees_v1", "malahy_payroll_batches_v1",
-    { list: null }, null);
+    { list: null }, null, state, persist, renderList, renderSummary, logErr);
   env.api = api;
   return env;
 }

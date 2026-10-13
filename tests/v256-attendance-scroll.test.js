@@ -887,7 +887,7 @@ console.log("\n-- C) previous-days history scrolling --");
 console.log("\n-- D) scope guards --");
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  eq("D1 the app version is 2.5.6 (the authorized v2.5.6 release bump)", pkg.version, "2.5.6");
+  eq("D1 the app version is 2.5.7 (the authorized v2.5.7 patch release bump)", pkg.version, "2.5.7");
 
   /* مرجع ثابت: حالة ما قبل إصدار v2.5.6 (آخر HEAD مستقر قبل التزام الإصدار).
      بعد دمج العمل في HEAD لم يعد فرق HEAD مجديًا، لذا نُثبّت خط الأساس
@@ -928,13 +928,17 @@ console.log("\n-- D) scope guards --");
     "payrollPrintSelectedReceipts", "payrollScopeFileStamp", "payrollScopePicker",
     "pbActualDates", "pbActualEntries", "pbSavedItems",
     "picked", "refresh", "setAll"]; /* مساعدات داخلية ضمن دوالي الانتقاء */
-  const allowedAdded = PHASE11_FNS.concat(PHASE2_FNS).sort();
+  /* إصدار v2.5.7 (رواتب ⇒ مصروفات اليوم): دالتان فقط — تسجيل بند المصروف من
+     دفعة محفوظة، وتحويل بند مصروف إلى صفّ تقرير يحتفظ برابط الصرف. */
+  const V257_FNS = ["recordPayrollExpenses", "dayExpenseRow"];
+  const allowedAdded = PHASE11_FNS.concat(PHASE2_FNS).concat(V257_FNS).sort();
   ok("D2 every function added to index.html is on the authorized phase list",
      addedFns.length === allowedAdded.length,
      "added=" + JSON.stringify(addedFns.sort()) + " allowed=" + JSON.stringify(allowedAdded));
-  ok("D3 ...the Phase 1.1 finalization trio is intact, plus only the authorized Phase 2 export set",
+  ok("D3 ...the Phase 1.1 finalization trio is intact, plus only the authorized Phase 2 + v2.5.7 sets",
      JSON.stringify(addedFns.sort()) === JSON.stringify(allowedAdded) &&
-     PHASE11_FNS.every(function (n) { return addedFns.indexOf(n) !== -1; }),
+     PHASE11_FNS.every(function (n) { return addedFns.indexOf(n) !== -1; }) &&
+     V257_FNS.every(function (n) { return addedFns.indexOf(n) !== -1; }),
      JSON.stringify(addedFns.sort()));
   eq("D4 no existing function was removed from index.html", removedFns.length, 0);
   ok("D5 no new script tag was added to index.html",
@@ -944,7 +948,7 @@ console.log("\n-- D) scope guards --");
      addedFns.every(function (n) { return allowedAdded.indexOf(n) !== -1; }));
   ok("D7 no new external dependency was introduced",
      Object.keys(pkg.dependencies).length === 1 && Object.keys(pkg.devDependencies).length === 2);
-  ok("D8 the payroll core gained ONLY the finalization plan+apply pair",
+  ok("D8 the payroll core gained ONLY the finalization plan+apply pair + the v2.5.7 salary-expense trio",
      (function () {
        const p = fs.readFileSync(path.join(ROOT, "assets", "payroll", "payroll-core.js"), "utf8");
        let h = "";
@@ -952,7 +956,8 @@ console.log("\n-- D) scope guards --");
        if (!h) return true;
        const a = [...defFns(p)].filter(function (n) { return !defFns(h).has(n); });
        const r = [...defFns(h)].filter(function (n) { return !defFns(p).has(n); });
-       return JSON.stringify(a.sort()) === JSON.stringify(["applyAttendanceClose", "planAttendanceClose"])
+       return JSON.stringify(a.sort()) === JSON.stringify(["applyAttendanceClose", "arDayCount",
+            "fmt", "planAttendanceClose", "salaryDesc", "salaryExpenseEntries", "salaryExpenseTotal"])
            && r.length === 0;
      })());
   ok("D8b no existing payroll function body was removed (pure additions)",
@@ -963,7 +968,7 @@ console.log("\n-- D) scope guards --");
            { cwd: ROOT, maxBuffer: 1 << 28, encoding: "utf8" });
          const norm = (s) => s.replace(/\r\n/g, "\n").split("\n")
            .map((l) => l.replace(/^\s*\*.*$/, "").replace(/^\s*\/\*.*$/, "").trim())
-           .filter((l) => l && !/^function (planAttendanceClose|applyAttendanceClose)/.test(l));
+           .filter((l) => l && !/^function (planAttendanceClose|applyAttendanceClose|arDayCount|fmt|salaryDesc|salaryExpenseEntries|salaryExpenseTotal)/.test(l));
          const a = norm(h), b = norm(p);
          /* كل سطر موجود في HEAD يجب أن يبقى موجودًا */
          const setB = new Set(b);
@@ -993,7 +998,12 @@ console.log("\n-- D) scope guards --");
            "AI_REPORTS/V2_5_6_PHASE_2_IMPLEMENTATION_REPORT.md",
            "AI_REPORTS/V2_5_6_PRE_RELEASE_REVIEW_REPORT.md",
            "AI_REPORTS/V2_5_6_FINAL_PRE_PUBLISH_REPORT.md",
-           "AI_REPORTS/V2_5_6_RELEASE_PUBLISH_REPORT.md"];
+           "AI_REPORTS/V2_5_6_RELEASE_PUBLISH_REPORT.md",
+            /* إصدار v2.5.7 (رواتب ⇒ مصروفات اليوم): وحدة تقرير اليوم + اختبار
+               مركزي جديد + تقرير التنفيذ. نفس النمط المصرَّح به أعلاه. */
+            "assets/report/daily-report.js",
+            "tests/v257-salary-expenses.test.js",
+            "AI_REPORTS/V2_5_7_SALARY_EXPENSES_IMPLEMENTATION_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
      })(), (function () {
