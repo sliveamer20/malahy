@@ -8,9 +8,19 @@
  *        مبيعات الألعاب = revenue
  *        مبيعات الهدايا = gifts
  *        إجمالي المبيعات = مبيعات الألعاب + مبيعات الهدايا
- *        الإجمالي النهائي = إجمالي المبيعات − إجمالي المصروفات
- *    (نفس نتيجة revenue − expenses + gifts القديمة تمامًا — الهدايا تُضاف مرة
- *     واحدة، والمصروفات تُخصم مرة واحدة، ولا يوجد أي حساب مكرّر.)
+ *        الصافي قبل خصم الإلكتروني = مبيعات الألعاب − المصروفات
+ *        الإجمالي قبل خصم الإلكتروني = إجمالي المبيعات − المصروفات
+ *        الإجمالي النهائي النقدي = الإجمالي قبل خصم الإلكتروني − الدفع الإلكتروني
+ *    (نفس نتيجة revenue − expenses + gifts القديمة تمامًا للإجمالي قبل خصم
+ *     الإلكتروني — الهدايا تُضاف مرة واحدة، والمصروفات تُخصم مرة واحدة، ولا
+ *     يوجد أي حساب مكرّر.)
+ *
+ *  - **الدفع الإلكتروني يُخصم مرة واحدة فقط** من الرصيد النهائي (لا من المبيعات):
+ *        الصافي قبل خصم الإلكتروني = revenue − expenses          (gameSales − expenses)
+ *        الإجمالي قبل خصم الإلكتروني = الصافي + الهدايا          (net + gifts)
+ *        الإجمالي النهائي النقدي = الإجمالي قبل خصم − إلكتروني   (net + gifts − elecRevenue)
+ *    التحصيل الإلكتروني يبقى ضمن مبيعات الألعاب وإحصاءاتها كما هو (لا يُشطب ولا
+ *    يُعاد تصنيفه) — هو فقط مستثنى من رصيد النقد الفعلي في الدرج.
  *  - ترتيب الأقسام: الترويسة ← تفصيل الألعاب ← الهدايا ← المصروفات ←
  *    ملخص المبيعات ← عدد التذاكر/الدفع ← سجل المرتجعات.
  *  - نفس بيانات التقرير تتكيّف مع ورق الطباعة المختار (58mm / 80mm / A4)
@@ -94,11 +104,21 @@
     const t = util();
 
     /* ---- الملخّص المالي (الحساب الوحيد) ---- */
-    const gameSales  = round2(num(day.revenue));                 /* مبيعات الألعاب */
+    const gameSales  = round2(num(day.revenue));                 /* مبيعات الألعاب (كاش + إلكتروني) */
     const giftSales  = round2(num(day.gifts));                   /* مبيعات الهدايا */
     const expenses   = round2(num(day.expenses));                /* إجمالي المصروفات */
     const totalSales = round2(gameSales + giftSales);            /* إجمالي المبيعات */
-    const finalTotal = round2(totalSales - expenses);            /* الإجمالي النهائي */
+    const finalTotal = round2(totalSales - expenses);            /* الإجمالي قبل خصم الإلكتروني */
+    /* ---- الدفع الإلكتروني (يُخصم مرة واحدة من الرصيد النهائي فقط) ----
+       المصدر الرسمي: day.elecRevenue المحفوظ أصلًا مع اليوم (archiveDay/printTodayReport).
+       السجلات القديمة التي لا تحمل الحقل تُعامل كصفر ⇒ لا يتغيّر إجماليها إطلاقًا. */
+    const elecSales     = round2(num(day.elecRevenue));
+    /* السجلات القديمة بلا cashRevenue: الكاش = المبيعات − الإلكتروني (نفسها النتيجة) */
+    const cashSales     = (day.cashRevenue != null) ? round2(num(day.cashRevenue))
+                                                    : round2(gameSales - elecSales);
+    const netBeforeElec = round2(gameSales - expenses);          /* الصافي قبل خصم الإلكتروني */
+    const elecDeduction = elecSales;                             /* خصم المبيعات الإلكترونية */
+    const finalCash     = round2(finalTotal - elecDeduction);    /* الإجمالي النهائي النقدي */
 
     /* ---- الترويسة ---- */
     const bd = businessDateOf(day.startedAt || day.endedAt || Date.now(), t);
@@ -173,7 +193,12 @@
         totalSales: totalSales,
         expenses: expenses,
         salaryTotal: salaryTotal,
-        final: finalTotal
+        cashSales: cashSales,
+        elecSales: elecSales,
+        netBeforeElec: netBeforeElec,
+        final: finalTotal,
+        elecDeduction: elecDeduction,
+        finalCash: finalCash
       },
       tickets: tickets
     };
@@ -301,13 +326,21 @@
       h += hr();
     }
 
-    /* ---- 5) ملخص المبيعات (فصل التفاصيل عن الملخص المالي) ---- */
+    /* ---- 5) ملخص المبيعات (فصل التفاصيل عن الملخص المالي) ----
+       تفصيل الدفع النقدي/الإلكتروني أولاً (المصدر: day.cashRevenue/day.elecRevenue)،
+       ثم الخصم الإلكتروني والإجمالي النهائي النقدي. لا تُلمس أرقام أخرى. */
     h += '<div class="b" data-sec="summary">ملخص المبيعات:</div>';
     h += row('مبيعات الألعاب', money(m.summary.gameSales));
+    h += row('↳ الدفع النقدي', money(m.summary.cashSales));
+    h += row('↳ الدفع الإلكتروني', money(m.summary.elecSales));
+    h += row('↳ التذاكر الإلكترونية', fmtNum(m.tickets.elec));
     h += row('مبيعات الهدايا', money(m.summary.giftSales));
     h += row('إجمالي المبيعات', money(m.summary.totalSales));
     h += row('إجمالي المصروفات', money(m.summary.expenses));
-    h += '<div class="r big b"><span class="l">الإجمالي النهائي</span><span class="v num">' + esc(money(m.summary.final)) + '</span></div>';
+    h += row('الصافي قبل خصم الإلكتروني', money(m.summary.netBeforeElec));
+    h += row('الإجمالي قبل خصم الإلكتروني', money(m.summary.final));
+    h += row('خصم المبيعات الإلكترونية', money(m.summary.elecDeduction));
+    h += '<div class="r big b"><span class="l">الإجمالي النهائي النقدي</span><span class="v num">' + esc(money(m.summary.finalCash)) + '</span></div>';
     h += hr();
 
     /* ---- 6) عدد التذاكر / طرق الدفع ---- */

@@ -48,7 +48,7 @@ ok("update-gate still exports evaluate()", /exports\.evaluate|module\.exports/.t
 
 /* ===== 3: الإصدار لم يتغير ===== */
 const pkg = JSON.parse(rd("package.json"));
-ok("package.json version now 2.5.8 (authorized v2.5.8 release bump)", pkg.version === "2.5.8", String(pkg.version));
+ok("package.json version now 2.5.9 (authorized v2.5.9 release bump)", pkg.version === "2.5.9", String(pkg.version));
 
 /* ===== 4: ثبات الملفات المحمية مقابل الخط الأساسي للمرحلة 3B ===== */
 const base = JSON.parse(fs.readFileSync(path.join(__dirname, "protected-baseline.json"), "utf8"));

@@ -1860,7 +1860,7 @@
         <div class="v num" id="scNet">0 <span class="u">ج</span></div>
       </div>
       <div class="sc-cell final">
-        <div class="k">الإجمالي النهائي</div>
+        <div class="k">الإجمالي النهائي النقدي</div>
         <div class="v num" id="scFinal">0 <span class="u">ج</span></div>
       </div>
     </div>
@@ -1924,10 +1924,13 @@
       <div class="srow rev"><span class="lab">مبيعات الألعاب</span><span class="amt num" id="sumRevenue">0</span></div>
       <div class="srow sub"><span class="lab">↳ منها كاش 💵</span><span class="amt num" id="sumCash">0</span></div>
       <div class="srow sub"><span class="lab">↳ منها تحويل إلكتروني 💳</span><span class="amt num" id="sumElec">0</span></div>
+      <div class="srow sub"><span class="lab">↳ عدد التذاكر الإلكترونية 🎟️</span><span class="amt num" id="sumElecTickets">0</span></div>
       <div class="srow exp"><span class="lab"><span class="op">−</span>المصروفات</span><span class="amt num" id="sumExpenses">0</span></div>
-      <div class="srow net"><span class="lab"><span class="op">=</span>الصافي</span><span class="amt num" id="sumNet">0</span></div>
+      <div class="srow net"><span class="lab"><span class="op">=</span>الصافي قبل خصم الإلكتروني</span><span class="amt num" id="sumNet">0</span></div>
       <div class="srow gift"><span class="lab"><span class="op">+</span>الهدايا</span><span class="amt num" id="sumGifts">0</span></div>
-      <div class="srow final"><span class="lab">الإجمالي النهائي</span><span class="amt num" id="sumFinal">0</span></div>
+      <div class="srow sub"><span class="lab">الإجمالي قبل خصم الإلكتروني</span><span class="amt num" id="sumBeforeElec">0</span></div>
+      <div class="srow sub"><span class="lab"><span class="op">−</span>خصم المبيعات الإلكترونية</span><span class="amt num" id="sumElecDeduct">0</span></div>
+      <div class="srow final"><span class="lab">الإجمالي النهائي النقدي</span><span class="amt num" id="sumFinalCash">0</span></div>
     </div>
   </div>
 
@@ -2596,7 +2599,14 @@ function totals(){
   /* الهدايا ليست مصروفًا ولا تُخصم من الربح: قيمتها تُضاف إلى الإجمالي
      النهائي (مبلغ يُحصّل مع الحساب) حسب القاعدة المالية للنظام. */
   const finalNet=net+gifts;
-  return {revenue,tickets,expenses,gifts,net,finalNet,cashRevenue,elecRevenue,cashTickets,elecTickets};
+  /* التحصيل الإلكتروني (تحويل/بطاقة) ليس نقدًا في الدرج: يبقى ضمن مبيعات
+     الألعاب وإحصاءاتها كما هو (لا يُشطب ولا يُعاد تصنيفه)، لكنه يُستثنى
+     من رصيد النقد الفعلي. الخصم **مرة واحدة فقط** من الإجمالي النهائي
+     النقدي — ولا يُخصم أبدًا من المبيعات نفسها. */
+  const elecDeduction=elecRevenue;
+  const finalCash=finalNet-elecDeduction;
+  return {revenue,tickets,expenses,gifts,net,finalNet,cashRevenue,elecRevenue,cashTickets,elecTickets,
+          elecDeduction,finalCash};
 }
 
 /* ============ حماية الأسعار التاريخية ============ */
@@ -2758,16 +2768,19 @@ function renderSummary(){
   $('#scRevenue').textContent=fmtNum(t.revenue);
   $('#scTickets').textContent=fmtNum(t.tickets);
   $('#scNet').innerHTML=fmtNum(t.net)+' <span class="u">ج</span>';
-  $('#scFinal').innerHTML=fmtNum(t.finalNet)+' <span class="u">ج</span>';
+  $('#scFinal').innerHTML=fmtNum(t.finalCash)+' <span class="u">ج</span>';
   $('#expTotal').textContent=fmtNum(t.expenses);
   $('#giftTotal').textContent=fmtNum(t.gifts);
   $('#sumRevenue').textContent=fmtNum(t.revenue);
   var _sc=$('#sumCash'); if(_sc)_sc.textContent=fmtNum(t.cashRevenue);
   var _se=$('#sumElec'); if(_se)_se.textContent=fmtNum(t.elecRevenue);
+  var _sx=$('#sumElecTickets'); if(_sx)_sx.textContent=fmtNum(t.elecTickets);
   $('#sumExpenses').textContent=fmtNum(t.expenses);
   $('#sumNet').textContent=fmtNum(t.net);
   $('#sumGifts').textContent=fmtNum(t.gifts);
-  $('#sumFinal').textContent=fmtNum(t.finalNet);
+  var _sb=$('#sumBeforeElec'); if(_sb)_sb.textContent=fmtNum(t.finalNet);
+  var _sd=$('#sumElecDeduct'); if(_sd)_sd.textContent=fmtNum(t.elecDeduction);
+  var _sf=$('#sumFinalCash'); if(_sf)_sf.textContent=fmtNum(t.finalCash);
 }
 
 function renderAll(){ renderGames(); renderList('exp'); renderList('gift'); renderSummary(); renderExpEmpOptions(); updatePassBanner(); }

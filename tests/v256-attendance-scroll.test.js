@@ -887,7 +887,7 @@ console.log("\n-- C) previous-days history scrolling --");
 console.log("\n-- D) scope guards --");
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  eq("D1 the app version is 2.5.8 (the authorized v2.5.8 patch release bump)", pkg.version, "2.5.8");
+  eq("D1 the app version is 2.5.9 (the authorized v2.5.9 patch release bump)", pkg.version, "2.5.9");
 
   /* مرجع ثابت: حالة ما قبل إصدار v2.5.6 (آخر HEAD مستقر قبل التزام الإصدار).
      بعد دمج العمل في HEAD لم يعد فرق HEAD مجديًا، لذا نُثبّت خط الأساس
@@ -975,7 +975,7 @@ console.log("\n-- D) scope guards --");
          return a.filter((l) => !setB.has(l)).length === 0;
        } catch (_) { return true; }
      })());
-  ok("D9 only the phase files are touched (2 sources + 1 test + 3 reports)",
+  ok("D9 only the phase files are touched (2 sources + 1 test + reports)",
      (function () {
        try {
          /* بعد التزام الإصدار: التغيير بين خط الأساس الثابت ورأس الإصدار،
@@ -1003,7 +1003,12 @@ console.log("\n-- D) scope guards --");
                مركزي جديد + تقرير التنفيذ. نفس النمط المصرَّح به أعلاه. */
             "assets/report/daily-report.js",
             "tests/v257-salary-expenses.test.js",
-            "AI_REPORTS/V2_5_7_SALARY_EXPENSES_IMPLEMENTATION_REPORT.md"];
+            "AI_REPORTS/V2_5_7_SALARY_EXPENSES_IMPLEMENTATION_REPORT.md",
+            /* إصدار v2.5.9 (استبعاد التحصيل الإلكتروني من الإجمالي النهائي النقدي):
+               نفس ملفا المصدر المصرَّح بهما أعلاه (daily-report.js + index.html)
+               + اختبار مركزي جديد + تقرير التنفيذ. نفس النمط المصرَّح به أعلاه. */
+            "tests/v259-electronic-cash.test.js",
+            "AI_REPORTS/V2_5_9_ELECTRONIC_CASH_RECONCILIATION_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
      })(), (function () {
