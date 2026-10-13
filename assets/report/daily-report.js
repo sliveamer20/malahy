@@ -287,9 +287,11 @@
     if (m.expenses.length) {
       h += '<div class="b" data-sec="expenses">المصروفات:</div>';
       /* بنود الرواتب: سطر مختصر واحد لكل موظف دُفع فعلًا في هذا اليوم،
-         يليه سطر إجمالي الرواتب. لا عنوان إضافي ولا فاصل إضافي ولا صفحة. */
+         يليه سطر إجمالي الرواتب. لا عنوان إضافي ولا فاصل إضافي ولا صفحة.
+         المسافة قبل المبلغ مقصودة: بدونها يلتصق الرقم بالكلمة في الاتجاه
+         من اليمين لليسار («المصروف250 ج» بدل «المصروف 250 ج»). */
       m.salaryExpenses.forEach(function (x) {
-        h += '<div class="pw">' + esc(x.desc) + '<span class="num">' + esc(money(x.amount)) + '</span></div>';
+        h += '<div class="pw">' + esc(x.desc) + ' <span class="num">' + esc(money(x.amount)) + '</span></div>';
       });
       if (m.salaryExpenses.length) {
         h += '<div class="pw b">إجمالي الرواتب المصروفة: <span class="num">' + esc(money(m.summary.salaryTotal)) + '</span></div>';

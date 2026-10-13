@@ -507,8 +507,10 @@ console.log("\n-- D) compact report output --");
     sec(html80));
   ok("21b the no-advance employee omits the advance part",
     sec(html80).indexOf("راتب أسماء | 5 أيام | إجمالي 425 - خصم 25 | المصروف") !== -1);
-  ok("21c the amount follows the label on the same compact line",
-    /راتب طه[^<]*<span class="num">250 ج<\/span>/.test(sec(html58)));
+  ok("21c the amount follows the label on the same compact line, separated by a space",
+    /راتب طه[^<]* <span class="num">250 ج<\/span>/.test(sec(html58)));
+  ok("21g the printed line never glues the label to the number (المصروف250 ج)",
+    !/المصروف\d/.test(sec(html58)) && !/المصروف\d/.test(sec(html80)));
   ok("21d numbers are LTR-isolated so they never reorder",
     html58.indexOf('<span class="num">') !== -1 && R.paperCSS("58").indexOf("unicode-bidi:embed") !== -1);
   ok("21e the document is RTL Arabic", html58.indexOf('lang="ar" dir="rtl"') !== -1);
