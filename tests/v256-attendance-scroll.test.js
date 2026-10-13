@@ -893,11 +893,13 @@ console.log("\n-- D) scope guards --");
      بعد دمج العمل في HEAD لم يعد فرق HEAD مجديًا، لذا نُثبّت خط الأساس
      عند نقطة الإصدار السابقة ليبقى الحارس صارمًا وذات معنى. */
   const { execFileSync } = require("child_process");
-  /* خط الأساس الثابت = الأب المباشر لالتزام الإصدار (آخر حالة مستقرة قبل
-     v2.5.6). يُشتق برمجيًا فلا يعتمد على نسخ معرّف يدويًا قد يخطئ. */
+  /* خط الأساس الثابت = الأب المباشر لالتزام الإصدار v2.5.6 (آخر حالة مستقرة قبل
+     الإصدار). يُشتق برمجيًا من الوسم نفسه فلا يعتمد على نسخ معرّف يدويًا قد يخطئ،
+     ولا يتزحزح عند إضافة التزامات لاحقة بعد الإصدار (كما كان يحدث مع HEAD~1،
+     فيفارغ فرق الدوال ويُنتج إنذارات كاذبة في D2/D3/D8). */
   const BASE = (function () {
     try {
-      return execFileSync("git", ["rev-parse", "HEAD~1"], { cwd: ROOT }).toString("utf8").trim();
+      return execFileSync("git", ["rev-parse", "v2.5.6~1"], { cwd: ROOT }).toString("utf8").trim();
     } catch (_) { return ""; }
   })();
   let head = "";
@@ -982,10 +984,15 @@ console.log("\n-- D) scope guards --");
            "assets/report/payroll-report.js", "main.js", "preload.js", "package.json",
            "tests/v256-attendance-scroll.test.js", "tests/v256-payroll-exports.test.js",
            "tests/phase3b-auth.test.js", "tests/phase3c1-gate.test.js", "tests/phase3c2-baseline.test.js",
+           /* تصحيح معتمَد للاختبار فقط: إصلاح 7g التابع للتاريخ + سجل الانتكاس 7g2 */
+           "tests/payroll-ui.test.js",
+           /* تقارير مراجعة ما قبل النشر — على نفس نمط التقارير المصرّح بها أعلاه */
            "AI_REPORTS/V2_5_6_PHASE_1_REPORT.md",
            "AI_REPORTS/V2_5_6_PHASE_1_REVIEW_REPORT.md",
            "AI_REPORTS/V2_5_6_PHASE_1_1_ATTENDANCE_FINALIZATION_REPORT.md",
-           "AI_REPORTS/V2_5_6_PHASE_2_IMPLEMENTATION_REPORT.md"];
+           "AI_REPORTS/V2_5_6_PHASE_2_IMPLEMENTATION_REPORT.md",
+           "AI_REPORTS/V2_5_6_PRE_RELEASE_REVIEW_REPORT.md",
+           "AI_REPORTS/V2_5_6_FINAL_PRE_PUBLISH_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
      })(), (function () {

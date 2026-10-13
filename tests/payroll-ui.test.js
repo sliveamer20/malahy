@@ -306,7 +306,10 @@ console.log("PAYROLL UI BRIDGE — real index.html functions over an in-memory d
   const employees = [{ id: "E1", name: "أحمد", job: "كاشير", dailyWage: 100, hiredAt: D(2026, 10, 1), weeks: [], days: [{ key: K(2026, 10, 12), ts: D(2026, 10, 12), status: "work", src: "dreg", wage: 100, note: "" }] }];
   env.store["malahy_employees_v1"] = employees;
   env.api.empLoad();
-  const res = env.api.payCommit([P.planPayout(env.api.empFind("E1"), { nowTs: Date.now(), dateTs: Date.now() })], {});
+  /* تواريخ ثابتة (لا تعتمد على ساعة النظام) ⇒ المرجع قابل للتكرار في أي يوم */
+  const batchDay = D(2026, 10, 13);
+  const nextDay = D(2026, 10, 14);
+  const res = env.api.payCommit([P.planPayout(env.api.empFind("E1"), { nowTs: batchDay, dateTs: batchDay })], {});
   ok("7a batch key created", !!env.store["malahy_payroll_batches_v1"]);
   eq("7b one batch inside", Object.keys(env.store["malahy_payroll_batches_v1"]).filter(function (k) { return k.indexOf("_seq_") !== 0; }).length, 1);
   ok("7b2 the only extra key is the daily reference counter",
@@ -317,9 +320,13 @@ console.log("PAYROLL UI BRIDGE — real index.html functions over an in-memory d
   ok("7e each item records its own payout id", typeof b.items[0].payoutId === "string" && b.items[0].payoutId.length > 0);
   /* بيانات الموظفين لم تُمسح */
   eq("7f employee still present", env.store["malahy_employees_v1"].length, 1);
-  /* مرجع جديد في اليوم التالي لا يتكرر */
-  const ref2 = P.nextRef(env.api.pbLoad(), D(2026, 10, 13));
-  eq("7g a new day gets its own reference", ref2, "PAY-20261013-01");
+  /* مرجع جديد في اليوم التالي لا يتكرر — كلا التاريخين ثابت فوق ساعة النظام،
+     فينتج نفس النتيجة في أي يوم يُشغَّل فيه الاختبار */
+  const ref2 = P.nextRef(env.api.pbLoad(), nextDay);
+  eq("7g a new day gets its own reference", ref2, "PAY-" + K(2026, 10, 14).replace(/-/g, "") + "-01");
+  /* سجل الانحدار: دفعة اليوم الثابت تُعطي مرجعًا من نفس اليوم المُثبَّت — لا من
+     تاريخ اليوم الحقيقي (السبب الجذري للخطأ كان Date.now()) */
+  eq("7g2 batch reference is pinned to the fixed batch day", res.batch.ref, "PAY-" + K(2026, 10, 13).replace(/-/g, "") + "-01");
 }
 
 /* ==========================================================================
