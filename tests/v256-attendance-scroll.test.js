@@ -992,7 +992,8 @@ console.log("\n-- D) scope guards --");
            "AI_REPORTS/V2_5_6_PHASE_1_1_ATTENDANCE_FINALIZATION_REPORT.md",
            "AI_REPORTS/V2_5_6_PHASE_2_IMPLEMENTATION_REPORT.md",
            "AI_REPORTS/V2_5_6_PRE_RELEASE_REVIEW_REPORT.md",
-           "AI_REPORTS/V2_5_6_FINAL_PRE_PUBLISH_REPORT.md"];
+           "AI_REPORTS/V2_5_6_FINAL_PRE_PUBLISH_REPORT.md",
+           "AI_REPORTS/V2_5_6_RELEASE_PUBLISH_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
      })(), (function () {
