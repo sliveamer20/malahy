@@ -150,6 +150,67 @@
     return e.days.length !== before;
   }
 
+  /* ================== خطة إغلاق يوم الحضور ==================
+     القاعدة المعتمدة في هذا النشاط: **كل يوم تقويمي يوم عمل** — لا يوم
+     راحة أسبوعي ولا أعياد ولا جدول عمل خاص بالموظف. لذلك «يوم العمل
+     المؤهَّل» هو كل يومٍ سابق انتهى **بعد تاريخ تعيين** الموظف، ولا شيء
+     غير ذلك. ولا تُخترع هنا أي قاعدة راحة أو تقويم أعياد.
+
+     planAttendanceClose **نقيّة تمامًا**: لا تكتب ولا تغيّر شيئًا، بل تُرجع
+     ما *سيحدث* لو نُفِّذ. وapplyAttendanceClose يأخذ هذه الخطة نفسها
+     فينفّذها، فالمعاينة والنتيجة لا تفترقان بحكم البنية لا بالمصادفة.
+
+     dayKey هو مفتاح يوم العمل نفسه (businessDayKey)، فيُحسب نهار وردية
+     الليل ليومه الصحيح بلا ازدواج مع يومه التقويمي. */
+  function planAttendanceClose(list, dayKey, opts) {
+    opts = opts || {};
+    var plan = { ok: false, reason: '', dayKey: String(dayKey || ''), todayKey: '',
+                 total: 0, mark: [], recorded: [], notHired: [], noHire: [] };
+    var t = tsOfDayKey(dayKey);
+    if (isNaN(t)) { plan.reason = 'bad-day'; return plan; }
+    var todayKey = String(opts.todayKey || dayKeyOfTs(opts.nowTs != null ? opts.nowTs : Date.now()));
+    plan.todayKey = todayKey;
+    var todayTs = tsOfDayKey(todayKey);
+    if (isNaN(todayTs) || !(t < todayTs)) { plan.reason = 'not-finished'; return plan; }
+    plan.ok = true;
+    var dayEnd = endOfDayTs(t);
+    arr(list).forEach(function (e) {
+      if (!e || !e.id) return;
+      plan.total++;
+      var rec = dayRec(e, dayKey);
+      if (rec) {                                   /* حالة قائمة: لا تُطمس أبدًا */
+        plan.recorded.push({ id: e.id, name: e.name || '', status: rec.status || 'work' });
+        return;
+      }
+      var hired = num(e.hiredAt, 0);
+      if (!hired) { plan.noHire.push({ id: e.id, name: e.name || '' }); return; }   /* لا نخمّن */
+      if (hired > dayEnd) { plan.notHired.push({ id: e.id, name: e.name || '' }); return; }
+      plan.mark.push({ id: e.id, name: e.name || '' });
+    });
+    return plan;
+  }
+
+  /* تنفيذ خطة مُعدّة مسبقًا — لا يُخطّط من جديد ولا يقرّر شيئًا من نفسه،
+     فيضمان تطابق المعاينة مع النتيجة. مع حارس أخير: لو ظهر صف بين
+     المعاينة والتنفيذ (تعديل متزامن) فلا يُكتب فوقه. */
+  function applyAttendanceClose(list, plan) {
+    var res = { ok: false, dayKey: '', marked: [], alreadySkipped: 0 };
+    if (!plan || !plan.ok) { res.reason = (plan && plan.reason) || 'no-plan'; return res; }
+    res.dayKey = plan.dayKey;
+    var byId = {};
+    arr(list).forEach(function (e) { if (e && e.id) byId[e.id] = e; });
+    arr(plan.mark).forEach(function (m) {
+      if (!m) return;
+      var e = byId[m.id];
+      if (!e) { res.alreadySkipped++; return; }
+      if (dayRec(e, plan.dayKey)) { res.alreadySkipped++; return; }
+      markDay(e, plan.dayKey, 'absent', { src: 'close', note: 'إغلاق يوم الحضور' });
+      res.marked.push(m.id);
+    });
+    res.ok = true;
+    return res;
+  }
+
   /* قائمة أيام الحضور حتى لحظة معيّنة (مرتّبة) */
   function daysUpTo(e, cutoffTs) {
     return arr(e && e.days).filter(function (d) {
@@ -877,6 +938,7 @@
     ensureLedger: ensureLedger, wageOf: wageOf,
     dayClass: dayClass, tallyDays: tallyDays,
     dayRec: dayRec, markDay: markDay, clearDay: clearDay, daysUpTo: daysUpTo,
+    planAttendanceClose: planAttendanceClose, applyAttendanceClose: applyAttendanceClose,
     opsUpTo: opsUpTo, payoutsUpTo: payoutsUpTo,
     statsUpTo: statsUpTo, stats: stats,
     ledgerRun: ledgerRun, settleOf: settleOf,

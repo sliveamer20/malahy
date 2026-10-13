@@ -313,6 +313,27 @@ ipcMain.handle("export-csv", async (_e, { rows, suggestedName }) => {
   }
 });
 
+/* ============ IPC: Excel متعدد الأوراق (SpreadsheetML 2003) ============
+   صيغة XML رسمية تفتحها Excel و LibreOffice بأوراق متعددة، بلا أي تبعية
+   خارجية. نفس مسار الحفظ الآمن القائم: نافذة حفظ ثم كتابة واحدة فقط.
+   لا تُلمس بيانات الرواتب إطلاقًا — هذا يعرض ما مُرِّر فقط. */
+ipcMain.handle("export-xls", async (_e, { xml, suggestedName }) => {
+  try {
+    const body = String(xml == null ? "" : xml);
+    if (!body || body.indexOf("<Workbook") === -1) return { ok: false, error: "invalid-workbook" };
+    const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+      title: "حفظ تقرير الرواتب (Excel)",
+      defaultPath: suggestedName || "report.xls",
+      filters: [{ name: "Excel Workbook (XML)", extensions: ["xls"] }],
+    });
+    if (canceled || !filePath) return { ok: false, canceled: true };
+    fs.writeFileSync(filePath, "\uFEFF" + body, "utf8");
+    return { ok: true, path: filePath };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+});
+
 /* ============ IPC: الطباعة (تذاكر) ============ */
 ipcMain.handle("get-printers", async () => {
   try {

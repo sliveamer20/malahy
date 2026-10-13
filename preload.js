@@ -32,6 +32,8 @@ contextBridge.exposeInMainWorld("malahyApp", {
 contextBridge.exposeInMainWorld("malahyExport", {
   savePDF: (opts) => ipcRenderer.invoke("export-pdf", opts),
   saveCSV: (opts) => ipcRenderer.invoke("export-csv", opts),
+  // Excel متعدد الأوراق (SpreadsheetML) — XML فقط، لا بيانات إضافية
+  saveXLS: (opts) => ipcRenderer.invoke("export-xls", opts),
 });
 
 // طباعة التذاكر (قائمة الطابعات + إرسال إيصال للطباعة)

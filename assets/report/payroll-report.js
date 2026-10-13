@@ -25,7 +25,9 @@
   var REPORT_TITLE = 'تقرير صرف رواتب الموظفين';
   var RECEIPT_TITLE = 'إيصال صرف راتب';
   var REPORT_FOOT = 'تم إصدار هذا التقرير من نظام ملاهي كوكو بارك';
-  var THERMAL_RULE = '------------------------------';
+  var SCOPE_TITLE = 'تقرير صرف الرواتب — نطاق مُختار';
+var MULTI_TITLE = 'تقرير صرف الرواتب — دفعات مختارة';
+var THERMAL_RULE = '------------------------------';
   /* أقسام التقرير — ترتيبها الرسمي ويُستخدم في الاختبارات */
   var SECTION_ORDER = ['header', 'meta', 'employees', 'totals', 'footer'];
 
@@ -515,15 +517,429 @@ var idf = r2(num(x.itemsDiff));
     h += '<div class="foot c">' + esc(REPORT_FOOT) + '</div>';
     return doc(h, opts.paperCSS != null ? opts.paperCSS : payrollPaperCSS(paper));
   }
+/* ==================================================================
+     نطاق الصرف المُختار (تقرير حراري مجمّع + إيصالات فردية)
+     ==================================================================
+     المدخلات سجلّات صرف **فعلية محفوظة** فقط: كل مدخل = {batch, item}
+     حيث item.status === 'saved' (نجح تطبيق الصرف وحُفظ فعليًا).
+     لا يُبنى هنا أي رقم مالي جديد: كل الأرقام تُقرأ من item نفسه.
+
+     فصلٌ صريح بين ثلاثة مبالغ لا يخلط بينها:
+       due          = المستحق وقت الصرف (احتساب) — ليس بالضرورة مدفوعًا
+       amount→paid  = المصروف فعلًا في هذه الدفعة
+       balanceAfter = المتبقّي بعد هذه الدفعة
+     فلا يُسمّى مستحقٌ غير مدفوع «مصروفًا» أبدًا. */
+  function arr(v) { return Array.isArray(v) ? v : []; }
+  function payoutScopeModel(entries, opts) {
+    opts = opts || {};
+    var t = util();
+    var rows = [], g = { work: 0, abs: 0, vac: 0, gross: 0, bonus: 0, pen: 0, adv: 0,
+                         ded: 0, due: 0, paid: 0, paidBefore: 0, balanceAfter: 0 };
+    var batches = {}, dates = {}, empSeen = {};
+    arr(entries).forEach(function (en) {
+      if (!en || !en.batch || !en.item) return;
+      var b = en.batch, it = en.item;
+      if (it.status !== 'saved') return;             /* لا يوجد صرف فعلي */
+      var when = num(b.ts) ? new Date(num(b.ts)) : new Date();
+      var pf = it.period || {};
+      rows.push({
+        batchId: b.id || '', ref: b.ref || '',
+        dateKey: b.dateKey || '', ts: num(b.ts, 0), when: when,
+        dateText: t.fmtDMY(when), timeText: t.fmtTime12(when),
+        empId: it.empId, name: it.empName || '', job: it.job || '',
+        dailyWage: r2(num(it.dailyWage)),
+        work: num(it.work), abs: num(it.abs), vac: num(it.vac),
+        gross: r2(num(it.gross)), bonus: r2(num(it.bonus)), pen: r2(num(it.pen)),
+        adv: r2(num(it.adv)), ded: r2(num(it.ded)),
+        due: r2(num(it.due)),
+        paid: r2(num(it.amount)),
+        paidBefore: r2(num(it.paidBefore)),
+        balanceAfter: r2(num(it.balanceAfter)),
+        partial: r2(num(it.amount)) < r2(num(it.due)) - 1e-9,
+        period: { fromKey: pf.fromKey || null, toKey: pf.toKey || null }
+      });
+      g.work += num(it.work); g.abs += num(it.abs); g.vac += num(it.vac);
+      g.gross = r2(g.gross + num(it.gross)); g.bonus = r2(g.bonus + num(it.bonus));
+      g.pen = r2(g.pen + num(it.pen)); g.adv = r2(g.adv + num(it.adv));
+      g.ded = r2(g.ded + num(it.ded));
+      g.due = r2(g.due + num(it.due));
+      g.paid = r2(g.paid + num(it.amount));
+      g.paidBefore = r2(g.paidBefore + num(it.paidBefore));
+      g.balanceAfter = r2(g.balanceAfter + num(it.balanceAfter));
+      if (b.id) batches[b.id] = 1;
+      if (b.dateKey) dates[b.dateKey] = 1;
+      if (it.empId) empSeen[it.empId] = 1;
+    });
+    rows.sort(function (a, z) {
+      if (a.dateKey !== z.dateKey) return a.dateKey < z.dateKey ? -1 : 1;
+      if (a.ts !== z.ts) return a.ts - z.ts;
+      return String(a.name).localeCompare(String(z.name));
+    });
+    return {
+      venue: (opts.venue != null && opts.venue !== '') ? String(opts.venue) : DEFAULT_VENUE,
+      title: opts.title || SCOPE_TITLE,
+      rows: rows, totals: g, count: rows.length,
+      batchCount: Object.keys(batches).length,
+      dateCount: Object.keys(dates).length,
+      employeeCount: Object.keys(empSeen).length,
+      dates: Object.keys(dates).sort()
+    };
+  }
+
+  /* الاسم يُلَفّ بلا حدّ أسطر (maxLines=0) فلا يُقصّ اسم طويل أبدًا —
+    requirement: الأسماء والمبالغ الطويلة تُلَف ولا تُقصّ. */
+  function scopeRowHTML(x, paper) {
+    var t = util(), esc = t.esc, w = charWidth(paper);
+    var pf = x.period || {};
+    var perTxt = (pf.fromKey && pf.toKey) ? (pf.fromKey + ' ← ' + pf.toKey) : '—';
+    var h = '<div class="emp" data-emp="' + esc(x.empId == null ? '' : x.empId) + '">';
+    h += '<div class="emp-h"><div><div class="emp-n">' + esc(wrapHTML(x.name, w, 0)) + '</div>';
+    h += '<div class="emp-j">' + esc(x.job || '—') + '</div></div>';
+    h += '<div class="emp-i">' + esc(x.ref || x.batchId || '') + '</div></div>';
+    h += '<div class="per">' + esc('الفترة: ' + perTxt) + '</div>';
+    h += '<div class="ln"><span class="l">' + esc('حضور / غياب / إجازة') + '</span>'
+       + '<span class="v">' + esc(x.work + ' / ' + x.abs + ' / ' + x.vac) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('الأجر اليومي') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.dailyWage, 8)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('الأجر المكتسب') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.gross, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('مكافآت') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.bonus, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('سلف') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.adv, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('جزاءات') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.pen, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('خصومات') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.ded, w)) + '</span></div>';
+    h += '<div class="ln b"><span class="l">' + esc('المستحق (احتساب)') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.due, w)) + '</span></div>';
+    h += '<div class="ln big"><span class="l">' + esc('المصروف فعلًا') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.paid, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('مسدَّد سابقًا') + '</span>'
+       + '<span class="v">' + esc(fitAmount(x.paidBefore, w)) + '</span></div>';
+    if (x.partial) {
+      h += '<div class="ln"><span class="l">' + esc('متبقّي بعد الصرف') + '</span>'
+         + '<span class="v">' + esc(fitAmount(x.balanceAfter, w)) + '</span></div>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  function scopeTotalsHTML(m, paper) {
+    var t = util(), esc = t.esc, w = charWidth(paper), g = m.totals;
+    var h = '<div class="tot" data-sec="totals">';
+    h += '<div class="ln"><span class="l">' + esc('أيام الحضور') + '</span><span class="v">' + esc(g.work) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('أيام الغياب') + '</span><span class="v">' + esc(g.abs) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('أيام الإجازة') + '</span><span class="v">' + esc(g.vac) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('إجمالي الأجر المكتسب') + '</span><span class="v">' + esc(fitAmount(g.gross, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('إجمالي المستحق') + '</span><span class="v">' + esc(fitAmount(g.due, w)) + '</span></div>';
+    h += '<div class="ln big"><span class="l">' + esc('إجمالي المصروف فعلًا') + '</span><span class="v">' + esc(fitAmount(g.paid, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('إجمالي المسدَّد سابقًا') + '</span><span class="v">' + esc(fitAmount(g.paidBefore, w)) + '</span></div>';
+    h += '<div class="ln"><span class="l">' + esc('إجمالي المتبقّي') + '</span><span class="v">' + esc(fitAmount(g.balanceAfter, w)) + '</span></div>';
+    h += '<div class="cnt">' + esc('سجلّات الصرف: ' + m.count + ' · الدفعات: ' + m.batchCount + ' · التواريخ: ' + m.dateCount) + '</div>';
+    h += '</div>';
+    return h;
+  }
+
+  /* تقرير مجمّع للنطاق المُختار — حراري (58/80) أو A4، بنفس بنية الإيصالات القائمة */
+  function scopeReportHTML(scope, opts) {
+    opts = opts || {};
+    var t = util(), esc = t.esc;
+    var paper = opts.paper || '80';
+    var m = scope || payoutScopeModel([], opts);
+    var h = '<div data-sec="header">';
+    h += '<div class="venue">' + esc(m.venue) + '</div>';
+    h += '<div class="ttl">' + esc(opts.title || SCOPE_TITLE) + '</div>';
+    h += '<div class="s c">' + esc('سجلّات صرف محفوظة فعليًا — ' + m.count + ' موظف في ' + m.batchCount + ' دفعة') + '</div>';
+    h += '</div>';
+    h += hrHTML(paper);
+    if (!m.count) {
+      h += '<div class="foot c">' + esc('لا توجد سجلّات صرف محفوظة في النطاق المختار') + '</div>';
+      return doc(h, opts.paperCSS != null ? opts.paperCSS : payrollPaperCSS(paper));
+    }
+    h += '<div data-sec="employees">' + m.rows.map(function (x) { return scopeRowHTML(x, paper); }).join('') + '</div>';
+    h += '<div data-sec="totals">' + scopeTotalsHTML(m, paper) + '</div>';
+    h += '<div class="foot c">' + esc(REPORT_FOOT) + '</div>';
+    return doc(h, opts.paperCSS != null ? opts.paperCSS : payrollPaperCSS(paper));
+  }
+
+  /* ==================================================================
+     عدة دفعات في ملف واحد (PDF) — مُرتّبة بالتاريخ ثم الدفعة
+     ==================================================================
+     كل دفعة تحتفظ برقمها ومرجعها وإجمالياتها، والإجمالي العام يجمع
+     الدفعات **المرصودة فعلًا** مرة واحدة فقط فلا مزدواجية. */
+  function multiBatchModel(batches, opts) {
+    opts = opts || {};
+    var sections = [];
+    var grand = { gross: 0, bonus: 0, pen: 0, adv: 0, ded: 0, paid: 0, due: 0,
+                   paidBefore: 0, balanceAfter: 0, work: 0, abs: 0, vac: 0, count: 0 };
+    var seen = {};                                    /* حارس عدم التكرار: تمرير الدفعة
+                                                        نفسها مرتين لا يضاعفها */
+    arr(batches).forEach(function (b) {
+      if (!b || !b.ts) return;
+      var bid = b.id || ('ts:' + num(b.ts, 0) + '|' + (b.ref || ''));
+      if (seen[bid]) return;
+      seen[bid] = 1;
+      var saved = arr(b.items).filter(function (x) { return x && x.status === 'saved'; });
+      if (!saved.length) return;                     /* لا صرف فعلي ⇒ لا يظهر */
+      var bm = batchModel(b, opts);
+      var tot = { gross: 0, bonus: 0, pen: 0, adv: 0, ded: 0, paid: 0, due: 0,
+                  paidBefore: 0, balanceAfter: 0, work: 0, abs: 0, vac: 0, count: saved.length };
+      saved.forEach(function (it) {
+        tot.gross = r2(tot.gross + num(it.gross)); tot.bonus = r2(tot.bonus + num(it.bonus));
+        tot.pen = r2(tot.pen + num(it.pen)); tot.adv = r2(tot.adv + num(it.adv));
+        tot.ded = r2(tot.ded + num(it.ded)); tot.paid = r2(tot.paid + num(it.amount));
+        tot.due = r2(tot.due + num(it.due)); tot.paidBefore = r2(tot.paidBefore + num(it.paidBefore));
+        tot.balanceAfter = r2(tot.balanceAfter + num(it.balanceAfter));
+        tot.work += num(it.work); tot.abs += num(it.abs); tot.vac += num(it.vac);
+      });
+      sections.push({
+        batchId: b.id || '', ref: b.ref || '', dateKey: b.dateKey || '', ts: num(b.ts, 0),
+        dateText: bm.dateText, timeText: bm.timeText, items: saved, totals: tot
+      });
+      grand.gross = r2(grand.gross + tot.gross); grand.bonus = r2(grand.bonus + tot.bonus);
+      grand.pen = r2(grand.pen + tot.pen); grand.adv = r2(grand.adv + tot.adv);
+      grand.ded = r2(grand.ded + tot.ded); grand.paid = r2(grand.paid + tot.paid);
+      grand.due = r2(grand.due + tot.due); grand.paidBefore = r2(grand.paidBefore + tot.paidBefore);
+      grand.balanceAfter = r2(grand.balanceAfter + tot.balanceAfter);
+      grand.work += tot.work; grand.abs += tot.abs; grand.vac += tot.vac;
+      grand.count += tot.count;
+    });
+    sections.sort(function (a, z) {
+      if (a.dateKey !== z.dateKey) return a.dateKey < z.dateKey ? -1 : 1;
+      return a.ts - z.ts;
+    });
+    var dates = {};
+    sections.forEach(function (s) { if (s.dateKey) dates[s.dateKey] = 1; });
+    return {
+      venue: (opts.venue != null && opts.venue !== '') ? String(opts.venue) : DEFAULT_VENUE,
+      title: opts.title || MULTI_TITLE,
+      sections: sections, totals: grand,
+      batchCount: sections.length, count: grand.count,
+      dateCount: Object.keys(dates).length, dates: Object.keys(dates).sort()
+    };
+  }
+
+  function multiBatchHTML(batches, opts) {
+    opts = opts || {};
+    var t = util(), esc = t.esc;
+    var paper = opts.paper || 'a4';
+    var m = opts.model || multiBatchModel(batches, opts);
+    var w = charWidth(paper);
+    var h = '<div data-sec="header">';
+    h += '<div class="venue">' + esc(m.venue) + '</div>';
+    h += '<div class="ttl">' + esc(m.title) + '</div>';
+    h += '<div class="s c">' + esc(m.dateCount + ' تاريخ · ' + m.batchCount + ' دفعة · ' + m.count + ' سجل صرف') + '</div>';
+    h += '</div>';
+    h += hrHTML(paper);
+    if (!m.batchCount) {
+      h += '<div class="foot c">' + esc('لا توجد سجلّات صرف محفوظة في التواريخ المختارة') + '</div>';
+      return doc(h, opts.paperCSS != null ? opts.paperCSS : payrollPaperCSS(paper));
+    }
+    var lastDate = null;
+    m.sections.forEach(function (s, si) {
+      if (si > 0) h += '<div style="page-break-before:always;break-before:page;"></div>';
+      if (s.dateKey && s.dateKey !== lastDate) {
+        lastDate = s.dateKey;
+        h += '<div class="ttl" style="font-size:' + (paper === 'a4' ? 15 : 12) + 'px;margin:8px 0 2px;">'
+           + esc('تاريخ الصرف: ' + s.dateText) + '</div>';
+      }
+      h += '<div class="tot" data-sec="batch-head">'
+         + '<div class="ln b"><span class="l">' + esc('رقم الدفعة') + '</span><span class="v">' + esc(s.ref || s.batchId) + '</span></div>'
+         + '<div class="ln"><span class="l">' + esc('معرّف الدفعة') + '</span><span class="v">' + esc(s.batchId) + '</span></div>'
+         + '<div class="ln"><span class="l">' + esc('وقت الصرف') + '</span><span class="v">' + esc(s.timeText) + '</span></div>'
+         + '<div class="ln big"><span class="l">' + esc('مصروف هذه الدفعة فعلًا') + '</span><span class="v">'
+         + esc(fitAmount(s.totals.paid, w)) + '</span></div></div>';
+      h += '<div data-sec="employees">' + s.items.map(function (it) {
+        return scopeRowHTML({
+          batchId: s.batchId, ref: s.ref, empId: it.empId, name: it.empName || '',
+          job: it.job || '', dailyWage: it.dailyWage,
+          work: num(it.work), abs: num(it.abs), vac: num(it.vac),
+          gross: it.gross, bonus: it.bonus, pen: it.pen, adv: it.adv, ded: it.ded,
+          due: it.due, paid: it.amount, paidBefore: it.paidBefore,
+          balanceAfter: it.balanceAfter,
+          partial: r2(num(it.amount)) < r2(num(it.due)) - 1e-9,
+          period: it.period || {}
+        }, paper);
+      }).join('') + '</div>';
+      h += '<div class="tot">'
+         + '<div class="ln"><span class="l">' + esc('سجلّات الدفعة') + '</span><span class="v">' + esc(s.totals.count) + '</span></div>'
+         + '<div class="ln big"><span class="l">' + esc('مصروف الدفعة') + '</span><span class="v">'
+         + esc(fitAmount(s.totals.paid, w)) + '</span></div></div>';
+    });
+    h += '<div style="page-break-before:always;break-before:page;"></div>';
+    h += '<div class="tot" data-sec="grand">'
+       + '<div class="ln"><span class="l">' + esc('عدد الدفعات') + '</span><span class="v">' + esc(m.batchCount) + '</span></div>'
+       + '<div class="ln"><span class="l">' + esc('عدد سجلّات الصرف') + '</span><span class="v">' + esc(m.count) + '</span></div>'
+       + '<div class="ln"><span class="l">' + esc('إجمالي المستحق') + '</span><span class="v">' + esc(fitAmount(m.totals.due, w)) + '</span></div>'
+       + '<div class="ln big"><span class="l">' + esc('الإجمالي المصروف فعلًا') + '</span><span class="v">' + esc(fitAmount(m.totals.paid, w)) + '</span></div>'
+       + '<div class="ln"><span class="l">' + esc('إجمالي المتبقّي') + '</span><span class="v">' + esc(fitAmount(m.totals.balanceAfter, w)) + '</span></div>'
+       + '</div>';
+    h += '<div class="foot c">' + esc(REPORT_FOOT) + '</div>';
+    return doc(h, opts.paperCSS != null ? opts.paperCSS : payrollPaperCSS(paper));
+  }
+
+  /* ==================================================================
+     Excel (SpreadsheetML 2003) — ورقة لكل دفعة + ورقة إجماليات
+     ==================================================================
+     صيغة XML رسمية من Microsoft تفتحها Excel و LibreOffice مباشرةً،
+     وتسمح بأوراق متعددة وعرض أعمدة وخلايا رقمية فعلية — بلا أي تبعية
+     خارجية جديدة (لا يوجد xlsx/exceljs في المشروع ولا نُضيف واحدًا). */
+  function xEsc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&apos;')
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+  }
+  function xCell(v, opts) {
+    opts = opts || {};
+    /* SpreadsheetML تتوقع ss:StyleID وليس ss — وإلا تُهمل الأنماط في Excel */
+    var s = opts.style ? (' ss:StyleID="' + xEsc(opts.style) + '"') : '';
+    if (opts.type === 'n') {
+      var n = Number(v);
+      if (!isFinite(n)) return '<Cell' + s + '/>';
+      return '<Cell' + s + '><Data ss:Type="Number">' + n + '</Data></Cell>';
+    }
+    return '<Cell' + s + '><Data ss:Type="String">' + xEsc(v) + '</Data></Cell>';
+  }
+  /* أسماء أوراق Excel: ≤31 محرفًا ولا تحمل : \ / ? * [ ] */
+  function safeSheetName(n) {
+    var s = String(n == null ? '' : n).replace(/[:\\\/?*\[\]]/g, '-');
+    if (!s) s = 'Sheet1';
+    return s.length > 31 ? s.slice(0, 31) : s;
+  }
+  function xSheet(name, cols, rows) {
+    var h = '<Worksheet ss:Name="' + xEsc(safeSheetName(name)) + '"><Table>';
+    h += '<Column ss:Width="' + num(cols && cols.width, 130) + '"/>';
+    h += '<Column ss:Width="' + num(cols && cols.width2, 160) + '"/>';
+    (rows || []).forEach(function (row) {
+      var cells = '';
+      (row || []).forEach(function (c) {
+        if (c && typeof c === 'object' && 'v' in c) cells += xCell(c.v, c);
+        else cells += xCell(c, {});
+      });
+      h += '<Row>' + cells + '</Row>';
+    });
+    h += '</Table><WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">'
+       + '<FreezePanes/><SplitHorizontal>1</SplitHorizontal>'
+       + '<TopRowBottomPane>1</TopRowBottomPane><ActivePane>2</ActivePane>'
+       + '</WorksheetOptions></Worksheet>';
+    return h;
+  }
+  function xlsWorkbook(sheets) {
+    var h = '<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n'
+      + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
+      + ' xmlns:o="urn:schemas-microsoft-com:office:office"'
+      + ' xmlns:x="urn:schemas-microsoft-com:office:excel"'
+      + ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"'
+      + ' xmlns:html="http://www.w3.org/TR/REC-html40">\n'
+      + '<Styles>'
+      + '<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Bottom"/>'
+      + '<Font ss:FontName="Calibri" ss:Size="11"/></Style>'
+      + '<Style ss:ID="hdr"><Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1"/>'
+      + '<Interior ss:Color="#DDEBF7" ss:Pattern="Solid"/></Style>'
+      + '<Style ss:ID="tot"><Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1"/>'
+      + '<Interior ss:Color="#FFF2CC" ss:Pattern="Solid"/></Style>'
+      + '</Styles>\n';
+    (sheets || []).forEach(function (s) { h += xSheet(s.name, s.cols, s.rows) + '\n'; });
+    h += '</Workbook>';
+    return h;
+  }
+
+  /* أعمورق الجدول المصدَّر — نفس الحقول لكل دفعة فتُقارَن بسهولة */
+  var XLS_COLS = ['الموظف', 'الوظيفة', 'أيام الحضور', 'أيام الغياب', 'أيام الإجازة',
+                  'الأجر المكتسب', 'مكافآت', 'سلف', 'جزاءات', 'خصومات',
+                  'المستحق (احتساب)', 'المصروف فعلًا', 'مسدَّد سابقًا', 'المتبقّي بعد الصرف',
+                  'من تاريخ', 'إلى تاريخ', 'رقم الدفعة', 'معرّف الدفعة', 'تاريخ الصرف'];
+  function xlsBatchRows(m, s) {
+    var rows = [];
+    rows.push([{ v: 'صرف رواتب — ' + (s.ref || s.batchId), style: 'tot' }]);
+    rows.push(['معرّف الدفعة', s.batchId]);
+    rows.push(['رقم الدفعة', s.ref || '']);
+    rows.push(['تاريخ الصرف', s.dateText + ' ' + s.timeText]);
+    rows.push(['عدد السجلات', { v: s.totals.count, type: 'n' }]);
+    rows.push([]);
+    rows.push(XLS_COLS.map(function (c) { return { v: c, style: 'hdr' }; }));
+    s.items.forEach(function (it) {
+      rows.push([it.empName || '', it.job || '',
+        { v: num(it.work), type: 'n' }, { v: num(it.abs), type: 'n' }, { v: num(it.vac), type: 'n' },
+        { v: r2(num(it.gross)), type: 'n' }, { v: r2(num(it.bonus)), type: 'n' },
+        { v: r2(num(it.adv)), type: 'n' }, { v: r2(num(it.pen)), type: 'n' }, { v: r2(num(it.ded)), type: 'n' },
+        { v: r2(num(it.due)), type: 'n' }, { v: r2(num(it.amount)), type: 'n' },
+        { v: r2(num(it.paidBefore)), type: 'n' }, { v: r2(num(it.balanceAfter)), type: 'n' },
+        (it.period || {}).fromKey || '', (it.period || {}).toKey || '',
+        s.ref || '', s.batchId, s.dateText]);
+    });
+    var g = s.totals;
+    rows.push([]);
+    rows.push(['إجمالي الدفعة', '', { v: g.work, type: 'n', style: 'tot' }, { v: g.abs, type: 'n', style: 'tot' },
+      { v: g.vac, type: 'n', style: 'tot' },
+      { v: r2(g.gross), type: 'n', style: 'tot' }, { v: r2(g.bonus), type: 'n', style: 'tot' },
+      { v: r2(g.adv), type: 'n', style: 'tot' }, { v: r2(g.pen), type: 'n', style: 'tot' },
+      { v: r2(g.ded), type: 'n', style: 'tot' }, { v: r2(g.due), type: 'n', style: 'tot' },
+      { v: r2(g.paid), type: 'n', style: 'tot' }, { v: r2(g.paidBefore), type: 'n', style: 'tot' },
+      { v: r2(g.balanceAfter), type: 'n', style: 'tot' }, '', '', '', '', '']);
+    return rows;
+  }
+  function xlsGrandRows(m) {
+    var rows = [];
+    rows.push([{ v: 'الإجمالي العام لكل الدفعات المختارة', style: 'tot' }]);
+    rows.push(['عدد التواريخ', { v: m.dateCount, type: 'n' }]);
+    rows.push(['عدد الدفعات', { v: m.batchCount, type: 'n' }]);
+    rows.push(['عدد سجلّات الصرف', { v: m.count, type: 'n' }]);
+    rows.push([]);
+    rows.push(['رقم الدفعة', 'معرّف الدفعة', 'تاريخ الصرف', 'سجلّات', 'المستحق (احتساب)',
+               'المصروف فعلًا', 'مسدَّد سابقًا', 'المتبقّي بعد الصرف'].map(function (c) { return { v: c, style: 'hdr' }; }));
+    m.sections.forEach(function (s) {
+      rows.push([s.ref || '', s.batchId, s.dateText,
+        { v: s.totals.count, type: 'n' }, { v: s.totals.due, type: 'n' },
+        { v: s.totals.paid, type: 'n' }, { v: s.totals.paidBefore, type: 'n' },
+        { v: s.totals.balanceAfter, type: 'n' }]);
+    });
+    rows.push([]);
+    rows.push(['الإجمالي العام', '', '', { v: m.count, type: 'n', style: 'tot' },
+      { v: r2(m.totals.due), type: 'n', style: 'tot' }, { v: r2(m.totals.paid), type: 'n', style: 'tot' },
+      { v: r2(m.totals.paidBefore), type: 'n', style: 'tot' },
+      { v: r2(m.totals.balanceAfter), type: 'n', style: 'tot' }]);
+    return rows;
+  }
+  /* مصنّف ورقة فريدة: لا تكرارت ولا محارف محجوزة ولا تجاوز 31 محرفًا */
+  function xlsSheetNameFor(m, s, used) {
+    var base = (s.dateText + ' ' + (s.ref || s.batchId));
+    var name = safeSheetName(base), i = 2, cand = name;
+    while (used[cand]) {
+      var suf = ' (' + i + ')';
+      cand = name.slice(0, Math.max(1, 31 - suf.length)) + suf;
+      i++;
+    }
+    used[cand] = 1;
+    return cand;
+  }
+  function xlsBuild(batches, opts) {
+    opts = opts || {};
+    var m = opts.model || multiBatchModel(batches, opts);
+    var used = {}, sheets = [];
+    m.sections.forEach(function (s) {
+      sheets.push({ name: xlsSheetNameFor(m, s, used), cols: { width: 150, width2: 170 }, rows: xlsBatchRows(m, s) });
+    });
+    sheets.push({ name: 'الإجماليات', cols: { width: 200, width2: 170 }, rows: xlsGrandRows(m) });
+    return { model: m, sheets: sheets, xml: xlsWorkbook(sheets) };
+  }
+
   return {
     DEFAULT_VENUE: DEFAULT_VENUE,
     REPORT_TITLE: REPORT_TITLE,
     RECEIPT_TITLE: RECEIPT_TITLE,
+    SCOPE_TITLE: SCOPE_TITLE, MULTI_TITLE: MULTI_TITLE,
     SECTION_ORDER: SECTION_ORDER,
     setUtil: setUtil, util: util,
     num: num, r2: r2, pad2: pad2,
     ellipsis: ellipsis, wrapArabic: wrapArabic, wrapHTML: wrapHTML, fitAmount: fitAmount,
     batchModel: batchModel, receiptModel: receiptModel,
+    payoutScopeModel: payoutScopeModel, scopeReportHTML: scopeReportHTML,
+    multiBatchModel: multiBatchModel, multiBatchHTML: multiBatchHTML,
+    xlsBuild: xlsBuild, xlsWorkbook: xlsWorkbook, xSheet: xSheet, xCell: xCell,
+    safeSheetName: safeSheetName, XLS_COLS: XLS_COLS,
     migrationAuditModel: migrationAuditModel, migrationAuditHTML: migrationAuditHTML,
     payrollPaperCSS: payrollPaperCSS, thermalCSS: thermalCSS, a4CSS: a4CSS,
     hrHTML: hrHTML, charWidth: charWidth,

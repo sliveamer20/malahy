@@ -783,6 +783,19 @@
   #empRoot::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:8px;}
   #empRoot::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
   #empRoot::-webkit-scrollbar-thumb:hover{background:var(--primary);}
+  /* جذر نافذة التسجيل اليومي: كان بلا أي قاعدة تمرير، فنموذج الأعمدة المرنة
+     (.emp-modal overflow:hidden + max-height:90vh) يقصّ ما بعد آخر موظف ولا
+     يظهر أي شريط تمرير. نفس معالجة #empRoot/#gmRoot: هو الحاوية القابلة
+     للتمرير الوحيد، فتبقى الرؤوس والأزرار كما هي ولا تنشأ أشرطة تمرير مزدوجة. */
+  #drRoot{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-inline-end:10px;}
+  #drRoot::-webkit-scrollbar{width:10px;}
+  #drRoot::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:8px;}
+  #drRoot::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+  #drRoot::-webkit-scrollbar-thumb:hover{background:var(--primary);}
+  /* شريط التنقّل بين الأيام يبقى ملتصقًا أعلى القائمة أثناء تمرير الموظفين
+     فيبقى الوصول إلى «اليوم السابق/التالي/اليوم» والتاريخ ممكنًا دائمًا
+     مهما طال عدد الموظفين. مرتبط بـ .dr-sticky لا بالتاريخ العام. */
+  #drRoot .dr-sticky{position:sticky;top:0;z-index:4;}
   .emp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;align-items:start;}
   .emp-grid > *{min-width:0;margin-bottom:0!important;}
   .emp-grid .full{grid-column:1/-1;}
@@ -998,6 +1011,38 @@
   .dr-st-full{color:var(--success-bright);border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);}
   .dr-st-in{color:var(--gold);border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.07);}
   .dr-st-absent{color:var(--red);border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.06);}
+  /* شارة الإجازة: تُقرأ من سجل الحضور نفسه فلها لون مستقل عن الغياب */
+  .dr-st-vac{color:var(--primary-bright);border-color:rgba(6,182,212,.4);background:rgba(6,182,212,.08);}
+  /* يوم بلا سجل: «جارٍ» أو «انتهى» — تمييز صريح بين الاثنين فلا يُقرأ
+     عدمُ التسجيل في يومٍ ما زال يعمل كغياب. */
+  .dr-st-open{color:var(--muted);border-color:var(--line);background:rgba(255,255,255,.03);}
+  /* زر «تسجيل غياب» لموظف واحد — يوم منتهٍ بلا أي سجل قائم */
+  .dr-absent{color:var(--red);border-color:rgba(251,113,133,.45);}
+  .dr-absent:hover{border-color:var(--red);background:rgba(251,113,133,.12);}
+  /* زر «إغلاق يوم الحضور» — ليومٍ سابق منتهٍ فقط */
+  .dr-fin{color:var(--primary-bright);border-color:rgba(6,182,212,.5);background:rgba(6,182,212,.1);}
+  .dr-fin:hover:not(:disabled){background:rgba(6,182,212,.2);border-color:rgba(6,182,212,.85);}
+  /* معاينة الإغلاق: عدّادات + قوائم أسماء قابلة للتمرير مهما طالت */
+  .dr-prev-box{max-height:66vh;overflow-y:auto;padding-inline-end:6px;}
+  .dr-prev-lead{font-size:12.5px;line-height:1.75;color:var(--muted);margin:0 0 10px;}
+  .dr-prev-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+  .dr-prev-stats .row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    background:var(--bg-2);border:1px solid var(--line-soft);border-radius:10px;padding:8px 11px;}
+  .dr-prev-stats .k{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.5;}
+  .dr-prev-stats .v{font-family:var(--led);direction:ltr;font-weight:900;font-size:15px;color:var(--ink);white-space:nowrap;}
+  .dr-prev-stats .row.mark{border-color:rgba(251,113,133,.4);background:rgba(251,113,133,.08);}
+  .dr-prev-stats .row.mark .v{color:var(--red);}
+  .dr-prev-g{margin-bottom:10px;}
+  .dr-prev-t{font-size:11.5px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+  .dr-prev-t.mark{color:var(--red);}
+  .dr-prev-t.rec{color:var(--success-bright);}
+  .dr-prev-t.skip{color:var(--muted-2);}
+  .dr-prev-list{display:flex;flex-direction:column;gap:4px;max-height:130px;overflow-y:auto;
+    background:var(--bg-2);border:1px solid var(--line-soft);border-radius:10px;padding:8px 10px;}
+  .dr-prev-i{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--ink);}
+  .dr-prev-i .s{font-size:10.5px;font-weight:800;color:var(--muted-2);border:1px solid var(--line);
+    border-radius:50px;padding:1px 7px;white-space:nowrap;}
+  .dr-prev-note{font-size:11px;line-height:1.7;color:var(--muted-2);margin:10px 0 0;}
   .emp-days .dr-time{font-size:12px;margin-bottom:0;}
 
   /* ===== Ledger (expenses + gifts) ===== */
@@ -1369,7 +1414,11 @@
 
   /* history */
   .hist-list{display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;margin-bottom:6px;}
-  .hist-item{background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden;transition:border-color .15s ease, box-shadow .15s ease;}
+  /* flex:0 0 auto مقصود: بدونه تكون عناصر القائمة قابلة للانكماش (flex-shrink:1)
+     فيقيّده max-height:56vh ويقصّ .hist-item محتواها (overflow:hidden) بدل أن
+     يتيح تمرير .hist-list — فتفقد أسطر آخر يوم مفتوح. الآن يبقي
+     كل يوم بارتفاعه الطبيعي والقائمة وحدها هي ما يتمرّر رأسيًا. */
+  .hist-item{flex:0 0 auto;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden;transition:border-color .15s ease, box-shadow .15s ease;}
   .hist-item:hover{border-color:rgba(255,255,255,.12);box-shadow:0 6px 18px -12px rgba(0,0,0,.5);}
   .hist-top{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background .15s ease;}
   .hist-top .hd{flex:1;}
@@ -1709,6 +1758,7 @@
   /* أشرطة التمرير */
   [data-theme="light"] ::-webkit-scrollbar-track,
   [data-theme="light"] #empRoot::-webkit-scrollbar-track,
+  [data-theme="light"] #drRoot::-webkit-scrollbar-track,
   [data-theme="light"] .rep-body::-webkit-scrollbar-track,
   [data-theme="light"] .rev-scroll::-webkit-scrollbar-track{background:rgba(15,23,42,.05);}
   /* تلميحات لوحة المفاتيح على الأزرار الملوّنة يبقى نصها داكنًا */
@@ -5426,6 +5476,12 @@ function empBatchesScreen(){
   wrap.appendChild(el('h3',{},['📜 سجل دفعات الصرف']));
   const list=pbList();
   if(!list.length){ wrap.appendChild(el('div',{class:'emp-empty'},['لا توجد دفعات صرف محفوظة بعد.'])); return wrap; }
+  const tools=el('div',{class:'emp-quick'});
+  tools.appendChild(el('button',{onClick:function(){ openPayrollPrintScope('report'); }},['🖨️ تقرير مجمّع (اختيار موظفين)']));
+  tools.appendChild(el('button',{onClick:function(){ openPayrollPrintScope('receipts'); }},['🧾 إيصالات (اختيار موظفين)']));
+  tools.appendChild(el('button',{onClick:function(){ openPayrollExportScope('pdf'); }},['📄 تصدير PDF (اختيار تواريخ)']));
+  tools.appendChild(el('button',{onClick:function(){ openPayrollExportScope('xls'); }},['📊 تصدير Excel (اختيار تواريخ)']));
+  wrap.appendChild(tools);
   const t=el('table',{class:'emp-table compact'});
   t.appendChild(el('tr',{},['رقم الدفعة','التاريخ','عدد الموظفين','إجمالي المصروف','إجمالي السلف والخصومات','تفاصيل'].map(function(h){return el('th',{text:h});})));
   list.forEach(function(b){
@@ -5820,6 +5876,249 @@ async function payrollPrintAllReceipts(batchId){
   toast(n===saved.length?('تم إرسال '+n+' إيصال للطابعة 🖨️'):('تم إرسال '+n+' من '+saved.length+' إيصال — راجع توصيل الطابعة'),n===saved.length?'ok':'warn');
 }
 
+/* ==================================================================
+     نطاق الصرف: اختيار الموظفين (للطباعة الحرارية)
+     وتواريخ الصرف (للتصدير PDF / Excel) — من سجلّات الصرف الفعلية فقط
+     ================================================================== */
+
+/* سجلّات الصرف **الفعلية المحفوظة** فقط (item.status==='saved') —
+   بند فشل أو تخطّي ليس صرفًا فلا يظهر ولا يُحتسب أبدًا. */
+function pbSavedItems(b){
+  return ((b&&b.items)||[]).filter(function(x){ return x && x.status==='saved'; });
+}
+/* كل سجلّات الصرف الفعلية مجمّعة: [{batch, item}] — قراءةٌ خالصة */
+function pbActualEntries(){
+  const out=[];
+  pbList().forEach(function(b){
+    pbSavedItems(b).forEach(function(it){ out.push({ batch:b, item:it }); });
+  });
+  return out;
+}
+/* تواريخ الصرف الفعلية: مشتقة من الدفعات التي فيها صرف فعلي فقط —
+   لا من تواريخ الحضور ولا من أي جدول مفترض. وتبقى دفعات اليوم الواحد
+   منفصلة برقمها. */
+function pbActualDates(){
+  const byDate={};
+  pbList().forEach(function(b){
+    if(!b||!b.ts) return;
+    if(!pbSavedItems(b).length) return;          /* لا صرف فعلي ⇒ ليس تاريخ صرف */
+    const k=b.dateKey||PR().dayKeyOfTs(b.ts);
+    if(!byDate[k]) byDate[k]={ dateKey:k, ts:Number(b.ts)||0, batches:[], records:0, paid:0 };
+    byDate[k].batches.push(b);
+    byDate[k].records+=pbSavedItems(b).length;
+    pbSavedItems(b).forEach(function(it){ byDate[k].paid=PR().r2(byDate[k].paid+Number(it.amount||0)); });
+    if((Number(b.ts)||0)>(Number(byDate[k].ts)||0)) byDate[k].ts=Number(b.ts)||0;
+  });
+  return Object.keys(byDate).sort().map(function(k){ return byDate[k]; });
+}
+
+/* ---------------- اختيار الموظفين: تقرير مجمّع / إيصالات فردية ---------------- */
+/* opts: {batchId?, mode:'report'|'receipts'} — لا يكتب شيئًا عند الفتح. */
+function payrollScopePicker(opts){
+  opts=opts||{};
+  const entries=pbActualEntries()
+    .filter(function(en){ return !opts.batchId || en.batch.id===opts.batchId; });
+  if(!entries.length){ toast('لا توجد سجلّات صرف محفوظة في النطاق المختار','warn'); return null; }
+  const sel={};
+  entries.forEach(function(en,i){ sel[i]=true; });   /* محدَّد مبدئيًا: الكل */
+
+  const ov=el('div',{class:'ovl2'});
+  const box=el('div',{class:'modal'});
+  const head=el('h3',{},[opts.mode==='receipts'?'🖨️ إيصالات الصرف — اختيار الموظفين':'🖨️ تقرير صرف مجمّع — اختيار الموظفين']);
+  const info=el('div',{class:'emp-hint',style:{marginTop:'0'}});
+  const list=el('div',{class:'dr-prev-list',style:{maxHeight:'38vh'}});
+  const acts=el('div',{class:'emp-quick',style:{margin:'10px 0 0'}});
+  const bar=el('div',{class:'modal-actions'});
+
+  function refresh(){
+    const n=Object.keys(sel).filter(function(k){ return sel[k]; }).length;
+    info.textContent='سجلّات الصرف الفعلية: '+fmtNum(entries.length)+' · المحدد: '+fmtNum(n)
+      +' — لن يظهر إلا من له صرف محفوظ فعلًا.';
+    okBtn.disabled=n===0;
+    okBtn.textContent=(opts.mode==='receipts'?'طباعة الإيصالات':'طباعة التقرير المجمّع')+' ('+fmtNum(n)+')';
+  }
+  list.innerHTML='';
+  entries.forEach(function(en,i){
+    const it=en.item;
+    const row=el('label',{class:'dr-prev-i',style:{cursor:'pointer',padding:'4px 2px'}});
+    const cb=el('input',{type:'checkbox',class:'emp-pick',style:{marginInlineEnd:'7px'}});
+    cb.checked=!!sel[i];
+    cb.addEventListener('change',function(){ sel[i]=cb.checked; refresh(); });
+    row.appendChild(cb);
+    row.appendChild(el('span',{class:'n',text:(it.empName||it.empId)+' — '+(en.batch.ref||en.batch.id)+' — مصروف '+fmtNum(it.amount)}));
+    row.appendChild(el('span',{class:'s',text:PR().fmtDMY(en.batch.ts)}));
+    list.appendChild(row);
+  });
+  acts.appendChild(el('button',{onClick:function(){
+    entries.forEach(function(en,i){ sel[i]=true; }); list.innerHTML=''; refresh();
+    list.querySelectorAll('input').forEach(function(c){ c.checked=true; });
+  }},['تحديد الكل']));
+  acts.appendChild(el('button',{onClick:function(){
+    entries.forEach(function(en,i){ sel[i]=false; }); refresh();
+    list.querySelectorAll('input').forEach(function(c){ c.checked=false; });
+  }},['مسح التحديد']));
+
+  const okBtn=el('button',{class:'confirm',onClick:function(){
+    const picked=entries.filter(function(en,i){ return sel[i]; });
+    ov.remove();
+    if(opts.mode==='receipts') payrollPrintSelectedReceipts(picked);
+    else payrollPrintScopeReport(picked);
+  }});
+  bar.appendChild(el('button',{class:'cancel',text:'إلغاء',onClick:function(){ ov.remove(); }}));
+  bar.appendChild(okBtn);
+
+  box.appendChild(head); box.appendChild(info);
+  box.appendChild(el('div',{class:'emp-sec',style:{padding:'12px 14px'}},[list,acts]));
+  box.appendChild(bar);
+  ov.appendChild(box);
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.remove(); });
+  ov.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ ev.stopPropagation(); ov.remove(); } });
+  document.body.appendChild(ov);
+  refresh();
+  return ov;
+}
+
+/* طباعة تقرير مجمّع للنطاق المختار — حراري بعرض الورق المختار (58/80/A4) */
+function payrollPrintScopeReport(entries){
+  const scope=PRR().payoutScopeModel(entries||[],{venue:payrollVenue()});
+  if(!scope.count){ toast('لا توجد سجلّات صرف محفوظة في النطاق المختار','warn'); return; }
+  const html=PRR().scopeReportHTML(scope,{venue:payrollVenue(),paper:paperKind()});
+  return payrollSend(html,'تم إرسال تقرير الصرف المجمّع للطابعة 🖨️');
+}
+/* إيصالات فردية — واحد لكل موظف مختار، بنفس مسار الطباعة القائم */
+async function payrollPrintSelectedReceipts(entries){
+  const list=entries||[];
+  if(!list.length){ toast('لا توجد سجلّات صرف مختارة','warn'); return; }
+  let n=0;
+  for(const en of list){
+    const html=PRR().receiptHTML(en.item,{venue:payrollVenue(),paper:paperKind(),ts:en.batch.ts,ref:en.batch.ref,batchId:en.batch.id});
+    if(html){ const ok=await payrollSend(html,null); if(ok) n++; }
+  }
+  toast(n===list.length
+    ? ('تم إرسال '+n+' إيصال للطابعة 🖨️')
+    : ('تم إرسال '+n+' من '+list.length+' إيصال — راجع توصيل الطابعة'),
+    n===list.length?'ok':'warn');
+}
+
+/* ---------------- اختيار تواريخ الصرف: تصدير PDF / Excel ---------------- */
+/* نفس واجهة الاختيار للزرّين — لا يُبنى أي خيار من تواريخ الحضور ولا من
+   جدول أسبوعي مفترض، بل من الدفعات التي فيها صرف محفوظ فعلًا. */
+function payrollDatePicker(opts){
+  opts=opts||{};
+  const dates=pbActualDates();
+  if(!dates.length){ toast('لا توجد تواريخ صرف محفوظة بعد — صرّف رواتب أولًا','warn'); return null; }
+  const sel={};                                   /* key = رقم الدفعة */
+  dates.forEach(function(d){ d.batches.forEach(function(b){ sel[b.id]=true; }); });
+
+  const ov=el('div',{class:'ovl2'});
+  const box=el('div',{class:'modal'});
+  const info=el('div',{class:'emp-hint',style:{marginTop:'0'}});
+  const body=el('div',{class:'dr-prev-list',style:{maxHeight:'44vh'}});
+  const acts=el('div',{class:'emp-quick',style:{margin:'10px 0 0'}});
+  const bar=el('div',{class:'modal-actions'});
+
+  function picked(){
+    const ids={};
+    dates.forEach(function(d){ d.batches.forEach(function(b){ if(sel[b.id]) ids[b.id]=1; }); });
+    return Object.keys(ids).map(function(id){ return pbGet(id); }).filter(function(b){ return !!b; });
+  }
+  function refresh(){
+    const bs=picked();
+    const recs=bs.reduce(function(a,b){ return a+pbSavedItems(b).length; },0);
+    const paid=bs.reduce(function(a,b){
+      return a+pbSavedItems(b).reduce(function(x,it){ return x+Number(it.amount||0); },0);
+    },0);
+    info.textContent='تواريخ الصرف الفعلية: '+fmtNum(dates.length)
+      +' · الدفعات المحدَّدة: '+fmtNum(bs.length)
+      +' · سجلّات الصرف: '+fmtNum(recs)
+      +' · المصروف: '+fmtNum(PR().r2(paid))+' ج';
+    okBtn.disabled=!bs.length;
+    okBtn.textContent=(opts.mode==='xls'?'تصدير Excel':'تصدير PDF')+' ('+fmtNum(bs.length)+' دفعة)';
+  }
+  function setAll(v){
+    dates.forEach(function(d){ d.batches.forEach(function(b){ sel[b.id]=v; }); });
+    refresh();
+    body.querySelectorAll('input').forEach(function(c){ c.checked=v; });
+  }
+  body.innerHTML='';
+  dates.forEach(function(d){
+    body.appendChild(el('div',{class:'dr-prev-t skip',text:'تاريخ الصرف: '+PR().fmtDMY(d.ts)+' — دفعات: '+fmtNum(d.batches.length)+' — سجلّات: '+fmtNum(d.records)+' — مصروف: '+fmtNum(d.paid)+' ج'}));
+    d.batches.forEach(function(b){
+      const row=el('label',{class:'dr-prev-i',style:{cursor:'pointer',padding:'4px 2px'}});
+      const cb=el('input',{type:'checkbox',class:'emp-pick',style:{marginInlineEnd:'7px'}});
+      cb.checked=!!sel[b.id];
+      cb.addEventListener('change',function(){ sel[b.id]=cb.checked; refresh(); });
+      row.appendChild(cb);
+      row.appendChild(el('span',{class:'n',text:'دفعة '+(b.ref||b.id)+' — سجلّات: '+fmtNum(pbSavedItems(b).length)+' — الوقت '+fmtTime12(new Date(b.ts))}));
+      row.appendChild(el('span',{class:'s',text:b.id}));
+      body.appendChild(row);
+    });
+  });
+  acts.appendChild(el('button',{onClick:function(){ setAll(true); }},['تحديد الكل']));
+  acts.appendChild(el('button',{onClick:function(){ setAll(false); }},['مسح التحديد']));
+
+  const okBtn=el('button',{class:'confirm',onClick:function(){
+    const bs=picked();
+    ov.remove();
+    if(opts.mode==='xls') exportPayrollScopeXLS(bs);
+    else exportPayrollScopePDF(bs);
+  }});
+  bar.appendChild(el('button',{class:'cancel',text:'إلغاء',onClick:function(){ ov.remove(); }}));
+  bar.appendChild(okBtn);
+
+  box.appendChild(el('h3',{},[opts.mode==='xls'?'📊 تصدير رواتب Excel — اختيار التواريخ':'📄 تصدير رواتب PDF — اختيار التواريخ']));
+  box.appendChild(info);
+  box.appendChild(el('div',{class:'emp-sec',style:{padding:'12px 14px'}},[body,acts]));
+  box.appendChild(bar);
+  ov.appendChild(box);
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.remove(); });
+  ov.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ ev.stopPropagation(); ov.remove(); } });
+  document.body.appendChild(ov);
+  refresh();
+  return ov;
+}
+
+/* ---------------- تصدير ملف واحد يشمل كل الدفعات المختارة ---------------- */
+function payrollScopeFileStamp(batches){
+  const d=pbActualDates().filter(function(x){
+    return (batches||[]).some(function(b){ return b.dateKey===x.dateKey; });
+  });
+  if(d.length===1) return PR().fmtDMY(d[0].ts).replace(/[\\/]/g,'-');
+  return d.map(function(x){ return x.dateKey; }).sort().join('_');
+}
+function exportPayrollScopePDF(batches){
+  const bs=(batches||[]).filter(function(b){ return b && pbSavedItems(b).length; });
+  if(!bs.length){ toast('لا توجد دفعات بصرف محفوظ في التحديد','warn'); return; }
+  if(!(window.malahyExport&&window.malahyExport.savePDF)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
+  const model=PRR().multiBatchModel(bs,{venue:payrollVenue()});
+  if(!model.batchCount){ toast('لا توجد سجلّات صرف محفوظة في التحديد','warn'); return; }
+  const html=PRR().multiBatchHTML(bs,{venue:payrollVenue(),paper:'a4',model:model});
+  window.malahyExport.savePDF({html:html,suggestedName:'تقرير-رواتب-'+payrollScopeFileStamp(bs)+'.pdf'})
+    .then(function(res){ if(res&&res.ok) toast('تم حفظ تقرير PDF ('+fmtNum(model.batchCount)+' دفعة / '+fmtNum(model.count)+' سجل)','ok'); else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn'); })
+    .catch(function(){ toast('تعذّر حفظ الملف','warn'); });
+}
+function exportPayrollScopeXLS(batches){
+  const bs=(batches||[]).filter(function(b){ return b && pbSavedItems(b).length; });
+  if(!bs.length){ toast('لا توجد دفعات بصرف محفوظ في التحديد','warn'); return; }
+  if(!(window.malahyExport&&window.malahyExport.saveXLS)){ toast('التصدير متاح داخل البرنامج فقط','warn'); return; }
+  const built=PRR().xlsBuild(bs,{venue:payrollVenue()});
+  if(!built.model.batchCount){ toast('لا توجد سجلّات صرف محفوظة في التحديد','warn'); return; }
+  window.malahyExport.saveXLS({xml:built.xml,suggestedName:'تقرير-رواتب-'+payrollScopeFileStamp(bs)+'.xls'})
+    .then(function(res){ if(res&&res.ok) toast('تم حفظ تقرير Excel ('+fmtNum(built.sheets.length)+' ورقة)','ok'); else if(!(res&&res.canceled)) toast('تعذّر حفظ الملف','warn'); })
+    .catch(function(){ toast('تعذّر حفظ الملف','warn'); });
+}
+/* بوابة الصلاحيات + فتح منتقي التواريخ (الفتح لا يكتب شيئًا) */
+function openPayrollExportScope(mode){
+  if(!MalahyPerm.hasPerm('payroll')){ MalahyPerm.deny(); return; }
+  if(!MalahyPerm.hasPerm('reportExport')){ MalahyPerm.deny(); return; }
+  if(!PRR()){ toast('تعذّر تحميل وحدة تقارير الرواتب','warn'); return; }
+  payrollDatePicker({mode:mode});
+}
+function openPayrollPrintScope(mode){
+  if(!MalahyPerm.hasPerm('payroll')){ MalahyPerm.deny(); return; }
+  if(!PRR()){ toast('تعذّر تحميل وحدة تقارير الرواتب','warn'); return; }
+  payrollScopePicker({mode:mode});
+}
 /* ==================== تصدير PDF / Excel من نفس المصدر ==================== */
 function exportPayrollPDF(){
   const html=PRR().batchHTML(pbLatest(),{venue:payrollVenue(),paper:'a4'});
@@ -5962,15 +6261,145 @@ function drSetAmount(empId,dayKey,field,amount){
   paintDregSummary();
   return true;
 }
-function drDayStats(dayKey){
-  const t={present:0,departed:0,ded:0,bonus:0};
+/* ملخص اليوم: الحضور/الانصراف/الخصم/المكافأة من التسجيل اليومي، والغياب
+   والإجازة من سجل حضور الموظف نفسه — وهو المصدر الوحيد الذي يحسب الراتب.
+   فلا يُحتسب اليوم مرتين ولا يُختلق يوم لم يُسجَّل. */
+function drDayStats(dayKey,list){
+  const t={present:0,departed:0,ded:0,bonus:0,absent:0,vacation:0,unrecorded:0};
   drLoad().forEach(function(r){
     if(!r||r.dayKey!==dayKey) return;
     if(r.inTs) t.present++;
     if(r.outTs) t.departed++;
     t.ded+=Number(r.deduction)||0; t.bonus+=Number(r.bonus)||0;
   });
+  if(PR()){
+    (list||[]).forEach(function(e){
+      if(!e||!e.id) return;
+      const c=PR().dayClass(PR().dayRec(e,dayKey));
+      if(c==='absent') t.absent++;
+      else if(c==='vacation') t.vacation++;
+      else t.unrecorded++;      /* حضور أو بلا سجل — وليس غيابًا تلقائيًا */
+    });
+  }
   return t;
+}
+/* ============ سجل حضور موظف واحد + إغلاق يوم الحضور ====================
+   قاعدة العمل المعتمدة في هذا النشاط: **كل يوم تقويمي يوم عمل** — لا يوم
+   راحة أسبوعي ولا أعياد ولا جدول عمل خاص بالموظف. فـ«يوم العمل المؤهَّل»
+   هو كل يومٍ سابق انتهى بعد تاريخ تعيين الموظف، ولا شيء غير ذلك.
+   (لذلك لا وجود هنا لأي تقويم أعياد أو يوم راحة مفترض.)
+
+   ① تسجيل غياب موظف واحد — يدوي، بنفس مسار الحالة القائم (PR().markDay).
+   ② إغلاق يوم حضور كامل — يخطّط أولًا (معاينة كاملة) ثم ينفّذ الخطة نفسها،
+      فالمعاينة والنتيجة متطابقتان بحكم البنية. لا يُنفَّذ عند الفتح ولا عند
+      تبديل التاريخ ولا عند عرض السجل — بل بإصغاء صريح من المشغّل.
+
+   الضوابط المشتركة: لا اليوم الجاري ولا ما بعده · لا يُطمس أي حالة قائمة
+   (حضور/إجازة/غياب) · لا يُلمس من كان قبل تاريخ تعيينه · مرّة واحدة
+   بالمفتاح · تراجع كامل للكل عند فشل الحفظ. */
+function drDayFinished(dayKey){
+  /* مفتاح يوم العمل بصيغة YYYY-MM-DD دائمًا ⇒ المقارنة النصية ترتيبٌ زمني */
+  return String(dayKey||'') < drTodayKey();
+}
+function drMarkAbsent(empId,dayKey){
+  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
+  if(!PR()){ toast('تعذّر تحميل نظام الرواتب — أعد تشغيل البرنامج','warn'); return; }
+  dayKey=dayKey||(_dreg.dayKey||drTodayKey());
+  if(!drDayFinished(dayKey)){ toast('لا يُسجَّل غياب ليومٍ ما زال يعمل — اليوم غير منتهٍ بعد','warn'); return; }
+  const e=empFind(empId); if(!e) return;
+  if(PR().dayRec(e,dayKey)){
+    toast('يوم '+drDayLabel(dayKey)+' مسجَّل بالفعل لـ«'+e.name+'» ولن يُغيَّر','warn'); return;
+  }
+  empCore(e);
+  PR().markDay(e,dayKey,'absent',{src:'manual',note:'تسجيل غياب من نافذة التسجيل اليومي'});
+  if(!empSave()){
+    PR().clearDay(e,dayKey);          /* تراجع: تبقى الذاكرة مطابقة للقرص */
+    toast('تعذّر حفظ ملف الموظفين — لم يُسجَّل الغياب','warn'); return;
+  }
+  toast('تم تسجيل غياب '+e.name+' — '+drDayLabel(dayKey),'ok');
+  paintDreg();
+}
+/* ============ إغلاق يوم الحضور (تسجيل غياب تلقائي بعد المعاينة) ============
+   يخطّط أولًا عبر PR().planAttendanceClose (نقيّة، بلا كتابة) ثم يعرض
+   معاينة كاملة: التاريخ، عددaffected، أسماء الموظفين، وسبب كل تخطّي.
+   وعند التأكيد ينفّذ **نفس الخطة** عبر PR().applyAttendanceClose — فلا
+   يختلف ما وُعد به عمّا يُنفَّذ، ويعيد التطبيق على نفس الخطة صفر تكرار.
+   كل لا يحدث هذا إلا بإصغاء صريح: الفتح وتبديل التاريخ والعرض لا يكتبون. */
+function drCloseDay(){
+  if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
+  if(!PR()){ toast('تعذّر تحميل نظام الرواتب — أعد تشغيل البرنامج','warn'); return; }
+  const dayKey=_dreg.dayKey||drTodayKey();
+  /* المعاينة محسوبة على كل الموظفين دائمًا حتى لا يظنّ المشغّل أن
+     الإغلاق جزئي — والمفلتر لا يغيّر شيئًا (عرض فقط). */
+  const plan=PR().planAttendanceClose(empLoad(),dayKey,{todayKey:drTodayKey()});
+  if(!plan.ok){
+    toast(plan.reason==='bad-day'
+      ? 'تاريخ غير صالح — اختر يومًا صحيحًا من قائمة التاريخ'
+      : 'لا يمكن إغلاق يوم الحضور أثناء عمله أو قبل بدئه','warn');
+    return;
+  }
+  const label=drDayLabel(dayKey);
+  if(!plan.mark.length){
+    toast(plan.recorded.length
+      ? ('كل الموظفين في '+label+' لديهم حالة مسجَّلة — لا شيء يُغلق')
+      : ('لا يوجد موظف مؤهَّل بلا حالة في '+label),'warn');
+    return;
+  }
+  const nameOf=function(list){ return list.map(function(m){ return m.name||m.id; }); };
+  const stat=function(txt,val,cls){ return el('div',{class:'row '+(cls||'')},[
+    el('div',{class:'k'},[txt]), el('div',{class:'v',text:fmtNum(val)}) ]); };
+  const group=function(title,list,tone){
+    if(!list.length) return null;
+    return el('div',{class:'dr-prev-g'},[
+      el('div',{class:'dr-prev-t '+tone,text:title+' ('+fmtNum(list.length)+')'}),
+      el('div',{class:'dr-prev-list'},list.map(function(m){
+        return el('div',{class:'dr-prev-i'},[
+          el('span',{class:'n',text:m.name||m.id}),
+          (m.status?el('span',{class:'s',text:({work:'حضور',vacation:'إجازة',absent:'غياب'})[m.status]||m.status}):null)
+        ]);
+      })),
+    ]);
+  };
+  const ov=el('div',{class:'ovl2'});
+  const box=el('div',{class:'modal'},[
+    el('h3',{},['🔒 إغلاق يوم الحضور — '+label]),
+    el('div',{class:'dr-prev-box'},[
+      el('p',{class:'dr-prev-lead',text:'كل يومٍ تقويمي في هذا النشاط يوم عمل. سيُسجَّل «غياب» لكل موظف مؤهَّل بلا أي حالة مسجَّلة في هذا اليوم.'}),
+      el('div',{class:'dr-prev-stats'},[
+        stat('سيُسجَّل غيابه',plan.mark.length,'mark'),
+        stat('لديه حالة مسجَّلة — لن يُلمس',plan.recorded.length),
+        stat('قبل تاريخ تعيينه — يُترك',plan.notHired.length),
+        stat('بلا تاريخ تعيين — يُترك',plan.noHire.length),
+      ]),
+      group('سيُسجَّل غيابه',plan.mark,'mark'),
+      group('لديه حالة مسجَّلة — لن يُلمس',plan.recorded,'rec'),
+      group('قبل تاريخ تعيينه — يُترك',plan.notHired,'skip'),
+      group('بلا تاريخ تعيين — يُترك',plan.noHire,'skip'),
+      el('p',{class:'dr-prev-note',text:'الغياب لا يُحتسب أجرًا ولا يُخصم من الراتب — يتغيّر فقط عدّاد أيام الغياب في سجل الحضور وتقارير صرف الدفعة. ولا يمكن التراجع عن الإغلاق إلا من صفحة الموظف ← سجل الحضور.'}),
+    ]),
+    el('div',{class:'modal-actions'},[
+      el('button',{class:'cancel',text:'إلغاء',onClick:function(){ ov.remove(); }}),
+      el('button',{class:'confirm',text:'إغلاق اليوم وتسجيل الغياب',onClick:function(){
+        ov.remove();
+        /* لقطة قبل التنفيذ لكل موظف — التراجع يشمل الجميع دفعة واحدة */
+        const snapshot={};
+        empLoad().forEach(function(e){ if(e&&e.id) snapshot[e.id]=JSON.parse(JSON.stringify(e.days||[])); });
+        const res=PR().applyAttendanceClose(empLoad(),plan);
+        if(!res.ok){ toast('تعذّر إغلاق يوم الحضور — لم يُسجَّل أي غياب','warn'); return; }
+        if(!empSave()){
+          empLoad().forEach(function(e){ if(e&&snapshot[e.id]) e.days=snapshot[e.id]; });
+          toast('تعذّر حفظ ملف الموظفين — تراجع الإغلاق بالكامل ولم يُثبَّت أي غياب','warn'); return;
+        }
+        toast('🔒 أُغلق يوم '+label+' — غُيّب '+fmtNum(res.marked.length)
+          +' · تُخطّى '+fmtNum(plan.recorded.length+plan.notHired.length+plan.noHire.length+res.alreadySkipped),'ok');
+        paintDreg();
+      }}),
+    ]),
+  ]);
+  ov.appendChild(box);
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) ov.remove(); });
+  ov.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ ev.stopPropagation(); ov.remove(); } });
+  document.body.appendChild(ov);
 }
 function openDailyReg(empId){
   if(!MalahyPerm.hasPerm('employeeManage')){ MalahyPerm.deny(); return; }
@@ -6007,8 +6436,15 @@ function drBody(){
   }});
   const todayBtn=el('button',{class:'emp-back',style:{margin:'0',padding:'8px 12px'},onClick:function(){ drGo(drTodayKey()); }},['📍 اليوم']);
   const isToday=(dayKey===drTodayKey());
-  wrap.appendChild(el('div',{class:'emp-week-bar'},[
-    el('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},[prevBtn,nextBtn,todayBtn,dateIn]),
+  /* شريط التنقّل ملتصق أعلى القائمة (dr-sticky) فيبقى الوصول إلى الأيام
+     والتاريخ مفتوحًا مهما بلغ عدد الموظفين. */
+  const finBtn=el('button',{class:'dr-btn dr-fin',onClick:function(){ drCloseDay(); }},['🔒 إغلاق يوم الحضور']);
+  if(isToday||!drDayFinished(dayKey)){
+    finBtn.disabled=true;
+    finBtn.title='يُتاح إغلاق يوم الحضور بعد انتهاء يوم العمل فقط';
+  }
+  wrap.appendChild(el('div',{class:'emp-week-bar dr-sticky'},[
+    el('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},[prevBtn,nextBtn,todayBtn,dateIn,finBtn]),
     el('div',{style:{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}},[
       el('span',{},['التاريخ: ',el('b',{text:drDayLabel(dayKey)})]),
       isToday?el('span',{class:'emp-chip cur'},['🟢 اليوم الحالي']):el('span',{class:'emp-chip pend'},['🗓️ يوم سابق'])
@@ -6023,12 +6459,13 @@ function drBody(){
       ]));
     }
   }
-  const st=drDayStats(dayKey);
   const L=_dreg.empId?(empFind(_dreg.empId)?[empFind(_dreg.empId)]:[]):empLoad();
-  wrap.appendChild(el('div',{class:'rep-cards emp-c5',id:'drSummary'},[
+  const st=drDayStats(dayKey,L);
+  wrap.appendChild(el('div',{class:'rep-cards emp-c6',id:'drSummary'},[
     repCard('👥 عدد الموظفين',fmtNum(L.length),'tickets'),
     repCard('✅ الحضور',fmtNum(st.present),'rev'),
     repCard('🏠 الانصراف',fmtNum(st.departed),'gift'),
+    repCard('❌ الغياب',fmtNum(st.absent),'exp'),
     repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
     repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift'),
   ]));
@@ -6040,7 +6477,9 @@ function drBody(){
   sec.appendChild(el('div',{class:'emp-sec-h'},['📋 جدول التسجيل اليومي']));
   sec.appendChild(el('div',{class:'emp-hint',style:{marginTop:'0',marginBottom:'10px'}},[
     '✅ تسجيل «حضور» يُنشئ يوم عمل في سجل الحضور — وهو المصدر الوحيد لحساب الراتب. ',
-    '➖ الخصم و 🎁 المكافأة يظهران تلقائيًا في راتبه.'
+    '➖ الخصم و 🎁 المكافأة يظهران تلقائيًا في راتبه. ',
+    '❌ لا يُسجَّل غياب تلقائيًا أبدًا: لا في يومٍ ما زال يعمل، ولا ليوم راحةٍ أو عطلة — لأن التطبيق لا يخزّن أيّهما. '
+    +'✅ حضور · 🌴 إجازة · ❌ غياب — تُسجَّل يدويًا لكل موظف في يومه المنتهي، ولا تمسّ أي حالة مسجَّلة.'
   ]));
   const tbl=el('table',{class:'emp-table dr-table'});
   tbl.appendChild(el('tr',{},['الموظف','الحضور','الانصراف','الخصم (ج)','المكافأة (ج)','حالة اليوم','تفاصيل'].map(function(h){return el('th',{text:h});})));
@@ -6069,9 +6508,34 @@ function drBody(){
         if(isNaN(v)||v<0){ toast('اكتب قيمة مكافأة صحيحة','warn'); return; }
         if(drSetAmount(e.id,dayKey,'bonus',v)) toast('تم حفظ مكافأة '+e.name+' — '+fmtNum(v)+' ج','ok');
       }});
-    let statusTxt='لم يُسجَّل', statusCls='';
-    if(r&&r.inTs&&r.outTs){ statusTxt='حضر وانصرف'; statusCls='dr-st-full'; }
-    else if(r&&r.inTs){ statusTxt='حضر (لم ينصرف)'; statusCls='dr-st-in'; }
+    /* حالة اليوم تُقرأ من سجل حضور الموظف (e.days — المصدر الوحيد الذي يحسب
+       الراتب) لا من أزرار التسجيل اليومية وحدها، وإلا بدا يوم الغياب
+       المسجَّل فعلًا في السجل «لم يُسجَّل» واختفت منه الإجازة.
+       واليوم بلا سجل يبقى بلا سجل: لا يُختلق غياب، ويُفصَّل جارٍ/منتهٍ
+       حتى لا يُقرأ غياب اليوم الجاري كغيابٍ نهائي. */
+    const led=PR()?PR().dayRec(e,dayKey):null;
+    const ledCls=PR()?PR().dayClass(led):'unrecorded';
+    let statusTxt, statusCls;
+    if(ledCls==='absent'){ statusTxt='❌ غياب'; statusCls='dr-st-absent'; }
+    else if(ledCls==='vacation'){ statusTxt='🌴 إجازة'; statusCls='dr-st-vac'; }
+    else if(ledCls==='work'){
+      if(r&&r.inTs&&r.outTs){ statusTxt='حضر وانصرف'; statusCls='dr-st-full'; }
+      else if(r&&r.inTs){ statusTxt='حضر (لم ينصرف)'; statusCls='dr-st-in'; }
+      else { statusTxt='✅ حضور (من السجل)'; statusCls='dr-st-full'; }
+    }
+    else if(isToday){ statusTxt='⏳ اليوم جارٍ — لم يُسجَّل'; statusCls='dr-st-open'; }
+    else { statusTxt='⚠️ لم يُسجَّل — اليوم انتهى'; statusCls='dr-st-open'; }
+    /* زر «تسجيل غياب» — للموظف الواحد، ويومٍ منتهٍ، ولموظفٍ بلا أي سجل في
+       ذلك اليوم. لا يظهر لليوم الجاري إطلاقًا، فلا يُسبَب غيابٌ ليومٍ ما زال
+       يعمل، ولا يستطيع أن يمسّ حضورًا أو إجازة أو غيابًا مسجَّلًا. */
+    const detailKids=[el('button',{class:'emp-mini',title:'فتح صفحة الموظف والراتب',onClick:function(){
+      closeOverlay(); openEmployees(); empGo('emp',e.id,null);
+    }},['📂'])];
+    if(drDayFinished(dayKey)&&ledCls==='unrecorded'){
+      detailKids.push(el('button',{class:'emp-mini dr-absent',
+        title:'تسجيل غياب '+e.name+' في '+drDayLabel(dayKey)+' — القرار يدوي لكل موظف',
+        onClick:function(){ drMarkAbsent(e.id,dayKey); }},['❌']));
+    }
     tbl.appendChild(el('tr',{},[
       el('td',{},[el('span',{class:'emp-name',onClick:function(){ openDailyReg(e.id); }},[e.name]),el('div',{class:'dr-job',text:e.job||'—'})]),
       el('td',{class:'dr-cell'},inKids),
@@ -6079,9 +6543,7 @@ function drBody(){
       el('td',{},[dedIn]),
       el('td',{},[bonIn]),
       el('td',{},[el('span',{class:'dr-status '+statusCls,text:statusTxt})]),
-      el('td',{},[el('button',{class:'emp-mini',title:'فتح صفحة الموظف والراتب',onClick:function(){
-        closeOverlay(); openEmployees(); empGo('emp',e.id,null);
-      }},['📂'])]),
+      el('td',{},detailKids),
     ]));
   });
   sec.appendChild(el('div',{class:'tbl-wrap'},[tbl]));
@@ -6091,12 +6553,13 @@ function drBody(){
 function paintDregSummary(){
   const box=$('#drSummary'); if(!box) return;
   const dayKey=_dreg.dayKey||drTodayKey();
-  const st=drDayStats(dayKey);
   const L=_dreg.empId?(empFind(_dreg.empId)?[empFind(_dreg.empId)]:[]):empLoad();
+  const st=drDayStats(dayKey,L);
   box.innerHTML='';
   [repCard('👥 عدد الموظفين',fmtNum(L.length),'tickets'),
    repCard('✅ الحضور',fmtNum(st.present),'rev'),
    repCard('🏠 الانصراف',fmtNum(st.departed),'gift'),
+   repCard('❌ الغياب',fmtNum(st.absent),'exp'),
    repCard('➖ إجمالي الخصومات',fmtNum(st.ded),'exp'),
    repCard('🎁 إجمالي المكافآت',fmtNum(st.bonus),'gift')].forEach(function(c){ box.appendChild(c); });
 }

@@ -280,7 +280,7 @@ function makeStore(seed) {
       "changed: " + changedList.join(", "));
 
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
-    ok("package.json version still 2.5.5 (release bump, re-anchored for v2.5.5)", pkg.version === "2.5.5", pkg.version);
+    ok("package.json version now 2.5.6 (authorized v2.5.6 release bump)", pkg.version === "2.5.6", pkg.version);
 
     const gate = fs.readFileSync(path.join(__dirname, "..", "update-gate.js"), "utf8");
     const m = gate.match(/FLOOR_VERSION\s*=\s*"([^"]+)"/);
