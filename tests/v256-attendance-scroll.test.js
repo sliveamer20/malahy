@@ -1024,6 +1024,7 @@ console.log("\n-- D) scope guards --");
                لإصدار v2.6.0 (خطّاف مزيل NSIS) — نفس نهج إعادة التثبيت
                المعتمَد في v2.5.4 (الالتزام 2ed072f). */
             "tests/protected-baseline.json",
+            "AI_REPORTS/V2_6_0_RELEASE_PUBLISH_REPORT.md",
             "AI_REPORTS/UNINSTALL_ADMIN_PASSWORD_PROTECTION_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
