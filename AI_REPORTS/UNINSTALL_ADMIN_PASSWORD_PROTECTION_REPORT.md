@@ -264,10 +264,21 @@ fully cleared.
   release: `D1` now expects version `2.6.0`, and the `D9` allow-list gained the v2.6.0
   files (`.gitignore`, `users.js`, `electron-builder.yml`, `windows/uninstall-auth.html`,
   `build/uninstall-auth.nsh`, `tests/v260-uninstall-auth.test.js`, this report).
-- Full suite: no new regressions; the only failing files are the pre-existing ones
-  (`payroll-ui` date tests, stale `phase3b/3c1/3c2` baseline guards) that fail
-  identically on a pristine `v2.5.9` tree. `tests/v256-attendance-scroll.test.js` passes
-  fully once the v2.6.0 files are committed (its `D9` guard reads the committed diff).
+- Release-guard re-anchoring (same convention as the v2.5.4 release, commit
+  `2ed072f`): the version pins in `phase3b-auth` / `phase3c1-gate` /
+  `phase3c2-baseline` / `v256-payroll-exports` now expect `2.6.0`, and the single
+  `electron-builder.yml` entry of `tests/protected-baseline.json` was re-anchored to
+  the v2.6.0 hash (no other entry changed; `index.html`/`database.js`/`package.json`
+  remain allow-listed as intended). After this, the phase3b/3c1/3c2 suites pass fully.
+  The `D9` guard (which diffs `v2.5.6~1..HEAD` plus the working tree) gained
+  `tests/protected-baseline.json` in its allow-list with a documenting comment.
+- Full suite (final, committed state): **2603 passed / 2 failed across 30 files**.
+  The only 2 failures are `payroll-ui` §7 tests `7g`/`7g2`, which are **pre-existing
+  and date-sensitive**: verified byte-identical on a *pristine* v2.5.9 checkout.
+  Root cause: `payCommit` in `index.html` derives the batch reference from the real
+  clock (`Date.now()`), so the fixed-date pins only match on their literal day
+  (v2.5.9 was released 2026-10-13; today is 2026-10-14). This is untouched payroll
+  behaviour, out of this release's scope — no fix was made, see §9.
 - No payroll, attendance, ticket, expense, or accounting code was touched
   (scope guard D2–D8 assert this on `index.html` and the payroll modules).
 
@@ -339,3 +350,8 @@ uninstall-refusal path leaves the installation byte-for-byte intact, the correct
 password allows the uninstall, a missing app exe fails closed without deletion, the
 auto-update path completes with no password prompt, and the production database hash was
 confirmed identical after every test run. All regression suites show no new failures.
+
+The only remaining suite failures anywhere are the two pre-existing, date-sensitive
+`payroll-ui` §7 checks (`7g`/`7g2`), proven byte-identical on a pristine v2.5.9 checkout
+and caused by the real-clock batch-reference behaviour of `payCommit` (unchanged
+since v2.5.5, and out of scope for this release — no payroll code was modified).
