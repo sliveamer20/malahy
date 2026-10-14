@@ -20,7 +20,7 @@ console.log("PHASE 3C-2 — Regression, gates & source security");
 
 /* ===== الإصدار لم يتغير ===== */
 const pkg = JSON.parse(rd("package.json"));
-ok("package.json version now 2.5.9 (authorized v2.5.9 release bump)", pkg.version === "2.5.9", String(pkg.version));
+ok("package.json version now 2.6.0 (authorized v2.6.0 release bump)", pkg.version === "2.6.0", String(pkg.version));
 
 /* ===== الملفات المحمية مقابل خط الأساسي ===== */
 const base = JSON.parse(fs.readFileSync(path.join(__dirname, "protected-baseline.json"), "utf8"));
