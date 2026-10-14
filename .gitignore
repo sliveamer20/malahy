@@ -10,7 +10,10 @@ dist/
 release/
 releases/
 out/
-build/
+build/*
+# استثناء: خطّاف مزيل NSIS المخصص ضروري للبناء ويجب أن يُتابَع في المستودع
+# (electron-builder يقرؤه عبر nsis.include). باقي محتويات build/ تظل محلية.
+!build/uninstall-auth.nsh
 *.exe
 *.exe.blockmap
 *.dmg

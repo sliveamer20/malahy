@@ -94,6 +94,17 @@ contextBridge.exposeInMainWorld("malahyAuth", {
   logout: () => ipcRenderer.invoke("auth:logout"),
 });
 
+// مصادقة إلغاء التثبيت (--uninstall-auth) — قناة مُسجَّلة في العملية الرئيسية
+// فقط أثناء وضع مصادقة إلغاء التثبيت. التحقق يتم حصرًا عبر users.verifyAdminPassword
+// (نفس تجزئة حساب المدير). لا يُمرَّر أي سر في سطر الأوامر أو السجل.
+contextBridge.exposeInMainWorld("malahyUninstallAuth", {
+  // التحقق من كلمة سر المدير → { ok } | { ok:false, error }
+  verify: (password) =>
+    ipcRenderer.invoke("uninstall-auth:verify", { password: String(password || "") }),
+  // إلغاء العملية (يُغلق التطبيق برمز خروج غير صفري فيمنع الحذف)
+  cancel: () => { try { ipcRenderer.send("uninstall-auth:cancel"); } catch (e) {} },
+});
+
 // بوابة التحديث الإجباري (النافذة المقفولة قبل الواجهة الرئيسية)
 // ملاحظة: لا يوجد أي دالة "skip"/"later"/"close" — البرنامج لا يُقفل إلا
 // بعد التحديث، ولا يمكن تجاوز البوابة بأي زر أو اختصار.

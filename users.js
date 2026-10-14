@@ -533,6 +533,30 @@ async function completeRecovery(args) {
   return { ok: true };
 }
 
+/* ============ التحقق من كلمة سر المدير لإلغاء التثبيت (قراءة فقط) ============ */
+/* يُستخدم هذا المسار حصرًا من «وضع مصادقة إلغاء التثبيت» (--uninstall-auth) الذي
+   يُطلِقه مزيل التثبيت NSIS قبل حذف أي ملف. يعيد استخدام نفس آلية تسجيل الدخول
+   تمامًا (نفس التجزئة، نفس verifyPassword، نفس السلطة = حساب المدير الوحيد).
+
+   الخصائص الأمنية:
+   - قراءة فقط: لا يستدعي writeDoc ولا db.set إطلاقًا، فلا يُعدّل أي بيانات.
+   - لا يُنشئ جلسة ولا يلمّس K_PASS ولا يهاجر كلمة سر قديمة (الترحيل يحدث فقط
+     عند الإقلاع الطبيعي عبر initUsers).
+   - لا يكتب أي سر في السجل: الخطأ دائمًا منطقي صرف.
+   - fail-closed: لو لم يوجد مستودع أو حساب مدير أو تجزئة → رفض. لا يحدث أي
+     مسار بديل يسمح بالحذف بدون كلمة السر الصحيحة. */
+async function verifyAdminPassword(plain) {
+  try {
+    const doc = readDoc();
+    if (!doc || !doc.admin || typeof doc.admin.passwordHash !== "string") return false;
+    return await verifyPassword(String(plain == null ? "" : plain), doc.admin.passwordHash);
+  } catch (e) {
+    /* أي فشل في قراءة المستودع (تلف كامل، صلاحيات، …) → رفض مُغلق.
+       لا نُصرّح بالحذف أبداً بدون تجزئة صالحة يتم التحقق منها بنجاح. */
+    return false;
+  }
+}
+
 module.exports = function (dbInstance) {
   db = dbInstance;
   return {
@@ -546,6 +570,7 @@ module.exports = function (dbInstance) {
     beginRecovery, completeRecovery,
     getSession, logout, allPerms, sanitize,
     hashPassword, verifyPassword,
+    verifyAdminPassword,
     hashRecoveryCode, verifyRecoveryCode,
   };
 };

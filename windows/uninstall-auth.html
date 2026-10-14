@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>إلغاء تثبيت ملاهي كوكو بارك</title>
+<style>
+:root{
+  --bg:#0a1628;
+  --panel:#0f2137;
+  --panel-2:#152a46;
+  --line:rgba(255,255,255,.08);
+  --ink:#f1f5f9;
+  --muted:#94a3b8;
+  --primary:#06b6d4;
+  --primary-dim:#0891b2;
+  --primary-bright:#22d3ee;
+  --danger:#ef4444;
+  --danger-dim:#dc2626;
+  --radius:16px;
+  --radius-sm:11px;
+  --shadow:0 18px 40px -18px rgba(0,0,0,.8);
+  --ui:'Cairo','Tajawal','Segoe UI',Tahoma,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+html,body{
+  background:
+    radial-gradient(ellipse 600px 300px at 50% 40%,rgba(6,182,212,.07),transparent 65%),
+    var(--bg);
+  height:100vh;min-height:100vh;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ui);color:var(--ink);
+}
+.card{
+  width:400px;max-width:92vw;
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:28px 26px 22px;
+  display:flex;flex-direction:column;gap:14px;text-align:center;
+}
+.icon{
+  width:52px;height:52px;margin:0 auto;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);
+}
+.icon svg{width:28px;height:28px;stroke:var(--danger);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;}
+h1{font-size:20px;font-weight:800;line-height:1.3;}
+p.msg{font-size:14px;color:var(--muted);line-height:1.65;}
+.field{text-align:right;display:flex;flex-direction:column;gap:7px;}
+label{font-size:13px;font-weight:700;color:var(--muted);}
+input{
+  width:100%;padding:12px 14px;font-family:var(--ui);font-size:16px;
+  color:var(--ink);background:rgba(0,0,0,.28);
+  border:1px solid var(--line);border-radius:var(--radius-sm);
+  outline:none;direction:ltr;text-align:center;letter-spacing:2px;
+  transition:border-color .15s,box-shadow .15s;
+}
+input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(6,182,212,.25);}
+input[aria-invalid="true"]{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.22);}
+.err{min-height:18px;font-size:13px;color:#fca5a5;font-weight:600;}
+.buttons{display:flex;gap:10px;margin-top:2px;}
+button{
+  flex:1;padding:12px 10px;font-family:var(--ui);font-size:15px;font-weight:800;
+  border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;
+  transition:transform .08s,filter .15s,background .15s;
+}
+button:active{transform:scale(.97);}
+.btn-primary{background:var(--danger);color:#fff;}
+.btn-primary:hover{background:var(--danger-dim);}
+.btn-ghost{background:transparent;color:var(--muted);border-color:var(--line);}
+.btn-ghost:hover{color:var(--ink);border-color:var(--muted);}
+button:disabled{opacity:.6;cursor:default;}
+</style>
+</head>
+<body>
+<div class="card" role="dialog" aria-modal="true" aria-labelledby="uaTitle">
+  <div class="icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>
+  </div>
+  <h1 id="uaTitle">إلغاء تثبيت ملاهي كوكو بارك</h1>
+  <p class="msg">أدخل الرقم السري لحساب المسؤول للسماح بحذف البرنامج.</p>
+  <div class="field">
+    <label for="uaPass">الرقم السري للمسؤول</label>
+    <input id="uaPass" type="password" autocomplete="off" spellcheck="false"
+           inputmode="numeric" aria-label="الرقم السري للمسؤول"
+           placeholder="••••" maxlength="64">
+  </div>
+  <div class="err" id="uaErr" role="alert" aria-live="polite"></div>
+  <div class="buttons">
+    <button class="btn-ghost" id="uaCancel" type="button">إلغاء</button>
+    <button class="btn-primary" id="uaOk" type="button">تأكيد الحذف</button>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  /* الواجهة لا ترى أي تجزئة ولا سر: ترسل كلمة السر فقط للعملية الرئيسية التي
+     تتحقق منها عبر نفس دالة تسجيل الدخول، وتتلقّى نتيجة منطقية فقط. */
+  var bridge = window.malahyUninstallAuth;
+  var input = document.getElementById("uaPass");
+  var err = document.getElementById("uaErr");
+  var okBtn = document.getElementById("uaOk");
+  var cancelBtn = document.getElementById("uaCancel");
+  var busy = false;
+
+  function setError(msg){
+    err.textContent = msg || "";
+    input.setAttribute("aria-invalid", msg ? "true" : "false");
+  }
+  function setBusy(b){
+    busy = b;
+    okBtn.disabled = b; cancelBtn.disabled = b;
+    input.disabled = b;
+  }
+
+  async function submit(){
+    if (busy) return;
+    var pw = input.value;
+    if (!pw){ setError("أدخل الرقم السري للمسؤول."); input.focus(); return; }
+    setError("");
+    setBusy(true);
+    try {
+      var res = await bridge.verify(pw);
+      /* النجاح: العملية الرئيسية تُغلق التطبيق برمز 0 فيتابع المزيل الحذف.
+         لا حاجة لأي شيء هنا — نتجنّب أي تلميح عن سبب النجاح. */
+      if (!res || res.ok !== true){
+        setBusy(false);
+        setError("الرقم السري غير صحيح. يُرجى المحاولة مرة أخرى.");
+        input.value = "";
+        input.focus();
+      }
+    } catch (e){
+      setBusy(false);
+      setError("تعذّر التحقق من الرقم السري. تم رفض الحذف.");
+      input.focus();
+    }
+  }
+
+  okBtn.addEventListener("click", submit);
+  cancelBtn.addEventListener("click", function(){ try { bridge.cancel(); } catch (e) {} });
+  input.addEventListener("keydown", function(e){
+    if (e.key === "Enter"){ e.preventDefault(); submit(); }
+    else if (e.key === "Escape"){ e.preventDefault(); try { bridge.cancel(); } catch (e) {} }
+  });
+  /* منع لصق/سحب أي قيمة خارجية، وإبقاء المؤشر داخل الحقل */
+  input.addEventListener("paste", function(e){ e.preventDefault(); });
+  window.addEventListener("beforeunload", function(){ try { bridge.cancel(); } catch (e) {} });
+  input.focus();
+})();
+</script>
+</body>
+</html>

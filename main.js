@@ -673,46 +673,146 @@ ipcMain.on("gate-restart", () => {
   }
 });
 
+/* ============ وضع مصادقة إلغاء التثبيت (--uninstall-auth) ============ */
+/* يُطلِق هذا الوضع حصرًا مزيل التثبيت NSIS قبل حذف أي ملف (أنظر build/uninstall-auth.nsh).
+   يعرض نافذة عربية صغيرة تطلب الرقم السري لحساب المسؤول، ثم يتحقق منه عبر
+   users.verifyAdminPassword → نفس crypto.scrypt + timingSafeEqual على نفس تجزئة
+   حساب المدير المخزّنة في قاعدة البيانات القائمة (نفس سلطة تسجيل الدخول).
+
+   قرار التفويض الوحيد بين العمليتين هو رمز الخروج:
+     0  = سُمح بالحذف (يكمل المزيل عمله)
+     ≠0 = رُفض الحذف (يُلغي المزيل العملية قبل لمس أي ملف)
+
+   هذا الوضع:
+   - لا يُنشئ النافذة الرئيسية ولا شاشة البداية ولا بوابة التحديث ولا التحديثات
+     التلقائية (لا اتصال شبكي إطلاقًا).
+   - لا يطلب قفل نسخة واحدة (حتى يعمل حتى لو كان التطبيق الرئيسي مفتوحًا).
+   - قراءة فقط من قاعدة البيانات: لا initUsers ولا كتابة ولا جلسة.
+   - لا يقبل كلمة السر من سطر الأوامر أو متغيرات البيئة إطلاقًا — من الواجهة فقط،
+     فلا تتسرّب في سجل الأوامر أو السجلات.
+   - يفشل مُغلقًا (fail-closed): أي خطأ → رمز ≠0 → يُرفض الحذف. */
+const UNINSTALL_AUTH_FLAG = "--uninstall-auth";
+let unauthWindow = null;
+let unauthResolved = false;
+
+function unauthLog(line) {
+  /* سجل أخطاء فقط — لا كلمة سر ولا تجزئة ولا أي سر إطلاقًا */
+  try { appendLog("uninstall-auth :: " + String(line)); } catch (_) {}
+}
+function exitUninstallAuth(allowed) {
+  if (unauthResolved) return;
+  unauthResolved = true;
+  const code = allowed ? 0 : 1;
+  try { app.exit(code); } catch (_) { try { process.exit(code); } catch (__) {} }
+}
+function runUninstallAuthMode() {
+  app.whenReady().then(() => {
+    try {
+      unauthWindow = new BrowserWindow({
+        icon: path.join(__dirname, "assets", "icons", "icon.ico"),
+        title: "إلغاء تثبيت ملاهي كوكو بارك",
+        width: 460,
+        height: 380,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        fullscreenable: false,
+        center: true,
+        show: true,
+        autoHideMenuBar: true,
+        backgroundColor: "#0a1628",
+        webPreferences: {
+          preload: path.join(__dirname, "preload.js"),
+          contextIsolation: true,
+          nodeIntegration: false,
+          devTools: false,
+        },
+      });
+      Menu.setApplicationMenu(null);
+      unauthWindow.loadFile(path.join(__dirname, "windows", "uninstall-auth.html"));
+      /* إغلاق النافذة بدون نجاح = إلغاء → رمز ≠0 → يُرفض الحذف */
+      unauthWindow.on("closed", () => {
+        unauthWindow = null;
+        exitUninstallAuth(false);
+      });
+    } catch (e) {
+      unauthLog("تعذّر إنشاء نافذة المصادقة: " + String(e));
+      exitUninstallAuth(false);
+    }
+  });
+  /* القناتان الوحيدتان المُسجَّلتان في هذا الوضع — تحقق وإلغاء فقط،
+     بدون أي مسار لتنفيذ أوامر أو كتابة بيانات. */
+  ipcMain.handle("uninstall-auth:verify", async (_e, args) => {
+    try {
+      const allowed = await users.verifyAdminPassword((args && args.password) || "");
+      if (allowed) {
+        /* exitUninstallAuth يضبط عَلَم النجاح أولاً ثم ينهي العملية برمز 0.
+           الترتيب حاسم: لو ضبطنا العلم قبل الاستدعاء لعودت الدالة فورًا دون
+           إنهاء العملية أبدًا. */
+        exitUninstallAuth(true);
+        return { ok: true };
+      }
+      return { ok: false, error: "wrong-password" };
+    } catch (e) {
+      unauthLog("تعذّر التحقق (فشل مُغلق): " + String(e && e.message ? e.message : e));
+      return { ok: false, error: "auth-failed" };
+    }
+  });
+  ipcMain.on("uninstall-auth:cancel", () => exitUninstallAuth(false));
+}
+
 /* ============ دورة حياة التطبيق ============ */
 /* قفل نسخة واحدة: لو المستخدم فتح البرنامج مرة تانية نركّز على النافذة الموجودة
    بدل ما نعمل نسخة جديدة من البرنامج (تفادي تكرار البيانات وتعدّد النوافذ). */
-const gotSingleLock = app.requestSingleInstanceLock();
-if (!gotSingleLock) {
-  app.quit();
-} else {
-  app.on("second-instance", () => {
-    try {
-      if (gateWin && !gateWin.isDestroyed()) { gateWin.focus(); return; }
-      if (!mainWindow) return;
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      if (!mainWindow.isVisible()) mainWindow.show();
-      mainWindow.focus();
-    } catch (_) {}
-  });
+const UNAUTH_MODE = (function(){
+  /* وضع مصادقة إلغاء التثبيت: يُطلِقه مزيل التثبيت NSIS فقط (أنظر
+     build/uninstall-auth.nsh). نكشفه هنا مرة واحدة قبل أي قفل أو نافذة. */
+  try { return process.argv.indexOf(UNINSTALL_AUTH_FLAG) !== -1; } catch (_) { return false; }
+})();
 
-  /* البوابة تعمل قبل إنشاء النافذة الرئيسية: لو التحديث مطلوب نعرض
-     شاشة التحديث المقفولة بدل الواجهة الرئيسية. */
-  app.whenReady().then(async () => {
-    createSplash();
-    /* تهيئة مستودع المستخدمين وترحيل كلمة سر الأدمن (إضافي، idempotent، ولا يوقف
-       الإقلاع أبدًا إذا تعذّر). */
-    try { await users.initUsers(); }
-    catch (e) { appendLog("users.initUsers :: " + String(e)); }
-    let decision;
-    try {
-      decision = await runUpdateGate();
-    } catch (e) {
-      decision = { action: "proceed", installed: app.getVersion(), required: app.getVersion() };
-    }
-    if (decision && decision.action === "proceed") {
-      createMainWindow();
-    } else {
+if (UNAUTH_MODE) {
+  /* وضع مصادقة إلغاء التثبيت يعمل مستقلًا عن التطبيق الرئيسي تمامًا: لا قفل
+     نسخة واحدة، لا نافذة رئيسية، لا تحديثات، لا اتصال شبكي. */
+  runUninstallAuthMode();
+} else {
+  const gotSingleLock = app.requestSingleInstanceLock();
+  if (!gotSingleLock) {
+    app.quit();
+  } else {
+    app.on("second-instance", () => {
       try {
-        if (splash && !splash.isDestroyed()) splash.close();
+        if (gateWin && !gateWin.isDestroyed()) { gateWin.focus(); return; }
+        if (!mainWindow) return;
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        if (!mainWindow.isVisible()) mainWindow.show();
+        mainWindow.focus();
       } catch (_) {}
-      createGateWindow(decision);
-    }
-  });
+    });
+
+    /* البوابة تعمل قبل إنشاء النافذة الرئيسية: لو التحديث مطلوب نعرض
+       شاشة التحديث المقفولة بدل الواجهة الرئيسية. */
+    app.whenReady().then(async () => {
+      createSplash();
+      /* تهيئة مستودع المستخدمين وترحيل كلمة سر الأدمن (إضافي، idempotent، ولا يوقف
+         الإقلاع أبدًا إذا تعذّر). */
+      try { await users.initUsers(); }
+      catch (e) { appendLog("users.initUsers :: " + String(e)); }
+      let decision;
+      try {
+        decision = await runUpdateGate();
+      } catch (e) {
+        decision = { action: "proceed", installed: app.getVersion(), required: app.getVersion() };
+      }
+      if (decision && decision.action === "proceed") {
+        createMainWindow();
+      } else {
+        try {
+          if (splash && !splash.isDestroyed()) splash.close();
+        } catch (_) {}
+        createGateWindow(decision);
+      }
+    });
+  }
 }
 
 app.on("browser-window-created", (_, window) => {

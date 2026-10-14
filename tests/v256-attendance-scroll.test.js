@@ -887,7 +887,7 @@ console.log("\n-- C) previous-days history scrolling --");
 console.log("\n-- D) scope guards --");
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  eq("D1 the app version is 2.5.9 (the authorized v2.5.9 patch release bump)", pkg.version, "2.5.9");
+  eq("D1 the app version is 2.6.0 (the authorized v2.6.0 uninstall-protection release bump)", pkg.version, "2.6.0");
 
   /* مرجع ثابت: حالة ما قبل إصدار v2.5.6 (آخر HEAD مستقر قبل التزام الإصدار).
      بعد دمج العمل في HEAD لم يعد فرق HEAD مجديًا، لذا نُثبّت خط الأساس
@@ -1008,7 +1008,19 @@ console.log("\n-- D) scope guards --");
                نفس ملفا المصدر المصرَّح بهما أعلاه (daily-report.js + index.html)
                + اختبار مركزي جديد + تقرير التنفيذ. نفس النمط المصرَّح به أعلاه. */
             "tests/v259-electronic-cash.test.js",
-            "AI_REPORTS/V2_5_9_ELECTRONIC_CASH_RECONCILIATION_REPORT.md"];
+            "AI_REPORTS/V2_5_9_ELECTRONIC_CASH_RECONCILIATION_REPORT.md",
+            /* إصدار v2.6.0 (حماية إلغاء التثبيت بالرقم السري لحساب المسؤول):
+               نفس آلية المصادقة القائمة (users.js) + جسر الواجهة (preload.js) +
+               وضع مصادقة إلغاء التثبيت (main.js) + نافذة الحوار العربية +
+               خطّاف مزيل NSIS + تكوين البناء + اختبار مركزي + تقرير التنفيذ.
+               main.js و preload.js مُصرَّح بهما أعلاه. */
+            "users.js",
+            "electron-builder.yml",
+             ".gitignore",
+            "windows/uninstall-auth.html",
+            "build/uninstall-auth.nsh",
+            "tests/v260-uninstall-auth.test.js",
+            "AI_REPORTS/UNINSTALL_ADMIN_PASSWORD_PROTECTION_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
      })(), (function () {
