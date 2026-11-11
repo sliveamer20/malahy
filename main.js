@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const db = require("./database");
 const PERMLIB = require("./permissions");
+const printerReadiness = require("./printer-readiness");
 const users = require("./users")(db);
 
 // electron-updater اختياري (لو مش متثبت البرنامج يشتغل عادي بدون تحديثات)
@@ -351,42 +352,61 @@ ipcMain.handle("get-printers", async () => {
     return [];
   }
 });
-/* أسماء الطابعات المثبّتة في الويندوز (للتحقق من الطابعة المختارة قبل الطباعة).
-   تُرجع null لو تعذّر سرد الطابعات، وحينها نكتفي بالاسم المطلوب كما هو. */
-async function installedPrinterNames() {
-  try {
-    const wc = mainWindow && mainWindow.webContents;
-    if (!wc) return null;
-    const list = await wc.getPrintersAsync();
-    return (list || []).map((p) => (p && p.name) || "");
-  } catch (e) {
-    return null;
+/* ============ حماية من الإرسال المكرر لنفس مهمة الطباعة ============
+   بعض أحداث الواجهة قد تصل مرتين (نقرة مكررة/إعادة ربط مستمع). نمنح كل عملية
+   بيع معرّف مهمة فريدًا من الواجهة، ونرفض إرسال نفس المعرّف مرة أخرى خلال
+   نافذة قصيرة. لا نحتفظ بأي مهمة للطباعة لاحقًا: هذا مجرد منع تكرار في الذاكرة
+   ويزول تلقائيًا. */
+const recentPrintJobs = new Map();
+const PRINT_DEDUPE_MS = 15000;
+function claimPrintJob(jobId) {
+  const now = Date.now();
+  for (const [key, ts] of recentPrintJobs) {
+    if (now - ts > PRINT_DEDUPE_MS) recentPrintJobs.delete(key);
   }
+  if (recentPrintJobs.has(jobId)) return false;
+  recentPrintJobs.set(jobId, now);
+  return true;
+}
+
+/* عنوان المستند داخل الـ Spooler: يساعد المشغّل على تمييز مهام Malahy عن
+   مهام التطبيقات الأخرى عند فحص قائمة الطباعة يدويًا. لا يظهر على الورق
+   (عنوان <title> لا يُطبع في وضع silent) ولا يغيّر التصميم. */
+function stampPrintDocument(html) {
+  const src = String(html || "");
+  const marker = "Malahy print " + new Date().toISOString().replace(/[:.]/g, "-");
+  if (/<title[\s>]/i.test(src)) {
+    return src.replace(/<title([^>]*)>[\s\S]*?<\/title>/i, "<title$1>" + marker + "</title>");
+  }
+  if (/<head[\s>]/i.test(src)) {
+    return src.replace(/<head([^>]*)>/i, "<head$1><title>" + marker + "</title>");
+  }
+  if (/<html[\s>]/i.test(src)) {
+    return src.replace(/<html([^>]*)>/i, "<html$1><head><title>" + marker + "</title></head>");
+  }
+  return "<title>" + marker + "</title>" + src;
 }
 
 ipcMain.handle("print-ticket", async (_e, opts) => {
-  opts = opts || {};
+  /* طلب غير صالح (وليس نص HTML): لا نُنشئ نافذة ولا نطبع صفحة فارغة. */
+  if (!opts || typeof opts !== "object" || Array.isArray(opts) ||
+      typeof opts.html !== "string" || !opts.html.trim()) {
+    appendLog("print-ticket: طلب طباعة غير صالح");
+    return { ok: false, reason: "invalid-print-request" };
+  }
+  const printerName = typeof opts.printerName === "string" ? opts.printerName.trim() : "";
+  const jobId = typeof opts.jobId === "string" ? opts.jobId.trim() : "";
+  if (jobId && !claimPrintJob(jobId)) {
+    appendLog("print-ticket: منع إرسال مكرر لنفس المهمة: " + jobId);
+    return { ok: true, duplicate: true };
+  }
+
   let win = null;
+  let readyPromise = null;
   try {
-    /* 1) التحقق من الطابعة المختارة: لو الاسم محفوظ لكنه غير موجود بين طابعات
-          الويندوز (طابعة غير موصّلة أو أُزيلت) نُرجع سببًا واضحًا للواجهة بدل
-          رسالة "تعذّرت الطباعة" المبهمة. لو تعذّر السرد نكمل بالاسم كما هو. */
-    /* Two DISTINCT cases below, each needing its own message; merging them yields
-       a misleading generic error: (a) a selected printer that is now absent from
-       the system, (b) nothing selected AND no printer installed at all. */
-    const printerName = typeof opts.printerName === "string" ? opts.printerName : "";
-    const installed = await installedPrinterNames();
-    if (printerName) {
-      if (installed && installed.indexOf(printerName) === -1) {
-        appendLog("print-ticket: الطابعة المختارة غير مثبّتة: " + printerName);
-        return { ok: false, reason: "printer-not-found", available: installed };
-      }
-    } else if (installed && installed.length === 0) {
-      /* No printer selected AND no printer installed at all -> name the reason
-         precisely instead of letting it surface as a vague print failure. */
-      appendLog("print-ticket: no printer selected and no printers installed");
-      return { ok: false, reason: "no-printer-selected", available: [] };
-    }
+    /* فحص الجاهزية يبدأ بالتوازي مع تحميل صفحة الطباعة، لكن لا يُرسل أي شيء
+       إلى ويندوز قبل أن ينتهي الفحص بنجاح. */
+    readyPromise = printerReadiness.checkPrinterReady(printerName);
 
     win = new BrowserWindow({
       show: false,
@@ -395,9 +415,24 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
       webPreferences: { contextIsolation: true, javascript: false },
     });
     await win.loadURL(
-      "data:text/html;charset=utf-8," + encodeURIComponent(opts.html || "")
+      "data:text/html;charset=utf-8," + encodeURIComponent(stampPrintDocument(opts.html))
     );
     await new Promise((r) => setTimeout(r, 250));
+
+    const ready = await readyPromise;
+    readyPromise = null;
+    if (!ready || !ready.ok) {
+      try { if (win && !win.isDestroyed()) win.destroy(); } catch (_) {}
+      win = null;
+      appendLog("print-ticket: الطابعة غير جاهزة [" +
+        ((ready && ready.detail) || "unknown") + "] printer=" + (printerName || "(default)"));
+      return {
+        ok: false,
+        reason: (ready && ready.reason) || "printer-not-ready",
+        detail: (ready && ready.detail) || "unknown",
+        available: (ready && ready.available) || [],
+      };
+    }
 
     /* 2) خيارات الطباعة — يجب أن يكون حجم الورق صالحًا دائمًا. حسب عقد إلكترون:
           لو لم نُمرّر pageSize ولم نفعّل usePrinterDefaultPageSize (افتراضه false)
@@ -412,7 +447,11 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
       printBackground: true,
       margins: { marginType: opts.paper === "a4" ? "default" : "none" },
     };
-    if (printerName) printOpts.deviceName = printerName;
+    /* نثبّت الطابعة التي فُحصت فعليًا. عند اختيار «الطابعة الافتراضية» نستخدم
+       اسم الافتراضية الذي أعاده فحص ويندوز، حتى لا تتغيّر الطابعة بين الفحص
+       والإرسال. */
+    if (ready.printer) printOpts.deviceName = ready.printer;
+    else if (printerName) printOpts.deviceName = printerName;
     if (opts.paper === "a4") {
       printOpts.pageSize = "A4";
     } else {
@@ -432,10 +471,11 @@ ipcMain.handle("print-ticket", async (_e, opts) => {
     win = null;
     if (!result.success) {
       appendLog("print-ticket: فشلت الطباعة: " + (result.failureReason || "unknown") +
-        " | printer=" + printerName + " paper=" + opts.paper);
+        " | printer=" + (printOpts.deviceName || "") + " paper=" + opts.paper);
     }
-    return { ok: !!result.success, reason: result.failureReason || "" };
+    return { ok: !!result.success, reason: result.failureReason || "", accepted: !!result.success };
   } catch (err) {
+    if (readyPromise) { try { await readyPromise; } catch (_) {} }
     try { if (win && !win.isDestroyed()) win.destroy(); } catch (_) {}
     appendLog("print-ticket: استثناء: " + String(err));
     return { ok: false, error: String(err) };

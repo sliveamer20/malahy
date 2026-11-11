@@ -2816,7 +2816,8 @@ function addTicket(id,method){
     else { state.counts[id]=(Number(state.counts[id])||0)+1; }
     /* لقطة سعر الوحدة الفعلي لهذه التذكرة (تحمي الأسعار التاريخية) */
     txPricesPush(id,method,1,g.price);
-    appendTxLog({ id:uid(), ts:Date.now(), shift:shiftOfDate(new Date()), gameId:id, game:g.name,
+    const txId=uid();
+    appendTxLog({ id:txId, ts:Date.now(), shift:shiftOfDate(new Date()), gameId:id, game:g.name,
       unitPrice:g.price, qty:1, total:g.price, method:method, kind:'ticket' });
 
     const saved=persist();
@@ -2833,7 +2834,7 @@ function addTicket(id,method){
         ? ('تم قطع تذكرة (دفع إلكتروني) — '+g.name+' ('+fmtNum(g.price)+' جنيه)')
         : ('تم قطع تذكرة (كاش) — '+g.name+' ('+fmtNum(g.price)+' جنيه)'),'ok');
     }
-    printTicket(id,1,method);
+    printTicket(id,1,method,txId);
   }catch(e){
     logErr('addTicket('+id+','+method+')',e);
     try{ toast('تعذّر تسجيل التذكرة — تم تسجيل الخطأ في ملف السجل','warn'); }catch(_){ }
@@ -2909,14 +2910,15 @@ function addBatch(id){
   const g=GAMES.find(x=>x.id===id);
   state.counts[id]=(Number(state.counts[id])||0)+q;
   txPricesPush(id,'cash',q,g.price);
-  appendTxLog({ id:uid(), ts:Date.now(), shift:shiftOfDate(new Date()), gameId:id, game:g.name,
+  const txId=uid();
+  appendTxLog({ id:txId, ts:Date.now(), shift:shiftOfDate(new Date()), gameId:id, game:g.name,
     unitPrice:g.price, qty:q, total:q*g.price, method:'cash', kind:'batch' });
   inp.value='';
   persist(); refreshCounts();
   const card=$('#cnt-'+id)?.closest('.ticket');
   if(card){ card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash'); }
   toast('تم إضافة '+q+' تذكرة (كاش) — '+g.name,'ok');
-  printTicket(id,q,'cash');
+  printTicket(id,q,'cash',txId);
 }
 
 /* ============ Actions: expenses & gifts ============ */
@@ -4268,13 +4270,20 @@ function ticketHTMLFallback(o){
 }
 /* تفسير نتيجة الطباعة القادمة من العملية الرئيسية: تسجّل السبب الفعلي للفشل
    في سجل الجهاز (بدل إخفائه)، وعرض رسالة واضحة للمستخدم. تُرجع true/false. */
-function printResultToast(res,okMsg){
+function printResultToast(res,okMsg,opts){
   if(res && res.ok){ if(okMsg) toast(okMsg,'ok'); return true; }
   const reason=(res && (res.reason||res.error))||'';
-  if(reason==='no-printer-selected'){
+  const ticketPrint=!!(opts && opts.ticket);
+  /* عند قطع تذكرة، أي فشل طباعة يعني أن البيع سُجّل بالفعل. نعرض الرسالة
+     العربية المطلوبة حرفيًا حتى لا يظن الموظف أن البيع لم يُسجَّل. */
+  if(ticketPrint && reason!=='invalid-print-request'){
+    toast('تعذر الطباعة، الطابعة غير متصلة أو غير جاهزة. تم تسجيل عملية قطع التذكرة.','warn');
+  }else if(reason==='no-printer-selected'){
     toast('تعذّرت الطباعة: لم يتم تحديد طابعة. يُرجى اختيار طابعة أولاً من «الإعدادات».','warn');
   }else if(reason==='printer-not-found'){
     toast('الطابعة المختارة غير متوفرة الآن — افتح «الإعدادات» واختر طابعة متصلة','warn');
+  }else if(reason==='printer-not-ready'){
+    toast('تعذر الطباعة، الطابعة غير متصلة أو غير جاهزة.','warn');
   }else{
     toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn');
   }
@@ -4282,7 +4291,7 @@ function printResultToast(res,okMsg){
   return false;
 }
 
-async function printTicket(id,qty,method){
+async function printTicket(id,qty,method,jobId){
   /* الطباعة تحتاج صلاحية ticketPrint — لو أُلغيت من الكاشير يُسجَّل البيع
      ويُطبَّع لاحقًا من الإدارة؛ العملية نفسها لا تتأثر. */
   if(!MalahyPerm.hasPerm('ticketPrint')) return;
@@ -4294,9 +4303,9 @@ async function printTicket(id,qty,method){
   const logo=await brandLogoPrint(paperKind()==='58'?22:30);
   const html=ticketHTML({game:g.name,qty:qty,method:(method==='elec'?'elec':'cash'),price:g.price,total:qty*g.price,seq:ticketSeq,when:new Date(),logo:logo});
   try{
-    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
-    printResultToast(res);
-  }catch(e){ logErr('printTicket',e); toast('تعذّرت الطباعة','warn'); }
+    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true, jobId:jobId||'' });
+    printResultToast(res,null,{ticket:true});
+  }catch(e){ logErr('printTicket',e); toast('تعذر الطباعة، الطابعة غير متصلة أو غير جاهزة. تم تسجيل عملية قطع التذكرة.','warn'); }
 }
 /* ============ تذكرة الهدية (نفس تصميم تذاكر الألعاب — تتكيّف مع عرض الورق) ============
    مثل تذاكر الألعاب: لو كان قالب الـ SVG متوفرًا يُضمَّن في رأس الإيصال كقطعة
@@ -4351,7 +4360,7 @@ function giftTicketHTMLFallback(o){
     +'</body></html>';
 }
 /* طباعة تذكرة هدية — بترجع true لو نجحت، false لو فشلت (التسجيل بيتم قبلها دايمًا) */
-async function printGiftTicket(item){
+async function printGiftTicket(item,jobId){
   try{
     if(!(window.malahyPrint && window.malahyPrint.printTicket)) return false;
     const st=settings();
@@ -4363,7 +4372,7 @@ async function printGiftTicket(item){
       when:new Date(item.at||Date.now()),
       logo:logo
     });
-    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true });
+    const res=await window.malahyPrint.printTicket({ html:html, printerName:st.printerName||'', paper:paperKind(), silent:true, jobId:jobId||('gift:'+(item.id||'')) });
     if(!(res && res.ok) && res && (res.reason||res.error)){
       logErr('printGiftTicket',(res.reason||res.error));
     }
@@ -4382,7 +4391,7 @@ async function reprintGift(itemId){
     if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return; }
     /* لو الهدية قديمة ومفيهاش رقم عملية، نعطيها رقم دلوقتي ونحفظه */
     if(!item.seq){ giftSeq++; saveJSON(K_GSEQ,giftSeq); item.seq=giftSeq; if(!item.at) item.at=Date.now(); persist(); }
-    const ok=await printGiftTicket(item);
+    const ok=await printGiftTicket(item,'gift-reprint:'+(item.id||'')+':'+Date.now());
     if(ok) toast('تم إرسال تذكرة الهدية للطابعة 🖨️','ok');
     else toast('تعذّرت الطباعة — تأكد من توصيل الطابعة واختيارها من «الإعدادات»','warn');
   }catch(e){ logErr('reprintGift',e); toast('تعذّرت طباعة تذكرة الهدية','warn'); }
@@ -4973,13 +4982,25 @@ function empMigrationAudit(){
 function empPrintMigrationAudit(){
   if(!PRR()) return;
   if(!MalahyPerm.hasPerm('payroll')){ MalahyPerm.deny(); return; }
+  if(!(window.malahyPrint && window.malahyPrint.printTicket)){ toast('الطباعة متاحة داخل البرنامج فقط','warn'); return; }
   const a=empMigrationAudit();
   const html=PRR().migrationAuditHTML(a,{paper:paperKind(),venue:payrollVenue(),ts:Date.now()});
-  malahyPrint.printTicket(html,{
-    jobName:'payroll-migration-audit',
-    success:'تم إرسال تقرير تدقيق الترحيل إلى الطابعة',
-    errorTitle:'تعذّر طباعة تقرير تدقيق الترحيل'
-  });
+  try{
+    window.malahyPrint.printTicket({
+      html:html,
+      printerName:settings().printerName||'',
+      paper:paperKind(),
+      silent:true
+    }).then(function(res){
+      printResultToast(res,'تم إرسال تقرير تدقيق الترحيل إلى الطابعة');
+    }).catch(function(err){
+      logErr('empPrintMigrationAudit',err);
+      toast('تعذّرت طباعة تقرير تدقيق الترحيل','warn');
+    });
+  }catch(e){
+    logErr('empPrintMigrationAudit',e);
+    toast('تعذّرت طباعة تقرير تدقيق الترحيل','warn');
+  }
 }
 
 /* ---- دفعات الصرف (مفتاح مستقل: ذرّي per-employee ولا يمسح سجل الموظفين) ---- */

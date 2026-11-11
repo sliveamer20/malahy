@@ -34,6 +34,50 @@ const env = {
   logs: [],                // appendLog lines
 };
 
+/* Windows readiness probe stub. The real printer-readiness module is still
+   exercised (status parsing, port checks), but its PowerShell call is replaced
+   by a deterministic answer derived from the same `env.printers` fixtures. */
+function fakeProbe(target) {
+  const list = env.printers || [];
+  const found = target
+    ? list.filter((p) => p.name === target)[0]
+    : (list.filter((p) => p.isDefault)[0] || list[0]);
+  const names = list.map((p) => p.name);
+  if (!found) {
+    return { ok: true, found: false, target: target, spooler: "Running", names: names, tcpPorts: [], usbPort: null };
+  }
+  return {
+    ok: true,
+    found: true,
+    target: target,
+    spooler: "Running",
+    names: names,
+    tcpPorts: [],
+    usbPort: null,
+    printer: {
+      Name: found.name,
+      WorkOffline: !!found.workOffline,
+      PrinterStatus: found.printerStatus == null ? 3 : found.printerStatus,
+      ExtendedPrinterStatus: found.extendedPrinterStatus == null ? 2 : found.extendedPrinterStatus,
+      DetectedErrorState: found.detectedErrorState == null ? 0 : found.detectedErrorState,
+      PrinterState: found.printerState == null ? 0 : found.printerState,
+      Status: found.statusText || "Unknown",
+      PortName: found.portName || "nul:",
+      Default: !!found.isDefault,
+      Local: true,
+      Network: false,
+      JobCount: 0,
+      DriverName: "",
+    },
+  };
+}
+const childProcessStub = {
+  execFile: (_file, _args, options, cb) => {
+    const target = (options && options.env && options.env.MALAHY_PRINT_TARGET) || "";
+    setImmediate(() => cb(null, JSON.stringify(fakeProbe(target)), ""));
+  },
+};
+
 /* ---------- electron stub ---------- */
 const ipcMain = {
   handle: (ch, fn) => { ipcMain._h[ch] = fn; },
@@ -102,6 +146,7 @@ const origLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === "electron") return electronStub;
   if (request === "electron-updater") return { autoUpdater: null };
+  if (request === "child_process") return childProcessStub;
   return origLoad.apply(this, arguments);
 };
 
@@ -196,11 +241,13 @@ function mainWin() { return FakeBrowserWindow._all[FakeBrowserWindow._all.length
   env.printers = [{ name: "Microsoft Print to PDF", isDefault: true }];
   res = await printTicket({}, opts({ printerName: "" }));
   ok("5a existing behaviour preserved: prints to the Windows default", res.ok === true, JSON.stringify(res));
-  ok("5b no deviceName forced (user chose 'default')", env.printed.length === 1 && !env.printed[0].deviceName);
+  ok("5b pins the verified Windows default as deviceName",
+     env.printed.length === 1 && env.printed[0].deviceName === "Microsoft Print to PDF");
   ok("5c does NOT claim 'no-printer-selected' when a default exists", res.reason !== "no-printer-selected");
 
-  console.log("\n-- Scenario 6: printer discovery itself fails --");
+  console.log("\n-- Scenario 6: Electron discovery fails, Windows probe still answers --");
   reset();
+  env.printers = [{ name: "EPSON TM-T20" }];
   env.listThrows = true;
   res = await printTicket({}, opts({ printerName: "EPSON TM-T20" }));
   ok("6a falls back without a false rejection", res.ok === true, JSON.stringify(res));

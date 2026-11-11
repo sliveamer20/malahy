@@ -8,6 +8,7 @@ directories:
 files:
   - main.js
   - preload.js
+  - printer-readiness.js
   - database.js
   - activation.js
   - update-gate.js

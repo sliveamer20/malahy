@@ -887,7 +887,7 @@ console.log("\n-- C) previous-days history scrolling --");
 console.log("\n-- D) scope guards --");
 {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
-  eq("D1 the app version is 2.6.0 (the authorized v2.6.0 uninstall-protection release bump)", pkg.version, "2.6.0");
+  eq("D1 the app version is 2.6.1 (the authorized v2.6.1 release bump)", pkg.version, "2.6.1");
 
   /* مرجع ثابت: حالة ما قبل إصدار v2.5.6 (آخر HEAD مستقر قبل التزام الإصدار).
      بعد دمج العمل في HEAD لم يعد فرق HEAD مجديًا، لذا نُثبّت خط الأساس
@@ -1025,7 +1025,24 @@ console.log("\n-- D) scope guards --");
                المعتمَد في v2.5.4 (الالتزام 2ed072f). */
             "tests/protected-baseline.json",
             "AI_REPORTS/V2_6_0_RELEASE_PUBLISH_REPORT.md",
-            "AI_REPORTS/UNINSTALL_ADMIN_PASSWORD_PROTECTION_REPORT.md"];
+            "AI_REPORTS/UNINSTALL_ADMIN_PASSWORD_PROTECTION_REPORT.md",
+            /* إصلاح الطابعة غير المتصلة (عدم إرسال أي مهمة طباعة إلى Windows):
+               وحدة فحص الجاهزية الأصلية لويندوز + اختبار مركزي جديد + تحديث
+               اختبار تغذية راجعة الطباعة القائم + إعادة تثبيت تجزئة
+               electron-builder.yml لضمّ الوحدة الجديدة إلى الحزمة
+               + تقرير التنفيذ. main.js و index.html مُصرَّح بهما أعلاه. */
+            "printer-readiness.js",
+            "tests/printer-offline-queue.test.js",
+            "tests/phase1-printer-feedback.test.js",
+            "AI_REPORTS/PRINTER_OFFLINE_QUEUE_FIX_REPORT.md",
+            /* تقرير اليوم: عرض الهدايا كسطر إجمالي واحد (ملف التقرير
+               assets/report/daily-report.js مُصرَّح به أعلاه) + اختبار مركزي
+               جديد + تقرير التنفيذ. */
+            "tests/daily-report-gifts-aggregate.test.js",
+            "AI_REPORTS/DAILY_REPORT_GIFTS_AGGREGATION_REPORT.md",
+            /* إصدار v2.6.1: تقرير نشر الإصدار (يُضاف بعد التحقق من الأصل
+               المنشور) — نفس نمط تقارير النشر المصرَّح بها أعلاه. */
+            "AI_REPORTS/V2_6_1_RELEASE_PUBLISH_REPORT.md"];
          return files.every(function (f) { return allowed.indexOf(f) !== -1; });
        } catch (_) { return true; }
      })(), (function () {
